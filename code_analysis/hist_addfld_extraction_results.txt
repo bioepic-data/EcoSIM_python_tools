@@ -1,0 +1,532 @@
+#    Type            Field Name                     Units                     Default         Long Name
+1    hist_addfld1d   cumFIRE_CO2_col                gC m-2                    inactive        cumulative CO2 flux from fire (<0 into atmosphere)
+2    hist_addfld1d   cumFIRE_CH4_col                gC d-2                    inactive        cumulative CH4 flux from fire (<0 into atmosphere)
+3    hist_addfld1d   cNH4_LITR_col                  gN NH4/g litter           inactive        NH4 concentration in litter
+4    hist_addfld1d   cNO3_LITR_col                  gN NO3/g litter           inactive        NO3 concentration in litter
+5    hist_addfld1d   ECO_HVST_C_col                 gC/m2                     active          Harvested C
+6    hist_addfld1d   ECO_HVST_N_col                 gN/m2                     active          Harvested N
+7    hist_addfld1d   ECO_HVST_P_col                 gP/m2                     inactive        Harvested P
+8    hist_addfld1d   NET_N_MIN_col                  gN/m2                     inactive        Cumulative net microbial NH4 mineralization (<0 immobilization)
+9    hist_addfld1d   tLITR_C_col                    gC/m2                     active          Column integrated total (above+belowground) litter C
+10   hist_addfld1d   RADN_col                       MJ/m2/hr                  active          Total incoming solar radiation
+11   hist_addfld1d   tLITR_N_col                    gN/m2                     active          Column integrated total (above+belowground) litter N
+12   hist_addfld1d   Root_AR_col                    gC/m2/h                   active          Column integrated root autotrophic respiration
+13   hist_addfld1d   Root_CO2Relez_col              gC/m2/h                   active          Column integrated root CO2 flux
+14   hist_addfld1d   tLITR_P_col                    gP/m2                     inactive        Column integrated total (above+belowground) litter P
+15   hist_addfld1d   HUMUS_C_col                    gC/m2                     active          colum integrated humus C
+16   hist_addfld1d   HUMUS_N_col                    gN/m2                     active          colum integrated humus N
+17   hist_addfld1d   HUMUS_P_col                    gP/m2                     inactive        colum integrated humus P
+18   hist_addfld1d   AMENDED_C_col                  gC/m2                     inactive        Column-integrated total organic fertilizer C amendment
+19   hist_addfld1d   AMENDED_N_col                  gN/m2                     inactive        Column-integrated total organic fertilizer N amendment
+20   hist_addfld1d   AMENDED_P_col                  gP/m2                     inactive        Column-integrated total organic fertilizer P amendment
+21   hist_addfld1d   tLITRf_C_col                   gC/m2/hr                  inactive        Column-integrated total (above+belowground) litrFall C flux
+22   hist_addfld1d   tLITRf_N_FLX                   gN/m2/hr                  inactive        Column-integrated total (above+belowground) litrFall N
+23   hist_addfld1d   tLITRf_P                       gP/m2/hr                  inactive        Column-integrated total (above+belowground) litrFall P
+24   hist_addfld1d   tEXCH_PO4_col                  gP/m2                     inactive        Column-integrated total bioavailable (exchangeable) mineral P: H2PO4+HPO4
+25   hist_addfld1d   SUR_DOC_FLX_col                gC/m2/hr                  active          Column-integrated surface DOC flux
+26   hist_addfld1d   SUR_DON_FLX_col                gN/m2                     active          Column-integrated surface DON flux
+27   hist_addfld1d   SUR_DOP_FLX                    gP/m2                     inactive        Column-integrated surface DOP flux
+28   hist_addfld1d   SUB_DOC_FLX_col                gC/m2/hr                  active          total subsurface DOC flux
+29   hist_addfld1d   SUB_DON_FLX_col                gN/m2/hr                  inactive        total subsurface DON flux
+30   hist_addfld1d   SUB_DOP_FLX_col                gP/m2/hr                  inactive        total subsurface DOP flux
+31   hist_addfld1d   SUR_DIC_FLX_col                gC/m2/hr                  active          total surface DIC flux
+32   hist_addfld1d   SUR_DIN_FLX_col                gN/m2                     active          cumulative total surface DIN flux
+33   hist_addfld1d   SUR_DIP_FLX_col                gP/m2                     inactive        Cumulative surface DIP flux
+34   hist_addfld1d   SUB_DIC_FLX_col                gC/m2/hr                  active          total subsurface DIC flux
+35   hist_addfld1d   SUB_DIN_FLX_col                gN/m2/hr                  active          landscape total subsurface DIN flux
+36   hist_addfld1d   SUB_DIP_FLX_col                gP/m2/hr                  inactive        total subsurface DIP flux
+37   hist_addfld1d   HeatFlx2Grnd_col               MJ/m2/hr                  active          Heat flux into the ground
+38   hist_addfld1d   RadSW_Grnd_col                 W/m2                      active          Shortwave Radiation onto the ground
+39   hist_addfld1d   RadSW_Canopy_col               W/m2                      active          Shortwave Radiation onto the grid canopy
+40   hist_addfld1d   Qinfl2soi_col                  mm H2O/hr                 active          Water flux into the ground
+41   hist_addfld1d   Qdrain_col                     mm H2O/hr                 active          Drainage water flux out (>0) of the soil column
+42   hist_addfld1d   Ar_mass_col                    g/m2                      inactive        total Ar mass of the soil column, include that in snow and roots
+43   hist_addfld1d   CO2_mass_col                   g/m2                      inactive        total CO2 mass of the soil column, include that in snow and roots
+44   hist_addfld1d   Gchem_CO2_prod_col             gC/m2                     inactive        Column integrated CO2 production rate from geochemistry
+45   hist_addfld1d   Ar_soil_mass_col               g/m2                      inactive        total Ar mass of the soil column, excluding that in snow
+46   hist_addfld1d   tSALT_DISCHG_FLX_col           mol/m2/hr                 active          total subsurface ion flux
+47   hist_addfld1d   tPREC_P_col                    gP/m2                     inactive        column integrated total soil precipited P
+48   hist_addfld1d   tSoilOrgC_col                  gC/m2                     inactive        Column-integrated total soil organic C
+49   hist_addfld1d   tSoilOrgN_col                  gN/m2                     inactive        Column-integrated total soil organic N
+50   hist_addfld1d   tSoilOrgP_col                  gP/m2                     inactive        Column-integrated total soil organic P
+51   hist_addfld1d   tMICROB_C_col                  gC/m2                     active          Column-integrated micriobial C (include surface litter)
+52   hist_addfld1d   tMICROB_N_col                  gN/m2                     inactive        Column-integrated micriobial N (include surface litter)
+53   hist_addfld1d   tMICROB_P_col                  gP/m2                     inactive        Column-integrated micriobial P (include surface litter)
+54   hist_addfld1d   PO4_FIRE_col                   gP/m2                     inactive        Cumulative PO4 flux from fire
+55   hist_addfld1d   cPO4_LITR_col                  gP/g litr                 inactive        PO4 concentration in litter
+56   hist_addfld1d   cEXCH_P_LITR_col               gP/g litr                 inactive        concentration of exchangeable inorganic P in litterr
+57   hist_addfld1d   NET_P_MIN_col                  gP/m2                     inactive        Cumulative net microbial P mineralization (<0 immobilization)
+58   hist_addfld1d   HMAX_AIR_col                   kPa                       inactive        daily maximum vapor pressure
+59   hist_addfld1d   HMIN_AIR_col                   kPa                       inactive        daily maximum vapor pressure
+60   hist_addfld1d   PSI_LITR_col                   MPa                       inactive        Litter layer micropore matric water potential
+61   hist_addfld1d   SURF_ELEV_col                  m                         inactive        Surface elevation, including litter layer
+62   hist_addfld1d   tNH4_col                       gN/m2                     active          Column-integrated NH4+NH3
+63   hist_addfld1d   tNO3_col                       gN/m2                     active          Column integrated NO3+NO2 content
+64   hist_addfld1d   TEMP_LITR_col                  oC                        active          Litter layer temperature
+65   hist_addfld1d   TEMP_SURF_col                  oC                        inactive        Ground surface temperature
+66   hist_addfld1d   TEMP_SNOW_col                  oC                        inactive        First snow layer temperature
+67   hist_addfld1d   Frac_Snow_Ground_col           none                      inactive        Fraction of ground covered by snow
+68   hist_addfld1d   Frac_Litr_Ground_col           none                      inactive        Fraction of ground covered by litter
+69   hist_addfld1d   Surf_LitrC_col                 gC/m2                     active          Total surface litter C, including microbes
+70   hist_addfld1d   Surf_LitrN_col                 gN/m2                     active          Total surface litter N, including microbes
+71   hist_addfld1d   Surf_LitrP_col                 gP/m2                     inactive        Total surface litter P, including microbes
+72   hist_addfld1d   ATM_CO2_col                    umol/mol                  active          Atmospheric CO2 concentration
+73   hist_addfld1d   ATM_CH4_col                    umol/mol                  active          Atmospheric CH4 concentration
+74   hist_addfld1d   NBP_col                        gC/m2                     inactive        Cumulative net biosphere productivity (<0 into atmosphere)
+75   hist_addfld1d   ECO_LAI_col                    m2/m2                     active          Ecosystem LAI
+76   hist_addfld1d   ECO_SAI_col                    m2/m2                     active          Ecosystem stem Area index for all live branches
+77   hist_addfld1d   ECO_GPP_col                    gC/m2                     active          cumulative ecosystem GPP
+78   hist_addfld1d   ECO_RA_col                     gC/m2                     active          cumulative ecosystem autotrophic respiration
+79   hist_addfld1d   ECO_NPP_col                    gC/m2                     active          cumulative ecosystem NPP
+80   hist_addfld1d   ECO_RH_col                     gC/m2                     active          Cumulative ecosystem heterotrophic respiration (<0 into atmosphere)
+81   hist_addfld1d   ECO_HR_CO2_col                 gC/m2/hr                  inactive        Ecosystem heterotrophic respiration as CO2 (<0 into atmosphere)
+82   hist_addfld1d   HR_CO2_litr_col                gC/m2/hr                  active          Heterotrophic respiration as CO2 in litter (<0 into atmosphere)
+83   hist_addfld1d   ECO_RH_CH4                     gC/m2/hr                  active          Ecosystem heterotrophic respiration as CH4
+84   hist_addfld1d   tDIC_col                       gC/m2                     inactive        column integrated total soil DIC: CO2+CH4
+85   hist_addfld1d   tSTANDING_DEAD_C_col           gC/m2                     inactive        total standing dead C
+86   hist_addfld1d   tSTANDING_DEAD_N_col           gN/m2                     active          total standing dead N
+87   hist_addfld1d   tSTANDING_DEAD_P_col           gP/m2                     inactive        total standing dead P
+88   hist_addfld1d   tPRECIP_col                    mm/m2                     active          cumulative precipitation, including irrigation
+89   hist_addfld1d   ECO_ET_col                     mm H2O/m2                 active          cumulative total evapotranspiration
+90   hist_addfld1d   Ar_cumerr_col                  gAr/m2                    inactive        cumulative mass error for Ar
+91   hist_addfld1d   O2_cumerr_col                  gO/m2                     inactive        cumulative mass error for O2
+92   hist_addfld1d   N2_cumerr_col                  gN/m2                     inactive        cumulative mass error for N2
+93   hist_addfld1d   NH3_cumerr_col                 gN/m2                     inactive        cumulative mass error for NH3
+94   hist_addfld1d   H2_cumerr_col                  gH/m2                     inactive        cumulative mass error for H2
+95   hist_addfld1d   CO2_cumerr_col                 gC/m2                     active          cumulative mass error for CO2
+96   hist_addfld1d   CH4_cumerr_col                 gC/m2                     inactive        cumulative mass error for CH4
+97   hist_addfld1d   CAN_NEE_col                    umol C/m2/s               active          Canopy net CO2 exchange (<0 into atmosphere)
+98   hist_addfld1d   ECO_RADSW_col                  W/m2                      active          Shortwave radiation absorbed by the ecosystem
+99   hist_addfld1d   N2O_LITR_col                   g/m3                      inactive        N2O solute concentration in soil micropores
+100  hist_addfld1d   NH3_LITR_col                   g/m3                      inactive        NH3 solute concentration in soil micropores
+101  hist_addfld1d   SOL_RADN_col                   W/m2                      active          Incoming shortwave radiation on the ecosystem
+102  hist_addfld1d   AIR_TEMP_col                   oC                        active          air temperature
+103  hist_addfld1d   FreeNFix_col                   gN/hr/m2                  active          N fixation by free-living microbes
+104  hist_addfld1d   PATM_col                       kPa                       active          atmospheric pressure
+105  hist_addfld1d   HUM_col                        kPa                       active          vapor pressure
+106  hist_addfld1d   WIND_col                       m/s                       active          wind speed
+107  hist_addfld1d   PREC_col                       mm H2O/m2/hr              active          Total precipitation, excluding irrigation
+108  hist_addfld1d   SNOFAL_col                     mm H2O/m2/hr              active          Precipitation as snowfall
+109  hist_addfld1d   SOIL_RN_col                    W/m2                      active          total net radiation at ground surface (incoming short/long wave - outgoing short/long wave at soil/snow/litter)
+110  hist_addfld1d   SOIL_LE_col                    W/m2                      active          Latent heat flux into ground surface (exclude plant canopy)
+111  hist_addfld1d   SOIL_H_col                     W/m2                      active          Sensible heat flux into ground surface (exclude plant canopy)
+112  hist_addfld1d   SOIL_G_col                     W/m2                      active          total heat flux out of ground surface (>0 into atmosphere)
+113  hist_addfld1d   ECO_Radnet_col                 W/m2                      inactive        Ecosystem net radiation (>0 into ecosystem, short+sky_long - plant_long-surf_long)
+114  hist_addfld1d   ECO_LE_col                     W/m2                      active          Ecosystem latent heat flux (>0 into surface)
+115  hist_addfld1d   ECO_HeatS_col                  W/m2                      active          Ecosystem sensible heat flux (>0 into surface)
+116  hist_addfld1d   ECO_Heat2G_col                 W/m2                      active          Heat flux to warm the ecosystem (<0 into atmosphere), including canopy, snow, litter and exposed soil
+117  hist_addfld1d   O2w_conc_LITR_col              g/m3                      inactive        O2 solute concentration in litter layer
+118  hist_addfld1d   MIN_LWP_pft                    MPa                       inactive        minimum daily canopy water potential
+119  hist_addfld1d   SLA_pft                        cm2 leaf (gC leaf)-1      active          Specific leaf area
+120  hist_addfld1d   CO2_SEMIS_FLX_col              umol C/m2/s               active          Surface CO2 flux (< 0 into atmosphere), excluding wet deposition from rainfall and irrigation
+121  hist_addfld1d   Ar_SEMIS_FLX_col               umol Ar/m2/s              active          soil Ar flux (< 0 into atmosphere), excluding wet deposition from rainfall and irrigation
+122  hist_addfld1d   ECO_NEE_CO2_col                umol C/m2/s               active          ecosystem net CO2 exchange (<0 into atmosphere)
+123  hist_addfld1d   CH4_SEMIS_FLX_col              umol C/m2/s               active          Surface CH4 flux (<0 into atmosphere), excluding wet deposition from rainfall and surface irrigation
+124  hist_addfld1d   CH4_EBU_FLX_col                umol C/m2/s               active          soil CH4 ebullition flux (<0 into atmosphere)
+125  hist_addfld1d   Ar_EBU_FLX_col                 umol Ar/m2/s              active          soil Ar ebullition flux (<0 into atmosphere)
+126  hist_addfld1d   CumCO2_Transpt_Residual_col    gC/m2                     active          Cumulative difference between soil CO2 production and surface CO2 flux
+127  hist_addfld1d   CO2_DRAINLOSS_col              gC/m2/hr                  active          CO2 loss flux through subsurface drainage
+128  hist_addfld1d   CO2_Cum_Hyd_Loss_col           gC/m2                     active          Cumulative hydrological CO2 loss flux, including subsurface drainage
+129  hist_addfld1d   CumAr_Transpt_Residual_col     g/m2                      inactive        Cumulative difference between soil Ar production and surface Ar flux
+130  hist_addfld1d   CH4_PLTROOT_FLX_col            umol C/m2/s               active          soil CH4 flux through plants(<0 into atmosphere)
+131  hist_addfld1d   Ar_PLTROOT_FLX_col             umol Ar/m2/s              inactive        soil AR flux through plants(<0 into atmosphere)
+132  hist_addfld1d   CO2_PLTROOT_FLX_col            umol C/m2/s               inactive        soil CO2 flux through plants(<0 into atmosphere)
+133  hist_addfld1d   O2_PLTROOT_FLX_col             umol O2/m2/s              inactive        soil O2 flux through plants(<0 into atmosphere)
+134  hist_addfld1d   CO2_DIF_FLX_col                umol C/m2/s               inactive        soil CO2 flux through advection+diffusion (<0 into atmosphere)
+135  hist_addfld1d   O2_DIF_FLX_col                 umol O2/m2/s              inactive        soil O2 flux through advection+diffusion (<0 into atmosphere)
+136  hist_addfld1d   CH4_DIF_FLX_col                umol C/m2/s               inactive        soil CH4 flux through advection+diffusion (<0 into atmosphere)
+137  hist_addfld1d   NH3_DIF_FLX_col                umol N/m2/s               inactive        soil NH3 flux through advection+diffusion (<0 into atmosphere)
+138  hist_addfld1d   Ar_DIF_FLX_col                 umol Ar/m2/s              inactive        soil Ar flux through advection+diffusion (<0 into atmosphere)
+139  hist_addfld1d   O2_SEMIS_FLX_col               umol O2/m2/s              active          Surface O2 flux (<0 into atmosphere)
+140  hist_addfld1d   CO2_LITR_col                   gC/m3                     inactive        CO2 solute concentration in litter
+141  hist_addfld1d   EVAPN_col                      mm H2O/m2/hr              active          Column-integrated ground surface evaporation(<0 into atmosphere)
+142  hist_addfld1d   GasXSurfConduct_col            m/hr                      active          Conductance for soil-air gas exchange
+143  hist_addfld1d   CANET_col                      mm H2O/m2/hr              active          Column-integrated canopy evapotranspiration(<0 int atmosphere)
+144  hist_addfld1d   tSWC_col                       mmH2O/m2                  active          column integrated water content (include snow)
+145  hist_addfld1d   tSHeat_col                     MJ/m2                     inactive        column integrated heat content (include snow)
+146  hist_addfld1d   SNOWPACK_col                   mmH2O/m2                  active          total water equivalent snow
+147  hist_addfld1d   SNOWDENS_col                   kg/m3                     active          snow density
+148  hist_addfld1d   SURF_WTR_col                   m3/m3                     active          Volumetric water content in surface litter layer
+149  hist_addfld1d   ThetaW_litr_col                none                      inactive        Relative saturation of water content in surface litter layer [0-1]
+150  hist_addfld1d   ThetaI_litr_col                none                      inactive        Relative volume of ice content in surface litter layer [0-1]
+151  hist_addfld1d   SURF_ICE_col                   m3/m3                     active          Volumetric ice content in surface litter layer
+152  hist_addfld1d   ACTV_LYR_col                   m                         inactive        active layer depth
+153  hist_addfld1d   WTR_TBL_col                    m                         active          internal water table depth (<0 below soil surface)
+154  hist_addfld1d   N2O_SEMIS_FLX_col              gN/m2/hr                  active          Surface N2O flux (<0 into atmosphere), including wet deposition from rainfall and irrigation
+155  hist_addfld1d   PAR_col                        umol m-2 s-1              inactive        Direct plus diffusive incoming photosynthetic photon flux density
+156  hist_addfld1d   CO2_WetDep_FLX_col             gC/m2/hr                  inactive        Wet deposition CO2 flux to soil, from rainfall and irrigation (<0 into atmosphere)
+157  hist_addfld1d   Root_N_FIX_col                 gN/m2/hr                  active          Root N2 fixation
+158  hist_addfld1d   Ar_WetDep_FLX_col              gAr/m2/hr                 inactive        Wet deposition Ar flux to soil, from rainfall and irrigation (<0 into atmosphere)
+159  hist_addfld1d   RootO2_X_Flx_col               gO2/m2/hr                 inactive        O2 consumption rates in roots
+160  hist_addfld1d   N2_SEMIS_FLX_col               gN/m2/hr                  active          Surface N2 flux (<0 into atmosphere), including wet deposition from rainfall and irrigation
+161  hist_addfld1d   NH3_SEMIS_FLX_col              gN/m2/hr                  active          Surface NH3 flux (<0 into atmosphere), including wet deposition from rainfall and irrigation
+162  hist_addfld1d   H2_SEMIS_FLX_col               gH/m2/hr                  active          Surface H2 flux (<0 into atmosphere), including wet deposition from rainfall and irrigation
+163  hist_addfld1d   vHeatCap_litr_col              MJ/m3/K                   inactive        surface litter heat capacity
+164  hist_addfld1d   RUNOFF_FLX_col                 mmH2O/m2/hr               active          Surface runoff from surface water
+165  hist_addfld1d   SEDIMENT_FLX_col               kg/m2/hr                  inactive        total sediment subsurface flux
+166  hist_addfld1d   QDischarge_FLX_col             mmH2O/m2/hr               active          grid water lateral discharge with respect external water table (>0 out of grid)
+167  hist_addfld1d   HeatDischarge_FLX_col          MJ/m2/hr                  inactive        Column-integrated heat flux through discharge
+168  hist_addfld1d   LEAF_rPC_pft                   gP/gC                     inactive        Mass based leaf PC ratio
+169  hist_addfld1d   CAN_RN_pft                     W/m2                      inactive        Canopy net radiation
+170  hist_addfld1d   CAN_LE_pft                     W/m2                      inactive        Canopy latent heat flux (<0 to ATM)
+171  hist_addfld1d   CAN_H_pft                      W/m2                      inactive        Canopy sensible heat flux
+172  hist_addfld1d   CAN_G_pft                      W/m2                      inactive        Canopy storage heat flux
+173  hist_addfld1d   CAN_TEMPC_pft                  oC                        inactive        Canopy temperature
+174  hist_addfld1d   CANGRO_TEMP_FN_pft             none                      inactive        Canopy temperature growth function/stress
+175  hist_addfld1d   CAN_CO2_FLX_pft                umol C/m2/s               inactive        Canopy net CO2 exchange
+176  hist_addfld1d   CAN_GPP_pft                    gC/m2/hr                  inactive        Plant canopy gross CO2 fixation
+177  hist_addfld1d   CAN_cumGPP_pft                 gC/m2                     active          Plant canopy cumulative gross CO2 fixation
+178  hist_addfld1d   dCAN_GPP_CLIM_pft              gC/m2/hr                  inactive        Plant canopy CO2-limited gross CO2 fixation minus acutal value (>0 light-limitation)
+179  hist_addfld1d   dCAN_GPP_eLIM_pft              gC/m2/hr                  inactive        Plant canopy light-limited gross CO2 fixation minus actual value (>0 C-limitation)
+180  hist_addfld1d   CAN_RA_pft                     gC/m2/hr                  inactive        total aboveground autotrophic respiration
+181  hist_addfld1d   CAN_GROWTH_pft                 gC/m2/hr                  inactive        Canopy structural growth rate
+182  hist_addfld1d   cAbvNonstC_pft                 gC/gC                     inactive        Canopy nonstructural C concentration
+183  hist_addfld1d   cAbvNonstN_pft                 gN/gC                     inactive        Canopy nonstructural N concentration
+184  hist_addfld1d   cAbvNonstP_pft                 gP/gC                     inactive        Canopy nonstructural P concentration
+185  hist_addfld1d   CanNonstBConc_pft              g                         inactive        Canopy nonstructural biomass concentration
+186  hist_addfld1d   STOML_RSC_CO2_pft              s/m                       active          Canopy stomatal resistance for CO2
+187  hist_addfld1d   STOML_MinRSC_CO2_pft           s/m                       inactive        Canopy minimal stomatal resistance for CO2
+188  hist_addfld1d   Km_CO2_carboxy_pft             uM                        inactive        MM parameter for CO2 carboxylation by Rubisco
+189  hist_addfld1d   Ci_mesophyll_pft               uM                        inactive        Intracellular CO2 concentration for photosynthesis
+190  hist_addfld1d   BLYR_RSC_CO2_pft               s/m                       inactive        Canopy boundary layer resistance for CO2
+191  hist_addfld1d   CAN_CO2_pft                    umol/mol                  inactive        Canopy gaesous CO2 concentration
+192  hist_addfld1d   Leaf_O2_pft                    umol/mol                  inactive        Leaf aqueous O2 concentration
+193  hist_addfld1d   LAIstk_pft                     m2/m2                     active          whole plant leaf area, including stalk
+194  hist_addfld1d   PSI_CAN_pft                    MPa                       inactive        Canopy total water potential
+195  hist_addfld1d   RootAR_pft                     gC/m2/h                   inactive        Root autotrophic respiraiton
+196  hist_addfld1d   RootLen_pft                    m plant-1                 inactive        Root length per pft (excluding root hair)
+197  hist_addfld1d   TURG_CAN_pft                   MPa                       active          Canopy turgor water potential
+198  hist_addfld1d   STOM_RSC_H2O_pft               s/m                       inactive        Canopy stomatal resistance for H2O
+199  hist_addfld1d   BLYR_RSC_H2O_pft               s/m                       inactive        Canopy boundary layer resistance for H2O
+200  hist_addfld1d   QvTransp_pft                   mmH2O/m2/h                inactive        Canopy transpiration (<0 into atmosphere)
+201  hist_addfld1d   UPTK_NH4_FLX_pft               gN/m2/hr                  inactive        total root uptake of NH4
+202  hist_addfld1d   UPTK_NO3_FLX_pft               gN/m2/hr                  inactive        total root uptake of NO3
+203  hist_addfld1d   N2_FIX_FLX_pft                 gN/m2/hr                  inactive        total root N2 fixation
+204  hist_addfld1d   CAN_NH3_FLX_pft                gN/m2/hr                  inactive        *canopy NH3 flux
+205  hist_addfld1d   TC_Groth_pft                   oC                        inactive        Plant growth temperature
+206  hist_addfld1d   UPTK_PO4_FLX_pft               gP/m2/hr                  inactive        total root uptake of PO4
+207  hist_addfld1d   SHOOT_C_pft                    gC/m2                     inactive        Live plant shoot C
+208  hist_addfld1d   frcPARabs_pft                  none                      inactive        fraction of PAR absorbed by plant
+209  hist_addfld1d   Canopy_PAR_pft                 umol m-2 s-1              inactive        PAR absorbed by plant canopy
+210  hist_addfld1d   Plant_C_pft                    gC/m2                     inactive        Plant C
+211  hist_addfld1d   LEAF_C_pft                     gC/m2                     inactive        Canopy leaf C
+212  hist_addfld1d   PETIOLE_C_pft                  gC/m2                     inactive        Canopy sheath C
+213  hist_addfld1d   STALK_C_pft                    gC/m2                     inactive        Canopy stalk C
+214  hist_addfld1d   RESERVE_C_pft                  gC/m2                     inactive        Canopy reserve C
+215  hist_addfld1d   HUSK_C_pft                     gC/m2                     inactive        Canopy husk C
+216  hist_addfld1d   GRAIN_C_pft                    gC/m2                     inactive        Canopy grain C
+217  hist_addfld1d   Root_C_pft                     gC/m2                     inactive        Plant root C, exluding nodule
+218  hist_addfld1d   RootST_C_pft                   gC/m2                     inactive        Plant root structural C
+219  hist_addfld1d   RootST_N_pft                   gN/m2                     inactive        Plant root structural N
+220  hist_addfld1d   RootST_P_pft                   gP/m2                     inactive        Plant root structural P
+221  hist_addfld1d   RootNodule_C_pft               gC/m2                     inactive        Root total nodule C
+222  hist_addfld1d   ShootNodule_C_pft              gC/m2                     inactive        Shoot total nodule C
+223  hist_addfld1d   ShootNodule_N_pft              gN/m2                     inactive        Shoot total nodule N
+224  hist_addfld1d   ShootNodule_P_pft              gP/m2                     inactive        Shoot total nodule P
+225  hist_addfld1d   SSTORED_C_pft                  gC/m2                     active          Plant seasonal storage of nonstructural C
+226  hist_addfld1d   Root_NONSTC_pft                gC/m2                     inactive        Plant root storage of nonstructural C
+227  hist_addfld1d   Root_NONSTN_pft                gN/m2                     inactive        Plant root storage of nonstructural N
+228  hist_addfld1d   Root_NONSTP_pft                gP/m2                     inactive        Plant root storage of nonstructural P
+229  hist_addfld1d   SHOOT_NONSTC_pft               gC/m2                     inactive        Plant leaf storage of nonstructural C
+230  hist_addfld1d   SHOOT_NONSTN_pft               gN/m2                     inactive        Plant leaf storage of nonstructural N
+231  hist_addfld1d   SHOOT_NONSTP_pft               gP/m2                     inactive        Plant leaf storage of nonstructural P
+232  hist_addfld1d   LeafC3ChlC_pft                 mgC chl m-2 leaf area     active          Cholorophyll carbon in mesophyll for C3/bundle sheath for C4 plants
+233  hist_addfld1d   LeafC4ChlC_pft                 mgC chl m-2 leaf area     active          chlorophyll carbon in mesophyll for C4 plants
+234  hist_addfld1d   LeafRubisco_pft                gC rubisco m-2 leaf area  active          Rubisco carbon in mesophyll for C3/bundle sheath for C4 plants
+235  hist_addfld1d   LeafPEPC_pft                   gC PEP m-2 leaf area      active          PEP carbon in mesophyll for C4 plants
+236  hist_addfld1d   GRAIN_NO_pft                   1/m2                      inactive        Canopy grain number
+237  hist_addfld1d   LAI_xstk_pft                   m2/m2                     inactive        whole plant leaf area, exclude stalk
+238  hist_addfld1d   EXUD_CumYr_C_FLX_pft           gC/m2                     inactive        Cumulative root organic C uptake (<0 exudation into soil)
+239  hist_addfld1d   LITRf_C_pft                    gC/m2/hr                  inactive        total plant LitrFall C
+240  hist_addfld1d   SURF_LITRf_C_FLX_pft           gC/m2                     inactive        Cumulative plant LitrFall C to the soil surface
+241  hist_addfld1d   AUTO_RESP_pft                  gC/m2/hr                  inactive        Whole plant autotrophic respiration
+242  hist_addfld1d   HVST_C_FLX_pft                 gC/m2/hr                  inactive        Plant C harvest
+243  hist_addfld1d   Plant_BALANCE_C_pft            gC/m2                     active          Cumulative plant C conservation error
+244  hist_addfld1d   STANDING_DEAD_C_pft            gC/m2                     inactive        pft Standing dead C
+245  hist_addfld1d   FIREp_CO2_FLX_pft              gC/m2/hr                  inactive        Plant CO2 from fire
+246  hist_addfld1d   FIREp_CH4_FLX_pft              gC/m2/hr                  inactive        Plant CH4 emission from fire
+247  hist_addfld1d   cNPP_pft                       gC/m2                     active          Plant cumulative net primary productivity
+248  hist_addfld1d   CAN_HT_pft                     m                         active          Canopy height
+249  hist_addfld1d   POPN_pft                       1/m2                      active          Plant population
+250  hist_addfld1d   tTRANSPN_pft                   mmH2O/m2                  inactive        Cumulative canopy evapotranspiration (>0 into atmosphere)
+251  hist_addfld1d   WTR_STRESS_pft                 hr                        active          Canopy plant water stress indicator: number of hours PSICanopy_pft(< PSILY)
+252  hist_addfld1d   OXY_STRESS_pft                 none                      active          Plant root O2 stress indicator [0->1 weaker stress]
+253  hist_addfld1d   VcMax25C_RUBISCO_pft           umol CO2 s-1 m-2 leaf area active          Maximum carboxylation rate by Rubisco at 25oC
+254  hist_addfld1d   LeafProteinC_pft               gC protein m-2 leaf area  active          Protein carbon mass per unit of leaf area
+255  hist_addfld1d   VoMax25C_RUBISCO_pft           umol O2 s-1 m-2 leaf area active          Maximum oxygenation rate by Rubisco at 25oC
+256  hist_addfld1d   VcMax25C_PEP_pft               umol CO2 s-1 m-2 leaf area inactive        Maximum carboxylation rate by PEP at 25oC
+257  hist_addfld1d   JMax25C_photo_pft              umol e- s-1 m-2 leaf area active          Maximum electron transport rate at 25oC
+258  hist_addfld1d   TFN_Carboxy_pft                none                      inactive        Temperature response of carboyxlation in photosynthesis
+259  hist_addfld1d   TFN_Oxygen_pft                 none                      inactive        Temperature response of oxygenation in photosynthesis
+260  hist_addfld1d   TFN_eTranspt_pft               none                      inactive        Temperature response of electron transport in photosynthesis
+261  hist_addfld1d   PARSunlit_pft                  umol m-2 s-1              inactive        PAR absorbed by sunlit leaves
+262  hist_addfld1d   PARSunsha_pft                  umol m-2 s-1              inactive        PAR absorbed by sun-shaded leaves
+263  hist_addfld1d   CH2OSunlit_pft                 gC m-2 h-1                inactive        Photosynthesis by sunlit leaves
+264  hist_addfld1d   CH2OSunsha_pft                 gC m-2 h-1                inactive        Photosynthesis by sun-shaded leaves
+265  hist_addfld1d   LeafArea_sunlit_pft            m2 m-2                    inactive        Irridiance-lit leaf area
+266  hist_addfld1d   fClump_pft                     none                      inactive        Clumping factor of leaf area
+267  hist_addfld1d   SHOOT_N_pft                    gN/m2                     inactive        Live plant shoot N
+268  hist_addfld1d   Plant_N_pft                    gN/m2                     inactive        Plant N
+269  hist_addfld1d   LEAF_N_pft                     gN/m2                     inactive        Canopy leaf N
+270  hist_addfld1d   fLEAF_CN_pft                   gN/gC                     active          Canopy new leaf C:N mass ratio
+271  hist_addfld1d   fLEAF_CP_pft                   gP/gC                     active          Canopy new leaf C:P mass ratio
+272  hist_addfld1d   LEAFN2LAI_pft                  gN m-2 LA                 active          Canopy leaf N per m2 leaf area
+273  hist_addfld1d   Petiole_N_pft                  gN/m2                     inactive        Canopy sheath N
+274  hist_addfld1d   STALK_N_pft                    gN/m2                     inactive        Canopy stalk N
+275  hist_addfld1d   RESERVE_N_pft                  gN/m2                     inactive        Canopy reserve N
+276  hist_addfld1d   HUSK_N_pft                     gN/m2                     inactive        Canopy husk N
+277  hist_addfld1d   GRAIN_N_pft                    gN/m2                     inactive        Canopy grain C
+278  hist_addfld1d   Root_N_pft                     gN/m2                     inactive        Root nitrogen
+279  hist_addfld1d   RootNodule_N_pft               gN/m2                     inactive        Root total nodule N
+280  hist_addfld1d   SSTORED_N_pft                  gN/m2                     inactive        Plant seasonal storage of nonstructural N
+281  hist_addfld1d   EXUD_CumYr_N_FLX_pft           gN/m2                     inactive        Cumulative Root organic N uptake (<0 exudation into soil)
+282  hist_addfld1d   Uptk_N_CumYr_FLX_pft           gN/m2                     inactive        Cumulative Root N uptake (including <0 exudation to soil)
+283  hist_addfld1d   Uptk_P_CumYr_FLX_pft           gP/m2                     inactive        Cumulative Root P uptake (including <0 exudation to soil)
+284  hist_addfld1d   LITRf_N_FLX_pft                gN/m2/hr                  inactive        total plant LitrFall N
+285  hist_addfld1d   cumN_FIXED_pft                 gN/m2                     inactive        cumulative plant N2 fixation
+286  hist_addfld1d   TreeRingRadius_pft             m                         inactive        Mean tree ring radius
+287  hist_addfld1d   HVST_N_FLX_pft                 gN/m2/hr                  inactive        Plant N harvest
+288  hist_addfld1d   NH3can_FLX_pft                 gN/m2/hr                  inactive        total canopy NH3 flux
+289  hist_addfld1d   Plant_BALANCE_N_pft            gC/m2                     active          Cumulative plant N conservation error
+290  hist_addfld1d   STANDING_DEAD_N_pft            gN/m2                     inactive        pft standing dead N
+291  hist_addfld1d   FIREp_N_FLX_pft                gN/m2/hr                  inactive        Plant N emission from fire
+292  hist_addfld1d   SURF_LITRf_N_FLX_pft           gN/m2/hr                  inactive        total surface LitrFall N
+293  hist_addfld1d   SHOOT_P_pft                    gP/m2                     inactive        Live plant shoot P
+294  hist_addfld1d   Plant_P_pft                    gP/m2                     inactive        Plant P
+295  hist_addfld1d   STOMATAL_STRESS_pft            none                      inactive        stomatal stress from root turogr [0->1 increasing stress]
+296  hist_addfld1d   Canopy_DEW_pft                 mm H2O/m2                 inactive        Cumulative canopy dew deposition
+297  hist_addfld1d   LEAF_P_pft                     gP/m2                     inactive        Canopy leaf P
+298  hist_addfld1d   Petiole_P_pft                  gP/m2                     inactive        Canopy sheath P
+299  hist_addfld1d   STALK_P_pft                    gP/m2                     inactive        Plant stalk P
+300  hist_addfld1d   RESERVE_P_pft                  gP/m2                     inactive        Plant reserve P
+301  hist_addfld1d   HUSK_P_pft                     gP/m2                     inactive        Husk P
+302  hist_addfld1d   GRAIN_P_pft                    gP/m2                     inactive        Canopy grain P
+303  hist_addfld1d   Root_P_pft                     gP/m2                     inactive        Plant root P
+304  hist_addfld1d   RootNodule_P_pft               gP/m2                     inactive        Root total nodule P
+305  hist_addfld1d   SSTORED_P_pft                  gP/m2                     inactive        Plant seasonal storage of nonstructural P
+306  hist_addfld1d   EXUD_CumYr_P_FLX_pft           gP/m2                     inactive        Cumulative root organic P uptake (<0 exudation into soil)
+307  hist_addfld1d   RDecompC_SOM_litr_col          gC/m2/hr                  inactive        Hydrolysis of SOM C in litter layer
+308  hist_addfld1d   MicrobAct_litr_col             gC/m2/hr                  inactive        Respiration-based micoribal activity for hydrolysis in litter layer
+309  hist_addfld1d   RDecompC_BReSOM_litr_col       gC/m2/hr                  inactive        Hydrolysis of microbial residual OM C in litter layer
+310  hist_addfld1d   RDecompC_SorpSOM_litr_col      gC/m2/hr                  inactive        Hydrolysis of adsorbed OM C in litter layer
+311  hist_addfld1d   tRespGrossHeteUlm_litr_col     gC/m2/hr                  inactive        Oxygen unlimited gross heterotrophic respiraiton in litter layer
+312  hist_addfld1d   tRespGrossHete_litr_col        gC/m2/hr                  inactive        Oxygen-limited gross heterotrophic respiraiton in litter layer
+313  hist_addfld1d   LITRf_P_FLX_pft                gP/m2/hr                  inactive        total plant LitrFall P
+314  hist_addfld1d   HVST_P_FLX_pft                 gP/m2/hr                  inactive        Plant P harvest
+315  hist_addfld1d   Plant_BALANCE_P_pft            gP/m2                     active          Cumulative plant P conservation error
+316  hist_addfld1d   STANDING_DEAD_P_pft            gP/m2                     inactive        pft Standing dead P
+317  hist_addfld1d   FIREp_P_FLX_pft                gP/m2/hr                  inactive        Plant PO4 emission from fire
+318  hist_addfld1d   SURF_LITRf_P_FLX_pft           gP/m2/hr                  inactive        Plant LitrFall P to the soil surface
+319  hist_addfld1d   ShootRoot_XFER_C_pft           gC/m2/hr                  inactive        Shoot C transfered to root
+320  hist_addfld1d   ShootRoot_XFER_N_pft           gN/m2/hr                  inactive        Shoot N transfered to root
+321  hist_addfld1d   ShootRoot_XFER_P_pft           gP/m2/hr                  inactive        Shoot P transfered to root
+322  hist_addfld1d   BRANCH_NO_pft                  none                      inactive        Plant branch number
+323  hist_addfld1d   Growth_Stage_pft               none                      inactive        Plant development stage, integer, 0-planting, 1-emergence, 2-floral_init, 3-jointing,4-elongation, 5-heading, 6-anthesis, 7-seed_fill, 8-see_no_set, 9-seed_mass_set, 10-end_seed_fill
+324  hist_addfld1d   LEAF_rNC_pft                   gN/gC                     inactive        Mass based plant leaf NC ratio
+325  hist_addfld1d   MainBranchNO_pft               -                         inactive        Main branch number
+326  hist_addfld1d   RCanMaintDef_CO2_pft           gC m-2 h-1                inactive        Canopy maintenance respiraiton deficit as CO2 (<0 deficit)
+327  hist_addfld1d   RootMaintDef_CO2_pft           gC m-2 h-1                inactive        Root maintenance respiraiton deficit as CO2 (<0 deficit)
+328  hist_addfld2d   QDrainloss_vr                  mm H2O/hr                 inactive        Vertically resolved water drainage
+329  hist_addfld2d   FermOXYI_vr                    none                      inactive        Vertically resolved oxygen inhibitor of fermentation [0->1, weaker inhibition]
+330  hist_addfld2d   litrC_vr                       gC/m3                     inactive        Column-level Vertically resolved litter C
+331  hist_addfld2d   litrN_vr                       gN/m3                     inactive        Vertically resolved litter N
+332  hist_addfld2d   litrP_vr                       gP/m3                     inactive        Vertically resolved litter P
+333  hist_addfld2d   tSOC_vr                        gC/m3                     active          Vertically resolved total soil organic C (everything organic)
+334  hist_addfld2d   POM_C_vr                       gC/m3                     active          Vertically resolved particulate organic C (resulting from the humification process)
+335  hist_addfld2d   MAOM_C_vr                      gC (kg soil)-1            active          Vertically resolved mineral associated organic C (resulting from sorption process)
+336  hist_addfld2d   tMicrobeC_vr                   gC/m3                     active          Vertically resolved total live microbial C
+337  hist_addfld2d   tMicrobeN_vr                   gN/m3                     active          Vertically resolved total live microbial N
+338  hist_addfld2d   tMicrobeP_vr                   gP/m3                     active          Vertically resolved total live microbial P
+339  hist_addfld2d   AeroBact_PrimS_lim_vr          -                         inactive        Vertically resolved primary substrate limitation for aerobic heterotrophic bacteria
+340  hist_addfld2d   AeroFung_PrimS_lim_vr          -                         inactive        Vertically resolved primary substrate limitation for aerobic heterotrophic fungi
+341  hist_addfld2d   tSOCL_vr                       gC/m2                     inactive        Layer resolved total soil organic C (everything organic)
+342  hist_addfld2d   tSON_vr                        gN/m3                     inactive        Vertically resolved total soil organic N (everything organic)
+343  hist_addfld2d   BOTDEPZ_vr                     m                         active          Bottom depth of soil layer
+344  hist_addfld2d   tSOP_vr                        gC/m3                     inactive        Vertically resolved total soil organic P (everything organic)
+345  hist_addfld2d   NO3_vr                         gN/m3                     inactive        Vertically resolved dissolved NO3 concentration
+346  hist_addfld2d   NH4_vr                         gN/m3                     inactive        Vertically resolved dissolved NH4 concentration
+347  hist_addfld2d   VHeatCap_vr                    MJ/m3/K                   inactive        Vertically resolved Volumetric heat capacity
+348  hist_addfld2d   LEAF_NODE_NO_pft               none                      inactive        Leaf number
+349  hist_addfld1d   RUB_ACTVN_pft                  none                      inactive        mean rubisco activity for CO2 fixation across branches, 0-1
+350  hist_addfld1d   CanopyNLim_pft                 none                      inactive        mean canopy nitrogen limitation across branches, 0->1 weaker limitation
+351  hist_addfld1d   CanopyPLim_pft                 none                      inactive        mean canopy phosphorus limitation across branches, 0->1 weaker limitation
+352  hist_addfld2d   RNITRIF_vr                     gN/m2/hr                  inactive        Nitrification rate from NH3 oxidation in each soil layer
+353  hist_addfld2d   Root_CO2_mass_vr               gC/m2                     inactive        Layer resolved CO2 mass in roots
+354  hist_addfld2d   O2_root_conductance_pvr        1/h                       inactive        Root conductance for O2 gaseous in soil layer
+355  hist_addfld2d   CO2_root_conductance_pvr       1/h                       inactive        Root conductance for CO2 gaseous in soil layer
+356  hist_addfld2d   ProteinNperm2LeafArea_pnd      gC/(m2 leaf area)         inactive        Areal leaf protein N concentration by node
+357  hist_addfld2d   CO2w_conc_vr                   gC/m3 water               inactive        Aqueous CO2 concentration in soil micropore water
+358  hist_addfld2d   CH4w_conc_vr                   gC/m3 water               inactive        Aqueous CH4 concentration in soil micropore water
+359  hist_addfld2d   O2w_conc_vr                    g/m3 water                inactive        Aqueous O2 concentration in soil micropore water
+360  hist_addfld2d   N2Ow_conc_vr                   gN/m3 water               inactive        Aqueous N2O concentration in soil micropore water
+361  hist_addfld2d   NH3w_conc_vr                   gN/m3 water               inactive        Aqueous NH3 concentration in soil micropore water
+362  hist_addfld2d   H2w_conc_vr                    gN/m3 water               inactive        Aqueous H2 concentration in soil micropore water
+363  hist_addfld2d   Arw_conc_vr                    gN/m3 water               inactive        Aqueous Ar concentration in soil micropore water
+364  hist_addfld2d   N2w_conc_vr                    gN/m3 water               inactive        Aqueous N2 concentration in soil micropore water
+365  hist_addfld2d   TEMP_vr                        oC                        active          soil temperature profile
+366  hist_addfld2d   Decomp_OStress_vr              none                      inactive        decomposition oxygen stress [0->1 weaker]
+367  hist_addfld2d   RO2Decomp_flx_vr               gO2/m2/h                  inactive        Decomposition O2 uptake in soil layers
+368  hist_addfld2d   Decomp_TEMP_FN_vr              none                      inactive        Temeprature dependence of microbial decomposition in soil layers
+369  hist_addfld2d   FracLitMix_vr                  none                      inactive        Fraction of litter to mixed with the next layer (>0 downward mixing)
+370  hist_addfld2d   Decomp_Moist_FN_vr             none                      inactive        Moisture dependence of microbial decomposition in soil layers
+371  hist_addfld2d   RootC_vr                       gC/m3                     active          Root C density profile
+372  hist_addfld2d   RootC_pvr                      gC/m3                     active          Root C density profile of different pft
+373  hist_addfld2d   KH2ORadial_pvr                 m H2O h-1 MPa-1           active          Radial root conductance for water uptake
+374  hist_addfld2d   KH2OAxial_pvr                  m3 H2O h-1 MPa-1          active          Axial root conductance for water uptake
+375  hist_addfld2d   VmaxNH4Root_pvr                umolN h-1 (gC root)-1     active          Maximum NH4 uptake rate for given pft
+376  hist_addfld2d   VmaxNO3Root_pvr                umolN h-1 (gC root)-1     active          Maximum NO3 uptake rate for given pft
+377  hist_addfld2d   RootN_vr                       gN/m3                     inactive        Root N density profile
+378  hist_addfld2d   RootP_vr                       gP/m3                     inactive        Root P density profile
+379  hist_addfld2d   DOC_vr                         gC/m3                     active          DOC profile
+380  hist_addfld2d   DON_vr                         gN/m3                     inactive        DON profile
+381  hist_addfld2d   DOP_vr                         gP/m3                     inactive        DOP profile
+382  hist_addfld2d   acetate_vr                     gC/m3                     inactive        Acetate profile
+383  hist_addfld1d   DOC_soil_col                   gC/m2                     active          DOC in soil
+384  hist_addfld1d   DON_soil_col                   gN/m2                     active          DON in soil
+385  hist_addfld1d   RCH4_AMOX_litr_col             gC/m2/h                   active          Aerobic CH4 oxidation in litter layer
+386  hist_addfld1d   RCH4_ANMO_litr_col             gC/m2/h                   active          Anaerobic CH4 oxidation in litter layer
+387  hist_addfld1d   RCH4Oxi_aero_col               gC/m2/h                   active          Aerobic CH4 oxidation integrated over all layers
+388  hist_addfld1d   RCH4Oxi_anmo_col               gC/m2/h                   active          Anaerobic CH4 oxidation integrated over all layers
+389  hist_addfld1d   RCH4ProdHg_litr_col            gC/m2/h                   inactive        Hydrogenotrophic CH4 produciton in litter layer
+390  hist_addfld1d   RCH4ProdAcet_litr_col          gC/m2/h                   inactive        Acetoclastic CH4 produciton in litter layer
+391  hist_addfld1d   DOP_soil_col                   gP/m2                     active          DOP in soil
+392  hist_addfld1d   Acetate_soil_col               gC/m2                     active          Acetate in soil
+393  hist_addfld1d   DOC_litr_col                   gC/m3                     active          DOC in litter
+394  hist_addfld1d   DON_litr_col                   gN/m3                     inactive        DON in litter
+395  hist_addfld1d   DOP_litr_col                   gP/m3                     inactive        DOP in litter
+396  hist_addfld1d   Acetate_litr_col               gC/m3                     inactive        Acetate in litter
+397  hist_addfld2d   Aerobic_HetrBacterC_vr         gC/m3                     inactive        Aerobic bacteria C profile
+398  hist_addfld2d   Aerobic_HetrFungiC_vr          gC/m3                     inactive        Aerobic fungi C profile
+399  hist_addfld2d   Facult_denitrifierC_vr         gC/m3                     inactive        Facultative denitrifier C biomass profile
+400  hist_addfld2d   FermentorC_vr                  gC/m3                     inactive        Fermentor C biomass profile
+401  hist_addfld2d   Fermentor_frac_vr              -                         inactive        Fraction of microbial C in fermentor
+402  hist_addfld2d   AcetoMethgen_frac_vr           -                         inactive        Fraction of microbial C in acetoclastic methanogen
+403  hist_addfld2d   HydrogMethgen_frac_vr          -                         inactive        Fraction of microbial C in hydrogenotrohpic methanogen
+404  hist_addfld2d   Acetic_methanogenC_vr          gC/m3                     inactive        Aceticlastic methanogen C biomass profile
+405  hist_addfld2d   Aerobic_N2fixerC_vr            gC/m3                     inactive        Aerobic N2 fixer C biomass profile
+406  hist_addfld2d   GAS_PRESSURE_vr                Pa                        active          Soil gas pressure profile
+407  hist_addfld2d   CO2_gas_ppmv_vr                ppmv                      inactive        Equivalent soil gaseous CO2 profile
+408  hist_addfld2d   CH4_gas_ppmv_vr                ppmv                      inactive        Equivalent soil gaseous CH4 profile
+409  hist_addfld2d   H2_gas_ppmv_vr                 ppmv                      inactive        Equivalent soil gaseous H2 profile
+410  hist_addfld2d   Ar_gas_ppmv_vr                 ppmv                      inactive        Equivalent soil gaseous Ar profile
+411  hist_addfld2d   O2_gas_ppmv_vr                 ppmv                      inactive        Equivalent soil gaseous O2 profile
+412  hist_addfld2d   N2_gas_ppmv_vr                 ppmv                      inactive        Equivalent soil gaseous N2 profile
+413  hist_addfld2d   N2O_gas_ppmv_vr                ppmv                      inactive        Equivalent soil gaseous N2O profile
+414  hist_addfld2d   NH3_gas_ppmv_vr                ppmv                      inactive        Equivalent soil gaseous NH3 profile
+415  hist_addfld2d   Anaerobic_N2fixerC_vr          gC/m3                     inactive        Anaerobic N2 fixer C biomass profile
+416  hist_addfld2d   Ammonia_OxidizerBactC_vr       gC/m3                     inactive        Ammonia oxidize bacteria C biomass profile
+417  hist_addfld2d   Nitrie_OxidizerBactC_vr        gC/m3                     inactive        Nitrite oxidize bacteria C profile
+418  hist_addfld2d   Aerobic_methanotrophC_vr       gC/m3                     inactive        Aerobic methanotroph C biomass profile
+419  hist_addfld2d   Hygrogen_methanogenC_vr        gC/m3                     inactive        Hydrogenotrophic methanogen C biomass profile
+420  hist_addfld2d   SoildOM_Act_vr                 gC/m2                     inactive        Active solid organic C in soil layer
+421  hist_addfld2d   SoildOM_Act_Dens_vr            gC/gC                     inactive        Active solid organic C Density in soil layer
+422  hist_addfld2d   tOMActC_Dens_vr                gC/gC                     inactive        Active heterotrophic microbial C Density in soil layer
+423  hist_addfld2d   CH4Prod_hydro_vr               gC/m2/hr                  inactive        Vertically resolved hydrogenotrophic CH4 production rate
+424  hist_addfld2d   CH4Prod_aceto_vr               gC/m2/hr                  inactive        Vertically resolved acetoclastic CH4 production rate
+425  hist_addfld2d   CH4Oxi_Aero_vr                 gC/m2/hr                  inactive        Vertically resolved aerobic CH4 oxidation rate
+426  hist_addfld2d   CH4Oxi_ANMO_vr                 gC/m2/hr                  inactive        Vertically resolved anaerobic CH4 oxidation rate
+427  hist_addfld2d   Fermentation_vr                gC/m2/hr                  inactive        Vertically resolved fermentation rate
+428  hist_addfld2d   RootAR_vr                      gC/m2/hr                  inactive        Vertically resolved root respiration rate
+429  hist_addfld2d   RootAR2Soil_vr                 gC/m2/hr                  inactive        Vertically resolved root respiratory CO2 rate to soil
+430  hist_addfld2d   RootAR2Root_vr                 gC/m2/hr                  inactive        Vertically resolved root respiratory CO2 rate to roots
+431  hist_addfld2d   NH3Oxid_vr                     gN/m2/hr                  inactive        Vertically resolved NH3 oxidation rate
+432  hist_addfld2d   N2OProd_vr                     gN/m2/hr                  inactive        Vertically resolved total N2O production rate
+433  hist_addfld2d   HR_CO2_vr                      gC/m2/hr                  inactive        Vertically resolved heterotrophic respiration rate
+434  hist_addfld2d   Gchem_CO2_Prod_vr              gC/m2/hr                  inactive        Vertically resolved geochemical CO2 production rate
+435  hist_addfld2d   Aerobic_HetrBacterN_vr         gN/m3                     inactive        Aerobic bacteria N profile
+436  hist_addfld2d   Aerobic_HetrFungiN_vr          gN/m3                     inactive        Aerobic fungi N profile
+437  hist_addfld2d   Facult_denitrifierN_vr         gN/m3                     inactive        Facultative denitrifier N biomass profile
+438  hist_addfld2d   FermentorN_vr                  gN/m3                     inactive        Fermentor N biomass profile
+439  hist_addfld2d   Acetic_methanogenN_vr          gN/m3                     inactive        Aceticlastic methanogen N biomass profile
+440  hist_addfld2d   Aerobic_N2fixerN_vr            gN/m3                     inactive        Aerobic N2 fixer N biomass profile
+441  hist_addfld2d   Anaerobic_N2fixerN_vr          gN/m3                     inactive        Anaerobic N2 fixer N biomass profile
+442  hist_addfld2d   Ammonia_OxidizerBactN_vr       gN/m3                     inactive        Ammonia oxidize bacteria N biomass profile
+443  hist_addfld2d   Nitrie_OxidizerBactN_vr        gN/m3                     inactive        Nitrite oxidize bacteria N profile
+444  hist_addfld2d   Aerobic_methanotrophN_vr       gN/m3                     inactive        Aerobic methanotroph N biomass profile
+445  hist_addfld2d   tRespGrossHeterUlm_vr          gC/m2/h                   inactive        Total oxygen-unlimited gross respiraiton by heterotrophs
+446  hist_addfld2d   tRespGrossHeter_vr             gC/m2/h                   inactive        Total oxygen gross respiraiton by heterotrophs
+447  hist_addfld2d   Hygrogen_methanogenN_vr        gN/m3                     inactive        Hydrogenotrophic methanogen N biomass profile
+448  hist_addfld2d   MicrobAct_vr                   gC/m2/hr                  inactive        Layer resolved respiration-based microbial acitivity for hydrolysis
+449  hist_addfld2d   HydrolCSOM__cplx_vr            gC/m2/hr                  inactive        Layer resolved carbon hydrolysis in  complex
+450  hist_addfld2d   SOC__cplx_vr                   gC/m2                     inactive        Layer resolved carbon in  complex
+451  hist_addfld2d   SOMHydrlScal__cplx_vr          none                      inactive        Layer resolved SOM hydrolysis scalar in  complex
+452  hist_addfld2d   MicrobAct__cplx_vr             gC/m2/hr                  inactive        Layer resolved respiration-based microbial acitivity for hydrolysis in  complex
+453  hist_addfld2d   RDecompC_SOM_vr                gC/m2/hr                  inactive        Layer resolved Hydrolysis of solid OM C
+454  hist_addfld2d   RDecompC_BReSOM_vr             gC/m2/hr                  inactive        Layer resolved Hydrolysis of microbial residual OM C
+455  hist_addfld2d   RDecompC_SorpSOM_vr            gC/m2/hr                  inactive        Layer resolved Hydrolysis of adsorbed OM C
+456  hist_addfld2d   Aerobic_HetrBacterP_vr         gP/m3                     inactive        Aerobic P biomass profile
+457  hist_addfld2d   Aerobic_HetrFungiP_vr          gP/m3                     inactive        Aerobic fungi P profile
+458  hist_addfld2d   Facult_denitrifierP_vr         gP/m3                     inactive        Facultative denitrifier P biomass profile
+459  hist_addfld2d   FermentorP_vr                  gP/m3                     inactive        Fermentor P biomass profile
+460  hist_addfld2d   Acetic_methanogenP_vr          gP/m3                     inactive        Aceticlastic methanogen P biomass profile
+461  hist_addfld2d   Aerobic_N2fixerP_vr            gP/m3                     inactive        Aerobic N2 fixer P biomass profile
+462  hist_addfld2d   Anaerobic_N2fixerP_vr          gP/m3                     inactive        Anaerobic N2 fixer P biomass profile
+463  hist_addfld2d   Ammonia_OxidizerBactP_vr       gP/m3                     inactive        Ammonia oxidize bacteria P biomass profile
+464  hist_addfld2d   Nitrie_OxidizerBactP_vr        gP/m3                     inactive        Nitrite oxidize bacteria P profile
+465  hist_addfld2d   Aerobic_methanotrophP_vr       gP/m3                     inactive        Aerobic methanotroph P biomass profile
+466  hist_addfld2d   Hygrogen_methanogenP_vr        gP/m3                     inactive        Hydrogenotrophic methanogen P biomass profile
+467  hist_addfld2d   MicroBiomE_litr                g/m2                      active          Total micorobial elemental biomass in litter
+468  hist_addfld2d   Aerobic_HetrBacterE_litr       g/m2                      inactive        Aerobic heterotrophic bacterial elemental biomass in litter
+469  hist_addfld2d   Aerobic_HetrFungiE_litr        gP/m2                     inactive        Aerobic heterotrophic fungi elemental biomass in litter
+470  hist_addfld2d   Facult_denitrifierE_litr       g/m2                      inactive        Facultative denitrifier elemental biomass in litter
+471  hist_addfld2d   FermentorE_litr                g/m2                      inactive        Fermentor elemental biomass in litter
+472  hist_addfld2d   Acetic_methanogenE_litr        g/m2                      inactive        Aceticlastic methanogen elemental biomass in litter
+473  hist_addfld2d   Aerobic_N2fixerE_litr          g/m2                      inactive        Aerobic N2 fixer elemental biomass in litter
+474  hist_addfld2d   Anaerobic_N2fixerE_litr        g/m2                      inactive        Anaerobic N2 fixer elemental biomass in litter
+475  hist_addfld2d   Ammonia_OxidizerBactE_litr     g/m2                      inactive        Ammonia oxidize bacteria elemental biomass in litter
+476  hist_addfld2d   Nitrie_OxidizerBactE_litr      g/m2                      inactive        Nitrite oxidize bacteria elemental biomass in litter
+477  hist_addfld2d   Aerobic_methanotrophE_litr     g/m2                      inactive        Aerobic methanotroph elemental biomass in litter
+478  hist_addfld2d   Hygrogen_methanogenE_litr      g/m2                      inactive        Hydrogenotrophic methanogen elemental biomass in litter
+479  hist_addfld2d   HeatFlow_vr                    MJ m-3 hr-1               inactive        soil heat flow profile
+480  hist_addfld2d   HeatUptk_vr                    MJ m-3 hr-1               inactive        soil heat flow by plant water uptake (<0 into roots)
+481  hist_addfld2d   VSPore_vr                      m3 pore/m3 soil           inactive        Volumetric soil porosity
+482  hist_addfld2d   rWatFLP_vr                     m3 H2O/m3 soil pore       active          Fraction of soil porosity filled by water (relative saturation)
+483  hist_addfld2d   rIceFLP_vr                     m3 ice/m3 soil pore       inactive        fraction of soil porosity filled by ice
+484  hist_addfld2d   PSI_vr                         MPa                       inactive        soil matric pressure+osmotic pressure
+485  hist_addfld2d   PsiO_vr                        MPa                       inactive        soil osmotic pressure
+486  hist_addfld2d   RootH2OUptake_vr               mmH2O/hr                  inactive        soil water taken up by root (<0 into roots)
+487  hist_addfld2d   cNH4t_vr                       gN/Mg soil                inactive        soil NH4x concentration
+488  hist_addfld2d   cNO3t_vr                       gN/Mg soil                inactive        Soil NO3+NO2 concentration
+489  hist_addfld2d   cPO4_vr                        gP/Mg soil                inactive        soil dissolved PO4 concentration
+490  hist_addfld2d   cEXCH_P_vr                     gP/Mg soil                inactive        total exchangeable soil PO4 concentration
+491  hist_addfld2d   Free_N2Fix_vr                  ugN/m3 h-1                inactive        Free dizotrophic N2 fixation in soil
+492  hist_addfld2d   TMAX_SOIL_vr                   oC                        inactive        Soil maximum temperature profile
+493  hist_addfld2d   TMIN_SOIL_vr                   oC                        inactive        Soil minimum temperature profile
+494  hist_addfld1d   Decomp_OStress_LITR            none                      inactive        Decomposition O2 stress in litter layer [0->1: weaker]
+495  hist_addfld1d   Decomp_TEMP_FN_LITR            none                      inactive        Decomposition temperature sensitivity in litter layer
+496  hist_addfld1d   FracLitMix_LITR                none                      inactive        Fraction of surface litter layer to be mixed downward
+497  hist_addfld1d   Decomp_Moist_FN_LITR           none                      inactive        Decomposition moisture sensitivity in litter layer
+498  hist_addfld1d   RO2Decomp_flx_LITR             gO2/m2/h                  inactive        Decomposition O2 uptake in litter layer 
+499  hist_addfld1d   SoildOM_Act_litr               gC/m2                     inactive        Active solid OM in litter
+500  hist_addfld1d   tOMActC_Dens_litr              gC/gC                     inactive        Active heterotrophic microbial C density in litter
+501  hist_addfld1d   SoildOM_Act_Dens_litr          gC/gC                     inactive        Active solid OM density in litter
+502  hist_addfld2d   ElectricConductivity_vr        dS m-1                    inactive        electrical conductivity
+503  hist_addfld2d   HydCondSoil_vr                 m MPa-1 h-1               inactive        Vertical hydraulic conductivity
+504  hist_addfld2d   PSI_RT_pvr                     MPa                       inactive        Root total water potential of each pft
+505  hist_addfld2d   RootH2OUptkStress_pvr          m3 m-2 h-1                inactive        Rate indicated root water uptake stress of each pft (>0 hydraulic stress)
+506  hist_addfld2d   RootMaintDef_CO2_pvr           g CO2 m-2 h-1             inactive        Plant root maintenance deficit each pft (<0 deficit)
+507  hist_addfld2d   RootSurfAreaPP_pvr             m2 surface                inactive        Root surface area per plant (for nutrient uptake)
+508  hist_addfld2d   RootNlim_pvr                   -                         inactive        Plant root nitrogen limitation for each pft
+509  hist_addfld2d   RootPlim_pvr                   -                         inactive        Plant root phosphorus limitation for each pft
+510  hist_addfld2d   Root_OXYSTRESS_pvr             None                      inactive        Root Oxygen stress profile [0->1 weaker stress]
+511  hist_addfld2d   RootC_1st_pvr                  gC/m3                     inactive        Primary root structural biomass C density
+512  hist_addfld2d   RootNonstBConc_pvr             g/gC                      inactive        Primary root nonstructural biomass density
+513  hist_addfld2d   RootN_1st_pvr                  gN/m3                     inactive        Primary root structural biomass N density
+514  hist_addfld2d   RootP_1st_pvr                  gP/m3                     inactive        Primary root structural biomass P density
+515  hist_addfld2d   RootC_2nd_pvr                  gC/m3                     inactive        Secondary root structural biomass C density
+516  hist_addfld2d   RootN_2nd_pvr                  gN/m3                     inactive        Secondary root structural biomass N density
+517  hist_addfld2d   RootP_2nd_pvr                  gP/m3                     inactive        Secondary root structural biomass P density
+518  hist_addfld2d   Root1st_AxesNumL_pvr           1/d2                      inactive        Primary root axes number in soil layer
+519  hist_addfld2d   Root2nd_AxesNumL_pvr           1/d2                      inactive        Secondary root axes number in soil layer
+520  hist_addfld2d   RootKond2H2O_pvr               x1.e7 m s-1 MPa-1         inactive        Total root conductance to water uptake in soil layer
+521  hist_addfld2d   prtUP_NH4_pvr                  gN/m3/hr                  inactive        Root uptake of NH4
+522  hist_addfld2d   prtUP_NO3_pvr                  gN/m3/hr                  inactive        Root uptake of NO3
+523  hist_addfld2d   prtUP_PO4_pvr                  gP/m3/hr                  inactive        Root uptake of PO4
+524  hist_addfld2d   RootLDS_pvr                    cm/cm3                    inactive        Root length density (including root hair)
+525  hist_addfld2d   RootNutUptk_fClim_pvr          -                         inactive        C-availability for root nutrient uptake limitation, 0->1 stronger limitation
+526  hist_addfld2d   RootNutUptk_fNlim_pvr          -                         inactive        N-limitation for root nutrient uptake limitation, 0->1 stronger limitation
+527  hist_addfld2d   RootNutUptk_fPlim_pvr          -                         inactive        P-limitation for root nutrient uptake limitation, 0->1 stronger limitation
+528  hist_addfld2d   RootNutUptk_fProtC_pvr         -                         inactive        Protein-limitation for root nutrient uptake capacity, 0->1 weaker limitation
+529  hist_addfld2d   RootGRO_TEMP_FN_pvr            none                      inactive        Root growth temperature dependence function
+530  hist_addfld2d   CanopyLAIZ_plyr                m2/m2                     inactive        Vertically distributed leaf area
+531  hist_addfld2d   RootGRO_PSI_FN_pvr             none                      inactive        Root growth moisture dependence function
