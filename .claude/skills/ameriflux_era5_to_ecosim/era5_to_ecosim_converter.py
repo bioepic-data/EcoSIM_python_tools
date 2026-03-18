@@ -81,7 +81,8 @@ def convert_era5_to_ecosim(era5_file, output_file):
                             'WINDH': hour_data['WS_ERA'].mean(),  # Wind speed
                             'RAINH': hour_data['P_ERA'].sum(),    # Precipitation (sum over half-hour)
                             'DWPTH': hour_data['VPD_ERA'].mean(), # Vapor pressure (using VPD, need to convert)
-                            'SRADH': hour_data['SW_IN_ERA'].mean() # Solar radiation
+                            'SRADH': hour_data['SW_IN_ERA'].mean(), # Solar radiation
+                            'PATM': hour_data['PA_ERA'].mean()    # Atmospheric pressure
                         }
                     elif len(hour_data) == 1:
                         # If only one value, use it
@@ -93,7 +94,8 @@ def convert_era5_to_ecosim(era5_file, output_file):
                             'WINDH': hour_data['WS_ERA'].iloc[0],
                             'RAINH': hour_data['P_ERA'].iloc[0],
                             'DWPTH': hour_data['VPD_ERA'].iloc[0],
-                            'SRADH': hour_data['SW_IN_ERA'].iloc[0]
+                            'SRADH': hour_data['SW_IN_ERA'].iloc[0],
+                            'PATM': hour_data['PA_ERA'].iloc[0]   # Atmospheric pressure
                         }
                     else:
                         # No data for this hour, fill with missing value
@@ -105,7 +107,8 @@ def convert_era5_to_ecosim(era5_file, output_file):
                             'WINDH': 1e30,
                             'RAINH': 1e30,
                             'DWPTH': 1e30,
-                            'SRADH': 1e30
+                            'SRADH': 1e30,
+                            'PATM': 1e30
                         }
                     hourly_data.append(hourly_row)
 
@@ -115,13 +118,62 @@ def convert_era5_to_ecosim(era5_file, output_file):
     # Create the netCDF file
     create_ecosim_climate_file(hourly_df, output_file)
 
-def create_ecosim_climate_file(df, output_file):
+def calculate_solar_noon_utc(year, month, day, longitude):
+  """
+  Calculates the time of solar noon in Coordinated Universal Time (UTC).
+
+  Solar noon is the time when the sun is at its highest point in the sky
+  (transiting the local celestial meridian).
+
+  This calculation depends on the date (for Equation of Time) and longitude.
+  Latitude is not required for the *time* of solar noon, but is included
+  in this function's parameters as requested.
+
+  Args:
+    year (int): The year (e.g., 2024).
+    month (int): The month (1-12).
+    day (int): The day (1-31).
+    longitude (float): The observer's longitude in degrees.
+                       (Positive for East, Negative for West).
+    
+
+  Returns:
+    float: The time of solar noon in UTC hours (e.g., 12.5 = 12:30 PM UTC).
+  """
+  
+  # 1. Calculate the Day of the Year (DOY)
+  d = datetime(year, month, day)
+  doy = d.timetuple().tm_yday
+
+  # 2. Calculate the Equation of Time (EoT) in minutes
+  # This is a common approximation
+  # B is in degrees
+  B_deg = (360 / 365.24) * (doy - 81)
+  # B is in radians
+  B_rad = math.radians(B_deg)
+  
+  eot = 9.87 * math.sin(2 * B_rad) - 7.53 * math.cos(B_rad) - 1.5 * math.sin(B_rad)
+  
+  # 3. Calculate Solar Noon in minutes from UTC midnight
+  # 720 = 12:00 (noon) in minutes (12 * 60)
+  # 4 * longitude = longitude correction in minutes (Earth rotates 1 degree in 4 mins)
+  # We subtract eot from the mean solar noon
+  
+  solar_noon_minutes_from_utc_midnight = 720 - (4 * longitude) - eot
+  
+  # 4. Convert the minutes into hours
+  solar_noon_utc_hours = solar_noon_minutes_from_utc_midnight / 60
+  
+  return solar_noon_utc_hours
+
+def create_ecosim_climate_file(df, output_file, longitude):
     """
     Create ECOSIM climate forcing netCDF file from hourly data.
 
     Parameters:
     df (DataFrame): Hourly climate data
     output_file (str): Path to output netCDF file
+    longitude (float): Longitude of the site for solar noon calculation
     """
 
     # Create a new netCDF file
@@ -163,6 +215,11 @@ def create_ecosim_climate_file(df, output_file):
     srad_var = nc_file.createVariable('SRADH', 'f4', ('year', 'day', 'hour', 'ngrid'), fill_value=1e30)
     srad_var.long_name = "Incident solar radiation"
     srad_var.units = "W m^-2"
+
+    # Atmospheric pressure (kPa)
+    patm_var = nc_file.createVariable('PATM', 'f4', ('year', 'day', 'hour', 'ngrid'), fill_value=1e30)
+    patm_var.long_name = "Surface atmospheric pressure"
+    patm_var.units = "kPa"
 
     # Year variable
     year_var = nc_file.createVariable('year', 'i4', ('year',))
@@ -208,12 +265,14 @@ def create_ecosim_climate_file(df, output_file):
                         rain_var[i, day-1, hour, 0] = row['RAINH']
                         dwpt_var[i, day-1, hour, 0] = row['DWPTH']
                         srad_var[i, day-1, hour, 0] = row['SRADH']
+                        patm_var[i, day-1, hour, 0] = row['PATM']
 
     # Set other fixed variables
     for i, year in enumerate(unique_years):
         z0g_var[i, 0] = 1.0  # Fixed value
         iflgw_var[i, 0] = 0  # Fixed value
-        znoong_var[i, 0] = 12.0  # Fixed value
+        date2_year, date2_month, date2_day = years, 6, 1
+        znoong_var[i, 0] = calculate_solar_noon_utc(date2_year, date2_month, date2_day, longitude)  # Fixed value
 
     # Close the file
     nc_file.close()
@@ -224,14 +283,15 @@ def main():
     parser = argparse.ArgumentParser(description='Convert Ameriflux ERA5 half-hourly climate data to ECOSIM hourly format')
     parser.add_argument('--input', '-i', required=True, help='Input CSV file path')
     parser.add_argument('--output', '-o', required=True, help='Output netCDF file path')
-
+    parser.add_argument('--longitude', '-l', type=float, required=True, help='Longitude of the site for solar noon calculation')
+    
     args = parser.parse_args()
 
     if not os.path.exists(args.input):
         print(f"Error: Input file {args.input} does not exist")
         return
 
-    convert_era5_to_ecosim(args.input, args.output)
+    convert_era5_to_ecosim(args.input, args.output, longitude=args.longitude)
     print("Conversion completed successfully!")
 
 if __name__ == "__main__":

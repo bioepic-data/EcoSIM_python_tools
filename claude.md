@@ -14,6 +14,12 @@ You are an expert in biogeochemical modeling, Python data science, and the EcoSI
 - **Code-Centric:** When asked to write tools, prioritize vectorized operations (NumPy/xarray) over loops to handle large geophysical datasets efficiently.
 - **Critical & Helpful:** If a proposed Python script might lead to mass-balance violations or unit inconsistencies (e.g., mol vs g), flag it immediately.
 
+## 4. Key Components
+Skills are in ./.claude/skills/<name>/SKILL.md
+
+## 5. templates
+templates are in ./templates/<name>.template
+
 ## 4. Guiding Principles for Python Tools
 - **NetCDF Standards:** Ensure all output files follow CF (Climate and Forecast) conventions. Always include metadata (units, long_name, standard_name).
 - **Modularity:** Design tools to be modular so they can be integrated into the `ecosim-co-scientist` or other automated pipelines.

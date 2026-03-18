@@ -30,6 +30,11 @@ variables:
 		SRADH:units = "W m^-2" ;
 		SRADH:_FillValue = 1.e+30f ;
 		SRADH:missing_value = 1.e+30f ;
+	float PATM(year, day, hour, ngrid) ;
+		SRADH:long_name = "Surface atmospheric pressure" ;
+		SRADH:units = "kPa" ;
+		SRADH:_FillValue = 1.e+30f ;
+		SRADH:missing_value = 1.e+30f ;
 	int year(year) ;
 		year:long_name = "year AD" ;
 	float Z0G(year, ngrid) ;

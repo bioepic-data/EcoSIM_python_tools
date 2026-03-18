@@ -25,6 +25,7 @@ The output is a netCDF file with the following variables:
 - `RAINH`: Hourly precipitation (mm m⁻² hr⁻¹)
 - `DWPTH`: Hourly atmospheric vapor pressure (kPa)
 - `SRADH`: Hourly incident solar radiation (W m⁻²)
+- `PATM`: Hourly Surface atmospheric pressure (kPa)
 - `year`: Year AD
 - `Z0G`: Windspeed measurement height (m)
 - `IFLGW`: Flag for raising Z0G with vegetation
