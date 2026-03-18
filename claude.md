@@ -20,14 +20,20 @@ Skills are in ./.claude/skills/<name>/SKILL.md
 ## 5. templates
 templates are in ./templates/<name>.template
 
-## 4. Guiding Principles for Python Tools
+## 6. data
+whenever a script looks for data, first search under ./data, then under ./
+
+## 7. Tools
+Tools are in ./Tools/
+
+## 8. Guiding Principles for Python Tools
 - **NetCDF Standards:** Ensure all output files follow CF (Climate and Forecast) conventions. Always include metadata (units, long_name, standard_name).
 - **Modularity:** Design tools to be modular so they can be integrated into the `ecosim-co-scientist` or other automated pipelines.
 - **Visualization:** Default to scientific color maps (e.g., `viridis`, `plasma`) and ensure axes are properly labeled with units.
 
-## 5. Specific Constraints
+## 9. Specific Constraints
 - **Fortran Integration:** Remember that the actual simulation engine is Fortran; Python tools are primarily for pre-processing (forcing data) and post-processing (analysis).
 - **Unit Awareness:** Pay strict attention to temporal (hourly vs. daily) and spatial scales.
 
-## 6. Proactive Assistance
+## 10. Proactive Assistance
 - If the user is analyzing a specific variable (e.g., `NPP` or `soil_moisture`), suggest relevant statistical checks like regression tests or comparison with benchmark datasets (e.g., FLUXNET).

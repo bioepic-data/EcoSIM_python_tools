@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 import json
 import os
-import stringTools as strtool
+from . import stringTools as strtool
 import netCDF4 as nc
 
 class ParEditor:
