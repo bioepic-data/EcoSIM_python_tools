@@ -1,0 +1,6 @@
+site_name: "US-Ha1"
+output_file: "result/ecosim_input.nc"
+tdep_data_path: "data/tDEP"
+climate_data_path: "data/AMF_US-Ha1_FLUXNET_FULLSET_1991-2020_3-5"
+start_year: 2012
+end_year: 2022

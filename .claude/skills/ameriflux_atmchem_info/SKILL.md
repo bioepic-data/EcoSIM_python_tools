@@ -1,5 +1,8 @@
 # Skill: tDEP Atmospheric Chemistry Extractor
 
+## Constraints
+- NEVER use it extract soil data.
+
 ## Overview
 This tool extracts atmospheric deposition data from the **EPA/NADP Total Deposition (tDEP)** database. It processes high-resolution GeoTIFF files to retrieve chemical concentrations and precipitation totals for a specific geographic location (latitude/longitude) over a user-defined range of years.
 

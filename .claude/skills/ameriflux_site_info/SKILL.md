@@ -1,5 +1,8 @@
 # Skill: Flux Site to JSON Variable Mapping
 
+## Constraints
+- NEVER use it extract climate data.
+
 ## Purpose
 Automate the identification and derivation of site-specific attributes (e.g., location, vegetation) using Retrieval-Augmented Generation (RAG) to search for information about the specified site and extract required variables.
 

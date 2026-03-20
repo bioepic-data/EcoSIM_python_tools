@@ -1,5 +1,8 @@
 # Skill: Convert Ameriflux ERA5 Climate Data to ECOSIM Format
 
+## Constraints
+- NEVER use it extract soil data.
+
 ## Overview
 
 This skill converts Ameriflux ERA5 half-hourly climate forcing data into the ECOSIM hourly climate format. The conversion process transforms climate data from the ERA5 format (provided by Ameriflux) to the ECOSIM climate forcing format as specified in the `Blodget.clim.2012-2022.template` file.
