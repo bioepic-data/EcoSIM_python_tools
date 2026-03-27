@@ -58,7 +58,7 @@ def map_vegetation(igbp: str) -> int:
 
 def run_vision_rag_flow(site_id: str, output_dir: str = "result"):
     url = f"https://ameriflux.lbl.gov/sites/siteinfo/{site_id}"
-    img_path = f"{output_dir}/{site_id}_screenshot.png"
+    img_path = f"{output_dir}/images/{site_id}_screenshot.png"
     
     with sync_playwright() as p:
         try:
@@ -92,8 +92,10 @@ def run_vision_rag_flow(site_id: str, output_dir: str = "result"):
                 print(f"Successfully created {output_file}")
                 print(json.dumps(final_json, indent=4))
             
-        except Exception as e:
-            print(f"Flow failed: {e}")
+        except Exception as e:            
+            print(f"Error during vision RAG flow: {e}")
+            print("Ensure that Ollama is running with the Qwen2.5-VL model and that Playwright dependencies are installed.")
+            print(f"check image for {site_id} at {img_path}.")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

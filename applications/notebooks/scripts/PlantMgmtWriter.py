@@ -13,14 +13,14 @@ JSON format expected:
     iHarvType
     jHarvType
     CutHeight
-    FractionCut
+    FractionCut           #fraction of population removed for non-grazing, grazing rate for herbivore
     FineFractionLeafHarvested_pft
     FineFractionNonleafHarvested_pft
-    WoodyFractionHarvested_pft
+    StalkFractionHarvested_pft
     StandeadFractionHarvested_pft
     FineFractionLeafHarvested_col
     FineFractionNonleafHarvested_col
-    WoodyFractionHarvested_col
+    StalkFractionHarvested_col
     StandeadFractionHarvested_col
 
 Output string formats:
@@ -137,11 +137,11 @@ def build_mgmt_line(mgmt: Dict[str, Any]) -> str:
         fmt_number(mgmt["FractionCut"]),
         fmt_number(mgmt["FineFractionLeafHarvested_pft"]),
         fmt_number(mgmt["FineFractionNonleafHarvested_pft"]),
-        fmt_number(mgmt["WoodyFractionHarvested_pft"]),
+        fmt_number(mgmt["StalkFractionHarvested_pft"]),
         fmt_number(mgmt["StandeadFractionHarvested_pft"]),
         fmt_number(mgmt["FineFractionLeafHarvested_col"]),
         fmt_number(mgmt["FineFractionNonleafHarvested_col"]),
-        fmt_number(mgmt["WoodyFractionHarvested_col"]),
+        fmt_number(mgmt["StalkFractionHarvested_col"]),
         fmt_number(mgmt["StandeadFractionHarvested_col"]),
     ]
     return ",".join(fields)
