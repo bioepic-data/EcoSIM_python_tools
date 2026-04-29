@@ -23,7 +23,8 @@ warnings.filterwarnings("ignore")
 def get_site_longitude(site_id):
     """Get longitude for the site using ameriflux_site_info skill."""
     script_path = os.path.join(os.path.dirname(__file__), "..", "ameriflux_site_info", "extract_ameriflux_site_data.py")
-    result_dir = "result"
+    result_root = "result"
+    result_dir = os.path.join(result_root, site_id)
     os.makedirs(result_dir, exist_ok=True)
     cmd = [sys.executable, script_path, site_id]
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.getcwd())
@@ -31,11 +32,15 @@ def get_site_longitude(site_id):
         print(f"Error running site info: {result.stderr}")
         return None
     
-    site_file = f"{result_dir}/{site_id}_ecosim_site.json"
-    if os.path.exists(site_file):
-        with open(site_file, 'r') as f:
-            site_data = json.load(f)
-            return site_data.get('ALONG')
+    candidate_files = [
+        os.path.join(result_dir, f"{site_id}_ecosim_site.json"),
+        os.path.join(result_root, f"{site_id}_ecosim_site.json"),
+    ]
+    for site_file in candidate_files:
+        if os.path.exists(site_file):
+            with open(site_file, 'r') as f:
+                site_data = json.load(f)
+                return site_data.get('ALONG')
     return None
 
 def parse_timestamps(timestamp_str):

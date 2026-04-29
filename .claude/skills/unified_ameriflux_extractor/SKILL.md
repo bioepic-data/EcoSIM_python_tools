@@ -24,7 +24,7 @@ The result is a single JSON file containing all extracted information.
 - Python 3.8+.
 - Install required packages:
   ```bash
-  pip install playwright requests rasterio pyproj pyogrio numpy pandas
+  pip install playwright requests rasterio pyproj pyogrio geopandas numpy pandas netCDF4
   playwright install chromium
   ```
 - Ollama must be running with the `qwen2.5vl:7b` model.
@@ -39,11 +39,11 @@ python ./.Codex/skills/unified_ameriflux_extractor/unified_ameriflux_extractor.p
     --year1 2010 --year2 2020 \
     --gssurgo-gdb /path/to/gSSURGO_CONUS.gdb \
     --gssurgo-template /path/to/template.nc \
-    --gssurgo-out result/gssurgo_US-Ha1.json \
+    --gssurgo-out result/US-Ha1/gssurgo_US-Ha1.json \
     --gssurgo-extend-last \
-    --output result/unified_output.json \
-    --climate-output result/${site_id}_ecosim_climate.nc \
-    --grid-output result/${site_id}_ecosim_grid.nc \
+    --output result/US-Ha1/unified_output.json \
+    --climate-output result/${site_id}/${site_id}_ecosim_climate.nc \
+    --grid-output result/${site_id}/${site_id}_ecosim_grid.nc \
     --climate-data-dir data \
     --result-dir result
 ```
@@ -54,6 +54,8 @@ python ./.Codex/skills/unified_ameriflux_extractor/unified_ameriflux_extractor.p
 - `--climate-data-dir` points to the directory containing ERA5 files (default: `data`).
 - `--result-dir` is the directory for intermediate results (default: `result`).
 
-The script will create the unified JSON output, generate any requested NetCDF forcing files, and print confirmation messages.
+The script will create the unified JSON output, generate any requested NetCDF forcing files, and print confirmation messages. Site-specific outputs should be placed under `result/<SITE_ID>/`.
+
+When climate or grid NetCDF files are generated, the workflow should also emit derivation report JSON files that list template variables which could not be derived from source data and were left as fill/default values.
 
 **Note:** `create_ecosim_climate_forcing.py` and `create_ecosim_grid_forcing.py` have been moved to the `Tools/` directory. All internal calls have been updated accordingly.

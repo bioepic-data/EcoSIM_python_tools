@@ -238,7 +238,7 @@ DBF (Deciduous Broadleaf)  → 8 or 10 (Deciduous)
 
 1. **Prepare Environment**
    ```bash
-   pip install netCDF4 numpy pandas pyproj shapely pyogrio playwright
+   pip install netCDF4 numpy pandas rasterio pyproj shapely pyogrio geopandas requests matplotlib playwright
    ollama pull qwen2.5vl:7b
    ```
 

@@ -4,7 +4,7 @@
 
 ```bash
 # Install required packages
-pip install netCDF4 numpy pandas pyproj shapely pyogrio playwright
+pip install netCDF4 numpy pandas rasterio pyproj shapely pyogrio geopandas requests matplotlib playwright
 
 # Set up vision AI (one-time)
 ollama pull qwen2.5vl:7b

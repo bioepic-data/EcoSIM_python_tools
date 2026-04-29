@@ -1,6 +1,6 @@
 ---
 name: "ecosim-trait-deriver"
-description: "Use this skill when working with EcoSIM plant trait description files such as `plant_trait.*.desc` and you need to derive trait parameter sets for a named plant from web-sourced evidence, using the `.desc` file as a template and the `ndlf43` tree block or `gr3s43` grass block as the starting archetype."
+description: "Use this skill when working with EcoSIM plant trait description files such as `plant_trait.*.desc` and you need to derive trait parameter sets for a named plant from web and online literature evidence, using the `.desc` file as a template and the `ndlf43` tree block or `gr3s43` grass block as the starting archetype."
 ---
 
 # EcoSIM Trait Deriver
@@ -17,7 +17,7 @@ Use this skill for EcoSIM trait derivation tasks where:
 - Extracts normalized parameter rows from each template block
 - Uses `ndlf43` as the default tree archetype
 - Uses `gr3s43` as the default grass archetype
-- Guides web-based derivation of trait values for a named plant
+- Guides web- and online-literature-based derivation of trait values for a named plant
 - Separates values into:
   - directly supported by sources
   - inferred from close biological evidence
@@ -31,7 +31,7 @@ Instead:
 
 1. Identify whether the target plant should start from the tree archetype `ndlf43` or the grass archetype `gr3s43`.
 2. Parse the template file with `scripts/extract_trait_profiles.py`.
-3. Browse the web for plant-specific evidence.
+3. Search both the web and online literature for plant-specific evidence.
 4. Map the evidence onto EcoSIM trait codes.
 5. Keep a clear distinction between:
    - observed or explicitly reported values
@@ -44,7 +44,7 @@ Use sources in this order whenever possible:
 
 1. Official taxonomic or species-profile sources for identity and life form.
 2. Official crop or forestry databases for ecology, growth form, phenology, and environmental tolerances.
-3. Peer-reviewed papers for quantitative physiological or morphological trait values.
+3. Peer-reviewed papers and online literature sources for quantitative physiological, morphological, nutrient, and hydraulic trait values.
 4. Reputable extension or botanic-garden sources only as a fallback.
 
 Preferred source types:
@@ -60,10 +60,32 @@ Preferred source types:
 - Cross-cutting plant traits:
   - TRY database metadata and linked literature
   - peer-reviewed trait papers
+  - online journal articles, books, theses, and technical reports when they provide primary trait measurements or defensible synthesis values
+
+## Literature search requirement
+
+For quantitative trait derivation, do not stop at species profile pages if the trait is likely to be reported in the literature.
+
+You should actively search online literature for traits such as:
+
+- `VCMX`, `VOMX`, `ETMX`
+- `SLA1`
+- leaf N and P concentrations
+- seed mass and seedling carbon allocation
+- root depth, rooting pattern, and fine-root traits
+- hydraulic or drought-response traits
+
+Use species-level sources first. If species-level values are not available, fall back in this order:
+
+1. congeneric species
+2. closely related taxa with similar life form and climate niche
+3. functional-type syntheses for the same growth form
+
+When using non-species fallbacks, mark the trait as `inferred` rather than `sourced`.
 
 ## Web workflow
 
-Before doing substantial web-based derivation work, read [references/web_trait_derivation.md](references/web_trait_derivation.md).
+Before doing substantial web- or literature-based derivation work, read [references/web_trait_derivation.md](references/web_trait_derivation.md).
 
 For a plant like `Limber Pine` or `maize`:
 
@@ -78,9 +100,10 @@ For a plant like `Limber Pine` or `maize`:
    - morphology
    - root traits
    - photosynthetic and nutrient traits
-4. Update only the traits that have support.
-5. If evidence is qualitative rather than numeric, convert only when the mapping is defensible and explain the inference.
-6. If no support is found, keep the template value and mark it as template-retained.
+4. Search online literature specifically for quantitative traits that are not usually present in species profile pages.
+5. Update only the traits that have support.
+6. If evidence is qualitative rather than numeric, convert only when the mapping is defensible and explain the inference.
+7. If no support is found, keep the template value and mark it as template-retained.
 
 ## Mapping guidance
 
@@ -89,7 +112,7 @@ Use the template as a scaffold, not as a source of truth.
 - `PLANT CLASS INFORMATION`
   - derive from taxonomy, life form, lifespan, growth pattern, phenology, photoperiod, mycorrhizal status
 - `PHOTOSYNTHETIC PROPERTIES`
-  - prefer peer-reviewed physiology measurements
+  - prefer peer-reviewed physiology measurements from online papers, theses, technical reports, or synthesis datasets
   - if unavailable, only adjust high-level expectations such as slower evergreen conifer vs faster crop grass
 - `OPTICAL PROPERTIES`
   - usually retain template unless a credible species- or functional-type source provides values
@@ -97,14 +120,16 @@ Use the template as a scaffold, not as a source of truth.
   - use flowering time, leafout, senescence, chilling, and photoperiod evidence
 - `MORPHOLOGICAL PROPERTIES`
   - use SLA, leaf shape, seed size, canopy architecture, clumping, standing biomass evidence
+  - look for seed mass and SLA values in online floras, trait databases, and literature appendices
 - `ROOT CHARACTERISTICS`
   - use rooting depth, woody vs non-woody roots, fine-root structure, mycorrhiza, hydraulic traits if available
+  - prioritize literature and technical reports for depth, fine-root morphology, and hydraulic behavior
 - `ROOT UPTAKE PARAMETERS`
   - usually infer from functional type or retain template unless species-specific uptake kinetics are available
 - `WATER RELATIONS`
   - use drought tolerance and water-stress physiology when supported
 - `ORGAN GROWTH YIELDS` and `ORGAN N AND P CONCENTRATIONS`
-  - prefer peer-reviewed measurements; otherwise retain template and label as such
+  - prefer peer-reviewed measurements or defensible online literature values; otherwise retain template and label as such
 
 ## Command
 
@@ -146,6 +171,7 @@ When the user asks for derivation for a plant name, produce:
   - `inferred`
   - `template-retained`
 - source links for the evidence used
+- source links for the evidence used, including online literature when applicable
 
 If the user asks for a file output, emit CSV, JSON, or an updated `.desc`-style block.
 

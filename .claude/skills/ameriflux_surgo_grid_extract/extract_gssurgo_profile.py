@@ -158,10 +158,11 @@ def choose_component(gdb_path: str, mukey: str) -> pd.Series:
 
     requested = ["mukey", "cokey", "compname", "comppct_r", "majcompflag"]
     available_requested = [r for r in requested if r.lower() in fmap]
+    escaped_mukey = str(mukey).replace("'", "''")
     comp = pyogrio.read_dataframe(
         gdb_path,
         layer="component",
-        where=f"{actual_mukey} = '{str(mukey).replace("'", "''")}'",
+        where=f"{actual_mukey} = '{escaped_mukey}'",
         columns=actual_columns(gdb_path, "component", available_requested),
         read_geometry=False,
     )
@@ -204,10 +205,11 @@ def load_horizons(gdb_path: str, cokey: str) -> pd.DataFrame:
     if actual_cokey is None:
         raise ValueError("Layer chorizon does not contain COKEY/cokey")
 
+    escaped_cokey = str(cokey).replace("'", "''")
     hz = pyogrio.read_dataframe(
         gdb_path,
         layer="chorizon",
-        where=f"{actual_cokey} = '{str(cokey).replace("'", "''")}'",
+        where=f"{actual_cokey} = '{escaped_cokey}'",
         columns=actual_columns(gdb_path, "chorizon", hz_requested),
         read_geometry=False,
     )

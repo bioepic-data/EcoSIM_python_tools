@@ -56,9 +56,12 @@ def map_vegetation(igbp: str) -> int:
     if "DBF" in igbp: return 10
     return 10 # Default fallback
 
-def run_vision_rag_flow(site_id: str, output_dir: str = "result"):
+def run_vision_rag_flow(site_id: str, output_dir: str = None):
+    if output_dir is None:
+        output_dir = os.path.join("result", site_id)
     url = f"https://ameriflux.lbl.gov/sites/siteinfo/{site_id}"
     img_path = f"{output_dir}/images/{site_id}_screenshot.png"
+    os.makedirs(output_dir, exist_ok=True)
     
     with sync_playwright() as p:
         try:
@@ -99,6 +102,7 @@ def run_vision_rag_flow(site_id: str, output_dir: str = "result"):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        run_vision_rag_flow(sys.argv[1])
+        outdir = sys.argv[2] if len(sys.argv) > 2 else None
+        run_vision_rag_flow(sys.argv[1], outdir)
     else:
-        print("Usage: python extract_ameriflux_site_data.py <SITE_ID>")
+        print("Usage: python extract_ameriflux_site_data.py <SITE_ID> [OUTPUT_DIR]")

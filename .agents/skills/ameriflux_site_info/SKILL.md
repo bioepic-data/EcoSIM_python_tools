@@ -72,7 +72,7 @@ playwright install chromium
 ollama pull qwen2.5vl:7b
 
 ## Usage
-To execute the skill, run the following command from the project root. The resulting JSON will be saved to the `./result/` directory:
+To execute the skill, run the following command from the project root. The resulting JSON will be saved under `./result/<SITE_ID>/` by default:
 
 ```bash
 python ./.Codex/skills/ameriflux_site_info/extract_ameriflux_site_data.py <SITE_ID>
@@ -85,7 +85,7 @@ python ./.Codex/skills/ameriflux_site_info/extract_ameriflux_site_data.py US-Ha1
 
 ## Output
 
-The script creates a JSON file named `result/<site_name>_ecosim_site.json` with the following structure:
+The script creates a JSON file named `result/<SITE_ID>/<site_name>_ecosim_site.json` with the following structure:
 
 ```json
 {

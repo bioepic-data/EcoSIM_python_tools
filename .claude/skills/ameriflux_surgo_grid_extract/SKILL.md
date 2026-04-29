@@ -96,7 +96,7 @@ python ./.Codex/skills/ameriflux_surgo_grid_extract/extract_gssurgo_profile.py \
   --lon -121.85 \
   --lat 39.0 \
   --template template.nc \
-  --out result/profile_{site_id}.json \
+  --out result/<SITE_ID>/profile_<SITE_ID>.json \
   --extend-last
 ```
 
