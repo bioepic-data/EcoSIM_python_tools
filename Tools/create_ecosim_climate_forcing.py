@@ -67,11 +67,13 @@ CHEM_VALID_RANGES = {
 
 def find_skill_script(skill_name, script_name):
     """Find a skill script under the active local skill roots."""
-    for root in (".agents/skills", ".claude/skills", ".Codex/skills"):
-        candidate = os.path.join(root, skill_name, script_name)
-        if os.path.exists(candidate):
-            return candidate
-    return os.path.join(".agents/skills", skill_name, script_name)
+    normalized_name = skill_name.replace("_", "-")
+    for root in (".agents/skills", ".claude/skills"):
+        for candidate_name in (normalized_name, skill_name):
+            candidate = os.path.join(root, candidate_name, script_name)
+            if os.path.exists(candidate):
+                return candidate
+    return os.path.join(".agents/skills", normalized_name, script_name)
 
 def run_site_info(site_id, output_dir="result"):
     """Run the site info extraction."""
@@ -89,7 +91,7 @@ def run_site_info(site_id, output_dir="result"):
                 shutil.copy2(site_file, preferred_file)
             return data
 
-    script_path = find_skill_script("ameriflux_site_info", "extract_ameriflux_site_data.py")
+    script_path = find_skill_script("ameriflux-site-info", "extract_ameriflux_site_data.py")
     cmd = [sys.executable, script_path, site_id, output_dir]
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.getcwd())
     if result.returncode != 0:
@@ -114,7 +116,7 @@ def find_era5_file(site_id, data_dir="data"):
 
 def run_era5_conversion(era5_file, output_file, site_id, quality_report_file=None):
     """Run the ERA5 to EcoSIM conversion."""
-    script_path = find_skill_script("ameriflux_era5_to_ecosim", "era5_to_ecosim_converter.py")
+    script_path = find_skill_script("ameriflux-era5-to-ecosim", "era5_to_ecosim_converter.py")
     cmd = [sys.executable, script_path, "--input", era5_file, "--output", output_file, "--site-id", site_id]
     if quality_report_file:
         cmd.extend(["--quality-report", quality_report_file])
@@ -131,7 +133,7 @@ def extract_chemistry(lat, lon, years, output_file, chem_dir="data/nadp_data_gri
         print(f"  Error: NADP data directory not found: {chem_dir}")
         return None
 
-    script_path = find_skill_script("ameriflux_atmchem_info", "extract_nadp_range.py")
+    script_path = find_skill_script("ameriflux-atmchem-info", "extract_nadp_range.py")
     start_year = min(years)
     end_year = max(years)
     cmd = [sys.executable, script_path,
