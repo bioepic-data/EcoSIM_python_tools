@@ -4,8 +4,8 @@
 
 `create_ecosim_grid_forcing.py` automatically generates EcoSIM grid forcing NetCDF files for AmeriFlux sites by combining two specialized skills:
 
-1. **ameriflux_site_info**: Extracts site metadata (location, elevation, climate, vegetation)
-2. **ameriflux_surgo_grid_extract**: Extracts soil profile data from gSSURGO (CONUS database)
+1. **ameriflux-site-info**: Extracts site metadata (location, elevation, climate, vegetation)
+2. **ameriflux-surgo-grid-extract**: Extracts soil profile data from gSSURGO (CONUS database)
 
 The resulting NetCDF file follows the Blodget template structure and contains all necessary grid-level and soil profile information for EcoSIM biogeochemical simulations.
 
@@ -222,6 +222,6 @@ done
 ## Contact & Support
 
 For questions about:
-- **Site information extraction**: See `.claude/skills/ameriflux_site_info/SKILL.md`
-- **SURGO data extraction**: See `.claude/skills/ameriflux_surgo_grid_extract/SKILL.md`
+- **Site information extraction**: See `.agents/skills/ameriflux-site-info/SKILL.md`
+- **SURGO data extraction**: See `.agents/skills/ameriflux-surgo-grid-extract/SKILL.md`
 - **NetCDF structure**: See template file documentation in `templates/`

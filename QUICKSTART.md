@@ -129,7 +129,7 @@ result/
 
 - Full documentation: See `GRID_FORCING_README.md`
 - Implementation details: See `GRID_FORCING_IMPLEMENTATION.md`
-- Skills: See `.claude/skills/*/SKILL.md`
+- Skills: See `.agents/skills/*/SKILL.md`
 
 ---
 

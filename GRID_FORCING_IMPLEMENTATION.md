@@ -6,13 +6,13 @@ I have successfully created `create_ecosim_grid_forcing.py`, a comprehensive Pyt
 
 ## Skills Integrated
 
-### 1. **ameriflux_site_info** 
+### 1. **ameriflux-site-info**
    - **Purpose**: Extract AmeriFlux site metadata
    - **Method**: Vision RAG (Qwen2.5-VL) screenshot analysis
    - **Outputs**: Site JSON with latitude, longitude, elevation, MAT, climate zone, vegetation type
    - **Status**: ✓ Working
 
-### 2. **ameriflux_surgo_grid_extract**
+### 2. **ameriflux-surgo-grid-extract**
    - **Purpose**: Extract soil profile data from gSSURGO database
    - **Method**: Spatial lookup, horizon extraction, vertical interpolation
    - **Outputs**: Soil profile JSON with interpolated values at template depths
@@ -227,8 +227,8 @@ DBF (Deciduous Broadleaf)  → 8 or 10 (Deciduous)
 2. **`GRID_FORCING_README.md`** - Comprehensive documentation
 
 ### Supporting Files (Already Existed)
-- `.claude/skills/ameriflux_site_info/extract_ameriflux_site_data.py`
-- `.claude/skills/ameriflux_surgo_grid_extract/extract_gssurgo_profile.py`
+- `.agents/skills/ameriflux-site-info/extract_ameriflux_site_data.py`
+- `.agents/skills/ameriflux-surgo-grid-extract/extract_gssurgo_profile.py`
 - `templates/Blodget_grid_20251115_modified.nc.template`
 
 ### Output Directory
@@ -258,7 +258,7 @@ DBF (Deciduous Broadleaf)  → 8 or 10 (Deciduous)
 
 ## Contact & Documentation
 
-- **Skills Documentation**: See `.claude/skills/*/SKILL.md` files
+- **Skills Documentation**: See `.agents/skills/*/SKILL.md` files
 - **Template Documentation**: See `templates/Blodget_grid_*.template`
 - **This Summary**: This file (`GRID_FORCING_IMPLEMENTATION.md`)
 - **Full Usage Guide**: `GRID_FORCING_README.md`

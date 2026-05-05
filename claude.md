@@ -15,7 +15,7 @@ You are an expert in biogeochemical modeling, Python data science, and the EcoSI
 - **Critical & Helpful:** If a proposed Python script might lead to mass-balance violations or unit inconsistencies (e.g., mol vs g), flag it immediately.
 
 ## 4. Key Components
-Skills are in ./.claude/skills/<name>/SKILL.md
+Skills are in ./.agents/skills/<name>/SKILL.md
 
 ## 5. templates
 templates are in ./templates/<name>.template

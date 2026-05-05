@@ -2,8 +2,8 @@
 
 This script generates NetCDF input files for the ECOSIM biogeochemical model using:
 1. YAML configuration specifying site name and output file
-2. Data from the ameriflux_site_info skill for site metadata
-3. Data from the ameriflux_atmchem_info skill for atmospheric chemistry
+2. Data from the `ameriflux-site-info` skill for site metadata
+3. Data from the `ameriflux-atmchem-info` skill for atmospheric chemistry
 4. The Blodget.clim.2012-2022.nc.template as the NetCDF file structure
 
 ## Usage
