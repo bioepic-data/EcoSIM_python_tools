@@ -4,6 +4,18 @@ import json
 import os
 import argparse
 import glob
+import math
+
+def is_valid_grid_value(ion, value):
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        return False
+    if not math.isfinite(value) or value <= -900 or abs(value) >= 1e20:
+        return False
+    if ion == "phlab":
+        return 0.0 <= value <= 14.0
+    return value >= 0.0
 
 def extract_nadp_range(lat, lon, base_dir, output_file, start_year, end_year):
     # List of ions to extract
@@ -62,9 +74,9 @@ def extract_nadp_range(lat, lon, base_dir, output_file, start_year, end_year):
                         if 0 <= row < src.height and 0 <= col < src.width:
                             val = src.read(1)[row, col]
                             
-                            # Filter out NoData values (usually -999 or -9999)
-                            if val is not None and val > -900:
-                                key = f"{ion}_mg_l" if ion != "ph" else "ph"
+                            # Filter out NoData and physically invalid values.
+                            if is_valid_grid_value(ion, val):
+                                key = "ph" if ion == "phlab" else f"{ion}_mg_l"
                                 year_data["raw_ion_conc"][key] = float(val)
                                 
                                 if ion in elemental_conversions:

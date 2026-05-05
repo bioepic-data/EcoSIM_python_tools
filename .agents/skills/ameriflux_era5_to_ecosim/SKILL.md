@@ -15,8 +15,8 @@ The input is a CSV file with the following columns:
 - `TA_ERA`: Air temperature (°C)
 - `SW_IN_ERA`: Shortwave incoming radiation (W m⁻²)
 - `LW_IN_ERA`: Longwave incoming radiation (W m⁻²)
-- `VPD_ERA`: Vapor pressure deficit (kPa)
-- `PA_ERA`: Atmospheric pressure (hPa)
+- `VPD_ERA`: Vapor pressure deficit (hPa in AmeriFlux ERA5 products)
+- `PA_ERA`: Atmospheric pressure (kPa)
 - `P_ERA`: Precipitation (mm h⁻¹)
 - `WS_ERA`: Wind speed (m s⁻¹)
 
@@ -39,19 +39,32 @@ The output is a netCDF file with the following variables:
 1. **Data Reading**: Reads half-hourly climate data from the input CSV file
 2. **Timestamp Parsing**: Converts timestamp strings to datetime objects
 3. **Data Aggregation**: Averages consecutive half-hourly values to create hourly data
-4. **Variable Mapping**: Maps ERA5 variables to ECOSIM variable names and units
-5. **NetCDF Creation**: Creates a properly formatted netCDF file in ECOSIM format
+4. **Quality Control**: Masks physically invalid values before aggregation and fills those gaps by time interpolation.
+5. **Variable Mapping**: Maps ERA5 variables to ECOSIM variable names and units
+6. **NetCDF Creation**: Creates a properly formatted netCDF file in ECOSIM format
+
+## Physical Range Checks
+
+The converter must ensure derived climate values are in legitimate ranges before writing EcoSIM NetCDF:
+- `TMPH` from `TA_ERA`: -90 to 60 degC.
+- `WINDH` from `WS_ERA`: 0 to 75 m s^-1.
+- `RAINH` from `P_ERA`: non-negative source precipitation.
+- `DWPTH` from `VPD_ERA`: non-negative source vapor pressure deficit.
+- `SRADH` from `SW_IN_ERA`: 0 to 1400 W m^-2.
+- `PATM` from `PA_ERA`: kPa bounds centered on site elevation when `ALTIG` is available, otherwise broad physical fallback bounds.
+
+For sentinel values, non-finite values, and values outside these bounds, mask the value and interpolate along the half-hourly time axis. Use nearest-edge filling only at the beginning or end of the available source period. Emit a JSON quality report when `--quality-report` is supplied.
 
 ## Usage
 To execute the skill, run the following command from the project root. The resulting JSON will be saved to the `./result/` directory:
 
 ```bash
-python ./.Codex/skills/ameriflux_era5_to_ecosim/era5_to_ecosim_converter.py --input data/data/AMF_US-Ha1_FLUXNET_FULLSET_1991-2020_3-5/AMF_US-Ha1_FLUXNET_ERA5_HR_1981-2021_3-5.csv --output result/ecosim_climate.nc --site-id US-Ha1
+python ./.agents/skills/ameriflux_era5_to_ecosim/era5_to_ecosim_converter.py --input data/AMF_US-Ha1_FLUXNET_FULLSET_1991-2020_3-5/AMF_US-Ha1_FLUXNET_ERA5_HR_1981-2021_3-5.csv --output result/ecosim_climate.nc --site-id US-Ha1 --quality-report result/US-Ha1/US-Ha1_era5_quality_report.json
 ```
 
 ## Key Features
 
-- Handles missing data with appropriate fill values (1e30 for float variables)
+- Handles physically invalid source data by interpolation before NetCDF writing
 - Properly converts precipitation from half-hourly to hourly values (summing)
 - Averages temperature, wind speed, and solar radiation over half-hour periods
 - Supports multiple years of data
@@ -59,8 +72,7 @@ python ./.Codex/skills/ameriflux_era5_to_ecosim/era5_to_ecosim_converter.py --in
 
 ## Limitations
 
-- Assumes that each hour has exactly two half-hourly records
-- For hours with missing data, uses fill values (1e30)
+- Calendar padding that is not present in the source data may still use EcoSIM fill values.
 - Does not handle complex climate data processing beyond simple averaging
 
 ## Requirements

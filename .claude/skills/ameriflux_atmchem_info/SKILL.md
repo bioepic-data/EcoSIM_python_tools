@@ -58,10 +58,15 @@ The following variables are extracted and mapped to internal keys:
 **for NADP:**
 | Template Variable | NADP Prefix | Description |
 | :--- | :--- | :--- |
+| `PHRG` | `phlab` | pH in precipitation |
 | `CN4RIG` | `nh4` | Ammonium ($NH_4$) concentration |
 | `CNORIG` | `no3` | Nitrate ($NO_3$) concentration |
 | `CSORG` | `so4` | Sulfate ($SO_4$) concentration |
-| `CCARG` | `ca` | Calcium ($Ca$) concentration
+| `CCARG` | `ca` | Calcium ($Ca$) concentration |
+
+NADP extraction must reject NoData, non-finite, negative concentration values, and pH values outside 0-14. The pH raster `phlab` must be emitted under the raw key `ph` so the climate writer can derive `PHRG`.
+
+When the EcoSIM climate forcing writer consumes NADP chemistry, valid annual gaps are filled by linear interpolation with nearest-edge filling. If no valid NADP pH is available for `PHRG`, set `PHRG` to 7 for every year and record that default in the derivation report.
 
 ## Usage
 

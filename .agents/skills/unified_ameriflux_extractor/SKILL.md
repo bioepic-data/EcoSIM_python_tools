@@ -58,4 +58,10 @@ The script will create the unified JSON output, generate any requested NetCDF fo
 
 When climate or grid NetCDF files are generated, the workflow should also emit derivation report JSON files that list template variables which could not be derived from source data and were left as fill/default values.
 
+Climate NetCDF generation must apply range-aware gap filling:
+- ERA5 meteorology values outside legitimate physical bounds are masked and filled by time interpolation before hourly aggregation.
+- NADP chemistry values must be finite and non-negative, with `PHRG` constrained to pH 0-14.
+- Annual chemistry gaps are filled by linear interpolation with nearest-edge filling.
+- If `PHRG` cannot be derived from NADP data, write `PHRG=7` and record the policy fallback in the derivation report.
+
 **Note:** `create_ecosim_climate_forcing.py` and `create_ecosim_grid_forcing.py` have been moved to the `Tools/` directory. All internal calls have been updated accordingly.

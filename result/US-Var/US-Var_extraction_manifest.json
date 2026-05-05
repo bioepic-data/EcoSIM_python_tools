@@ -1,0 +1,44 @@
+{
+  "site_id": "US-Var",
+  "site_name": "Vaira Ranch- Ione",
+  "metadata_source": "https://ameriflux.lbl.gov/sites/siteinfo/US-Var",
+  "generated_files": {
+    "site_metadata": "result/US-Var/US-Var_ecosim_site.json",
+    "nadp_chemistry": "result/US-Var/US-Var_chemistry.json",
+    "gssurgo_profile": "result/US-Var/profile_US-Var.json",
+    "grid_forcing": "result/US-Var/US-Var_ecosim_grid.nc",
+    "grid_derivation_report": "result/US-Var/US-Var_grid_derivation_report.json"
+  },
+  "site_metadata": {
+    "ALATG": 38.4133,
+    "ALONG": -120.9508,
+    "ALTIG": 129.0,
+    "ATCAG": 15.8,
+    "koppen_code": "Csa",
+    "IETYPG": 34,
+    "igbp_type": "GRA",
+    "IXTYP1": 10
+  },
+  "chemistry_extraction": {
+    "source": "data/nadp_data_grids",
+    "requested_years": "2000-2024",
+    "nonempty_source_years": "2000-2011",
+    "notes": [
+      "NADP pH is emitted as ph and checked against pH 0-14.",
+      "Later years had no valid raster value at the US-Var point in the local NADP grid set."
+    ]
+  },
+  "grid_extraction": {
+    "source": "data/gSSURGO_CONUS.gdb",
+    "soil_source": "gssurgo",
+    "underived_or_fill_only_variables": [
+      "AEC",
+      "CORGR",
+      "FHOL"
+    ]
+  },
+  "climate_forcing": {
+    "status": "not_generated",
+    "reason": "No local AmeriFlux ERA5 half-hourly CSV matching AMF_US-Var_* was found under data/."
+  }
+}

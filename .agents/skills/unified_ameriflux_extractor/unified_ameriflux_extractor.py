@@ -17,6 +17,7 @@ import argparse
 import base64
 import requests
 import subprocess
+import math
 from typing import Dict, Any, Optional
 
 # --- Vision extraction (from ameriflux_site_info) ---
@@ -121,6 +122,18 @@ ION_LIST = ["phlab", "so4", "no3", "nh4", "ca", "mg", "na", "k", "cl"]
 VALID_EXT = [".tif", ".asc", ".TIF", ".ASC"]
 
 
+def is_valid_nadp_value(ion: str, value: Any) -> bool:
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        return False
+    if not math.isfinite(value) or value <= -900 or abs(value) >= 1e20:
+        return False
+    if ion == "phlab":
+        return 0.0 <= value <= 14.0
+    return value >= 0.0
+
+
 def extract_nadp_range(lat: float, lon: float, base_dir: str, start_year: int, end_year: int) -> Dict[str, Any]:
     results = {
         "metadata": {
@@ -161,7 +174,7 @@ def extract_nadp_range(lat: float, lon: float, base_dir: str, start_year: int, e
                     row, col = src.index(tx, ty)
                     if 0 <= row < src.height and 0 <= col < src.width:
                         val = src.read(1)[row, col]
-                        if val is not None and val > -900:
+                        if is_valid_nadp_value(ion, val):
                             key = f"{ion}_mg_l" if ion != "phlab" else "ph"
                             year_data["raw_ion_conc"][key] = float(val)
                             if ion in ELEMENTAL_CONVERSIONS:

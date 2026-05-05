@@ -20,10 +20,17 @@ from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore")
 
-def get_site_longitude(site_id):
-    """Get longitude for the site using ameriflux_site_info skill."""
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from Tools.climate_quality import sanitize_era5_dataframe
+
+def get_site_metadata(site_id):
+    """Get site metadata using ameriflux_site_info skill."""
     script_path = os.path.join(os.path.dirname(__file__), "..", "ameriflux_site_info", "extract_ameriflux_site_data.py")
-    result_dir = "result"
+    result_root = "result"
+    result_dir = os.path.join(result_root, site_id)
     os.makedirs(result_dir, exist_ok=True)
     cmd = [sys.executable, script_path, site_id]
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.getcwd())
@@ -31,12 +38,22 @@ def get_site_longitude(site_id):
         print(f"Error running site info: {result.stderr}")
         return None
     
-    site_file = f"{result_dir}/{site_id}_ecosim_site.json"
-    if os.path.exists(site_file):
-        with open(site_file, 'r') as f:
-            site_data = json.load(f)
-            return site_data.get('ALONG')
+    candidate_files = [
+        os.path.join(result_dir, f"{site_id}_ecosim_site.json"),
+        os.path.join(result_root, f"{site_id}_ecosim_site.json"),
+    ]
+    for site_file in candidate_files:
+        if os.path.exists(site_file):
+            with open(site_file, 'r') as f:
+                return json.load(f)
     return None
+
+def get_site_longitude(site_id):
+    """Get longitude for the site using ameriflux_site_info skill."""
+    site_data = get_site_metadata(site_id)
+    if not site_data:
+        return None
+    return site_data.get('ALONG')
 
 def parse_timestamps(timestamp_str):
     """Parse timestamp string from Ameriflux data."""
@@ -50,7 +67,7 @@ def parse_timestamps(timestamp_str):
     minute = int(timestamp_str[10:12])
     return datetime(year, month, day, hour, minute)
 
-def convert_era5_to_ecosim(era5_file, output_file, longitude):
+def convert_era5_to_ecosim(era5_file, output_file, longitude, elevation=None, quality_report_file=None):
     """
     Convert ERA5 half-hourly data to ECOSIM hourly format.
 
@@ -66,6 +83,7 @@ def convert_era5_to_ecosim(era5_file, output_file, longitude):
     # Parse timestamps
     df['timestamp_start'] = df['TIMESTAMP_START'].apply(parse_timestamps)
     df['timestamp_end'] = df['TIMESTAMP_END'].apply(parse_timestamps)
+    df, quality_report = sanitize_era5_dataframe(df, elevation_m=elevation)
 
     # Convert to hourly data by averaging consecutive half-hourly values
     # We need to group by hour and average the values
@@ -140,6 +158,12 @@ def convert_era5_to_ecosim(era5_file, output_file, longitude):
 
     # Create the netCDF file
     create_ecosim_climate_file(hourly_df, output_file, longitude)
+    if quality_report_file:
+        quality_report_dir = os.path.dirname(quality_report_file)
+        if quality_report_dir:
+            os.makedirs(quality_report_dir, exist_ok=True)
+        with open(quality_report_file, "w") as f:
+            json.dump(quality_report, f, indent=2)
 
 def calculate_solar_noon_utc(year, month, day, longitude):
   """
@@ -306,6 +330,7 @@ def main():
     parser.add_argument('--input', '-i', required=True, help='Input CSV file path')
     parser.add_argument('--output', '-o', required=True, help='Output netCDF file path')
     parser.add_argument('--site-id', '-s', required=True, help='AmeriFlux site ID (e.g., US-Ha1) to get longitude from')
+    parser.add_argument('--quality-report', help='Optional JSON report for range checks and interpolation repairs')
     
     args = parser.parse_args()
 
@@ -313,14 +338,16 @@ def main():
         print(f"Error: Input file {args.input} does not exist")
         return
 
-    # Get longitude from site info
-    longitude = get_site_longitude(args.site_id)
+    # Get longitude and elevation from site info
+    site_data = get_site_metadata(args.site_id)
+    longitude = site_data.get('ALONG') if site_data else None
     if longitude is None:
         print(f"Error: Could not get longitude for site {args.site_id}")
         return
+    elevation = site_data.get('ALTIG') if site_data else None
 
     print(f"Using longitude {longitude} for site {args.site_id}")
-    convert_era5_to_ecosim(args.input, args.output, longitude)
+    convert_era5_to_ecosim(args.input, args.output, longitude, elevation=elevation, quality_report_file=args.quality_report)
     print("Conversion completed successfully!")
 
 if __name__ == "__main__":
