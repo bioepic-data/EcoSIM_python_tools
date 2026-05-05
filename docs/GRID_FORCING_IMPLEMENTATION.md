@@ -1,5 +1,7 @@
 # EcoSIM Grid Forcing Creation - Implementation Summary
 
+> Note: This is supplemental implementation documentation for a grid forcing workflow. It assumes a `create_ecosim_grid_forcing.py` entry point exists in your checkout; that script is not currently present in this branch.
+
 ## Overview
 
 I have successfully created `create_ecosim_grid_forcing.py`, a comprehensive Python script that generates EcoSIM grid forcing NetCDF files for AmeriFlux sites by integrating two specialized skills.
@@ -227,8 +229,8 @@ DBF (Deciduous Broadleaf)  → 8 or 10 (Deciduous)
 2. **`GRID_FORCING_README.md`** - Comprehensive documentation
 
 ### Supporting Files (Already Existed)
-- `.agents/skills/ameriflux-site-info/extract_ameriflux_site_data.py`
-- `.agents/skills/ameriflux-surgo-grid-extract/extract_gssurgo_profile.py`
+- `../.agents/skills/ameriflux-site-info/extract_ameriflux_site_data.py`
+- `../.agents/skills/ameriflux-surgo-grid-extract/extract_gssurgo_profile.py`
 - `templates/Blodget_grid_20251115_modified.nc.template`
 
 ### Output Directory
@@ -259,7 +261,7 @@ DBF (Deciduous Broadleaf)  → 8 or 10 (Deciduous)
 
 ## Contact & Documentation
 
-- **Skills Documentation**: See `.agents/skills/*/SKILL.md` files
+- **Skills Documentation**: See `../.agents/skills/*/SKILL.md` files
 - **Template Documentation**: See `templates/Blodget_grid_*.template`
 - **This Summary**: This file (`GRID_FORCING_IMPLEMENTATION.md`)
 - **Full Usage Guide**: `GRID_FORCING_README.md`

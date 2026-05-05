@@ -1,5 +1,7 @@
 # EcoSIM Grid Forcing Script
 
+> Note: This is supplemental documentation for a grid forcing workflow. It assumes a `create_ecosim_grid_forcing.py` entry point exists in your checkout; that script is not currently present in this branch.
+
 ## Overview
 
 `create_ecosim_grid_forcing.py` automatically generates EcoSIM grid forcing NetCDF files for AmeriFlux sites by combining two specialized skills:
@@ -225,6 +227,6 @@ done
 ## Contact & Support
 
 For questions about:
-- **Site information extraction**: See `.agents/skills/ameriflux-site-info/SKILL.md`
-- **SURGO data extraction**: See `.agents/skills/ameriflux-surgo-grid-extract/SKILL.md`
+- **Site information extraction**: See `../.agents/skills/ameriflux-site-info/SKILL.md`
+- **SURGO data extraction**: See `../.agents/skills/ameriflux-surgo-grid-extract/SKILL.md`
 - **NetCDF structure**: See template file documentation in `templates/`

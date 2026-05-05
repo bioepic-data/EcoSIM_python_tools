@@ -1,5 +1,7 @@
 # Quick Start: EcoSIM Grid Forcing
 
+> Note: This is supplemental documentation for the grid forcing workflow. The examples assume a `create_ecosim_grid_forcing.py` entry point exists in your checkout; that script is not currently present in this branch.
+
 ## Installation
 
 ```bash
@@ -139,8 +141,8 @@ result/
 
 - Full documentation: See `GRID_FORCING_README.md`
 - Implementation details: See `GRID_FORCING_IMPLEMENTATION.md`
-- Skills: See `.agents/skills/*/SKILL.md`
+- Skills: See `../.agents/skills/*/SKILL.md`
 
 ---
 
-**Ready to go!** Run `python create_ecosim_grid_forcing.py US-Ha1` to create your first grid file.
+When a grid forcing entry point is present in your checkout, run `python create_ecosim_grid_forcing.py US-Ha1` to create a first grid file.

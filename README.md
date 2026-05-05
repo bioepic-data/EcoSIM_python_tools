@@ -1,40 +1,52 @@
-# ECOSIM NetCDF Generator
+# EcoSIM Python Tools
 
-This script generates NetCDF input files for the ECOSIM biogeochemical model using:
-1. YAML configuration specifying site name and output file
-2. Data from the `ameriflux-site-info` skill for site metadata
-3. Data from the `ameriflux-atmchem-info` skill for atmospheric chemistry
-4. The Blodget.clim.2012-2022.nc.template as the NetCDF file structure
+This repository contains Python utilities and Agent Skills for preparing EcoSIM inputs from AmeriFlux, ERA5, NADP/tDEP, and gSSURGO data.
 
-## Usage
+## Main Entry Points
+
+- Agent Skills: [`.agents/skills/*/SKILL.md`](.agents/skills)
+- Climate forcing orchestration: [`Tools/create_ecosim_climate_forcing.py`](Tools/create_ecosim_climate_forcing.py)
+- ERA5 to EcoSIM converter: [`.agents/skills/ameriflux-era5-to-ecosim/era5_to_ecosim_converter.py`](.agents/skills/ameriflux-era5-to-ecosim/era5_to_ecosim_converter.py)
+- Notebook helper scripts: [`applications/notebooks/scripts/`](applications/notebooks/scripts)
+
+The duplicate `.claude/skills` path is a symlink to `.agents/skills`.
+
+## Documentation
+
+- Quick start: [`docs/QUICKSTART.md`](docs/QUICKSTART.md)
+- Grid forcing workflow notes: [`docs/GRID_FORCING_README.md`](docs/GRID_FORCING_README.md)
+- Grid forcing implementation notes: [`docs/GRID_FORCING_IMPLEMENTATION.md`](docs/GRID_FORCING_IMPLEMENTATION.md)
+
+The grid forcing docs are supplemental workflow notes. The current checked-in orchestration script is `Tools/create_ecosim_climate_forcing.py`; if you are looking for a grid forcing entry point, verify that `Tools/create_ecosim_grid_forcing.py` exists in your branch before following those examples.
+
+## Notebook Runfile Helpers
+
+The old `README.txt` referenced runfile writers without paths. The available helper scripts are under `applications/notebooks/scripts/`:
+
+- `ExampleInputWriter.py` writes example input/run configuration files.
+- `PlantMgmtWriter.py`, `pftMgmtWriter.py`, and `MgmntUtil.py` support plant management inputs.
+- `SoilMgmtWriter.py` and `soilManagementWriter.py` support soil management inputs.
+- `SiteTopoWriter.py` writes site/topography inputs.
+- `PlantTraitWriter.py` writes plant functional type parameterizations.
+
+## ERA5 Conversion
+
+Use the maintained skill converter instead of the removed root-level `convert_era5_to_ecosim.py`:
 
 ```bash
-python generate_ecosim_netcdf.py config.yaml
+python .agents/skills/ameriflux-era5-to-ecosim/era5_to_ecosim_converter.py \
+  --input data/AMF_US-Ha1_FLUXNET_FULLSET_1991-2020_3-5/AMF_US-Ha1_FLUXNET_ERA5_HR_1981-2021_3-5.csv \
+  --output result/US-Ha1/US-Ha1_ecosim_climate.nc \
+  --site-id US-Ha1 \
+  --quality-report result/US-Ha1/US-Ha1_era5_quality_report.json
 ```
 
-## Configuration File Format
+## Skill Validation
 
-The YAML configuration file should contain:
-- `site_name`: AmeriFlux site identifier (e.g., "US-Ha1")
-- `output_file`: Path where the NetCDF file will be saved
-- `tdep_data_path`: Path to tDEP data directory
-- `start_year`: Starting year for atmospheric chemistry data
-- `end_year`: Ending year for atmospheric chemistry data
+Validate skills against the Agent Skills standard with:
 
-## Example Configuration
-
-```yaml
-site_name: "US-Ha1"
-output_file: "result/ecosim_input.nc"
-tdep_data_path: "data/tDEP"
-start_year: 2012
-end_year: 2022
+```bash
+for skill in .agents/skills/*; do
+  uvx --from 'git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref' skills-ref validate "$skill"
+done
 ```
-
-## Features
-
-- Integrates with existing AmeriFlux skills
-- Uses template-based NetCDF structure
-- Handles site metadata extraction
-- Extracts atmospheric chemistry data for specified years
-- Creates properly formatted ECOSIM input files
