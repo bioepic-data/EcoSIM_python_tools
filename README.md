@@ -1,6 +1,6 @@
 # EcoSIM Python Tools
 
-This repository contains Python utilities and Agent Skills for preparing EcoSIM inputs from AmeriFlux, ERA5, NADP/tDEP, and gSSURGO data.
+This repository contains Python utilities and Agent Skills for preparing EcoSIM inputs from AmeriFlux, ERA5, NADP/tDEP, gSSURGO, and FAO HWSD2 data.
 
 ## Main Entry Points
 
@@ -9,7 +9,7 @@ This repository contains Python utilities and Agent Skills for preparing EcoSIM 
 - ERA5 to EcoSIM converter: [`.agents/skills/ameriflux-era5-to-ecosim/era5_to_ecosim_converter.py`](.agents/skills/ameriflux-era5-to-ecosim/era5_to_ecosim_converter.py)
 - Notebook helper scripts: [`applications/notebooks/scripts/`](applications/notebooks/scripts)
 
-The duplicate `.claude/skills` path is a symlink to `.agents/skills`.
+The duplicate `.claude/skills` path points to `.agents/skills`, so skill updates made under `.agents/skills` are available through both paths automatically.
 
 ## Documentation
 
@@ -40,6 +40,10 @@ python .agents/skills/ameriflux-era5-to-ecosim/era5_to_ecosim_converter.py \
   --site-id US-Ha1 \
   --quality-report result/US-Ha1/US-Ha1_era5_quality_report.json
 ```
+
+## Soil Extraction
+
+The `ameriflux-surgo-grid-extract` skill uses gSSURGO as the primary soil source and FAO HWSD v2.0 from `data/FAO_HWSD2` as fallback when gSSURGO is unavailable or has invalid/fill values. See [the skill instructions](.agents/skills/ameriflux-surgo-grid-extract/SKILL.md) for variable mappings and assumptions.
 
 ## Skill Validation
 
