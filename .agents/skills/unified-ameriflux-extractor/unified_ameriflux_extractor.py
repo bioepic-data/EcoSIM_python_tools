@@ -2,7 +2,7 @@
 """Unified AmeriFlux site extraction script.
 
 Combines four functionalities:
-1. Extract site metadata (lat, lon, elevation, MAT, climate code, IGBP type) from the AmeriFlux website using a local vision model.
+1. Extract site metadata (lat, lon, elevation, MAT, climate code, IGBP type) from the AmeriFlux website using a vision workflow when needed.
 2. Extract NADP atmospheric chemistry data for a range of years.
 3. Extract tDEP atmospheric deposition data for a range of years.
 4. Extract a dominant-component soil profile from a gSSURGO geodatabase (via ameriflux-surgo-grid-extract skill).
@@ -23,6 +23,9 @@ from typing import Dict, Any, Optional
 # --- Vision extraction (from ameriflux_site_info) ---
 from playwright.sync_api import sync_playwright
 
+OLLAMA_API_URL = os.environ.get("OLLAMA_API_URL", "http://localhost:11434/api/chat")
+OLLAMA_VISION_MODEL = os.environ.get("OLLAMA_VISION_MODEL", "qwen2.5vl:7b")
+
 # Koppen mapping (from ameriflux_site_info)
 KOPPEN_MAP = {
     "Af": 11, "Am": 12, "As": 13, "Aw": 14, "BWk": 21, "BWh": 22, "BSk": 26, "BSh": 27,
@@ -33,13 +36,13 @@ KOPPEN_MAP = {
 
 
 def encode_image(image_path: str) -> str:
-    """Base64‑encode an image for the Ollama vision endpoint."""
+    """Base64-encode an image for the configured local vision endpoint."""
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
 
 def query_vision_model(image_path: str, site_id: str) -> Optional[Dict[str, Any]]:
-    """Send screenshot to local Qwen2.5‑VL model and parse JSON output."""
+    """Send screenshot to the configured local vision model and parse JSON output."""
     base64_image = encode_image(image_path)
     prompt = (
         f"Analyze this screenshot of AmeriFlux site {site_id}. "
@@ -48,12 +51,12 @@ def query_vision_model(image_path: str, site_id: str) -> Optional[Dict[str, Any]
         "igbp_type (e.g., GRA, ENF, DBF). Only return the JSON object."
     )
     payload = {
-        "model": "qwen2.5vl:7b",
+        "model": OLLAMA_VISION_MODEL,
         "messages": [{"role": "user", "content": prompt, "images": [base64_image]}],
         "stream": False,
     }
     try:
-        resp = requests.post("http://localhost:11434/api/chat", json=payload, timeout=300)
+        resp = requests.post(OLLAMA_API_URL, json=payload, timeout=300)
         resp.raise_for_status()
         content = resp.json()["message"]["content"]
         # Strip possible markdown fences

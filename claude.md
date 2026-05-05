@@ -24,7 +24,7 @@ templates are in ./templates/<name>.template
 whenever a script looks for data, first search under ./data, then under ./
 
 ## 7. Tools
-Tools, including that for vision RAG, are in ./Tools/
+Tools, including vision-assisted site metadata extraction utilities, are in ./Tools/
 
 ## 8. ouptut
 file output will stored in ./result

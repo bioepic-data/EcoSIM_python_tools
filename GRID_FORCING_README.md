@@ -20,12 +20,13 @@ The resulting NetCDF file follows the Blodget template structure and contains al
 - `pyogrio`
 - `playwright`
 - `requests`
-- `ollama` (local service for vision RAG)
+- Optional local vision backend such as Ollama when using the bundled screenshot-to-metadata script
 
 ### External Resources
 - gSSURGO geodatabase: `data/gSSURGO_CONUS.gdb`
 - Blodget template: `templates/Blodget_grid_20251115_modified.nc.template`
-- Ollama with `qwen2.5vl:7b` model running locally
+- Vision model access for AmeriFlux site metadata extraction. This can be the active agent's built-in vision capability, a hosted multimodal model, or a local Ollama-compatible model such as `qwen2.5vl:7b`.
+- For the bundled local script, override the local backend with `OLLAMA_VISION_MODEL` and `OLLAMA_API_URL` when needed.
 
 ### Site Data Requirements
 - AmeriFlux site must have a valid site ID (e.g., US-Ha1, US-MMS)
@@ -110,7 +111,8 @@ The script generates the following files in the `result/` directory:
 ## Data Processing Workflow
 
 ### Step 1: Site Information Extraction
-- Uses vision RAG (Qwen2.5-VL) to extract site metadata from AmeriFlux website
+- Captures or uses a rendered AmeriFlux site page screenshot and extracts site metadata with a vision-capable workflow
+- Supports native agent vision, hosted multimodal models, or the bundled local Ollama path
 - Creates `<SITE_ID>_ecosim_site.json` with:
   - Latitude, longitude, elevation
   - Mean annual temperature
@@ -141,10 +143,11 @@ If certain soil variables are not available from gSSURGO:
 - Document in processing log
 
 ### Incomplete Site Information
-If vision RAG fails to extract site metadata:
-- Check Ollama service is running: `ollama serve`
-- Verify Qwen model is installed: `ollama pull qwen2.5vl:7b`
-- Manually enter values in intermediate JSON files
+If the vision workflow fails to extract site metadata:
+- If using the bundled local script, check the Ollama service is running: `ollama serve`
+- If using local Ollama, verify the selected vision model is installed, for example: `ollama pull qwen2.5vl:7b`
+- If the active agent has native vision, provide the screenshot directly and ask it to extract the site metadata as JSON
+- As a fallback, manually enter values in intermediate JSON files
 
 ### gSSURGO Database Issues
 If spatial query returns no data:
@@ -200,8 +203,8 @@ done
 ## Troubleshooting
 
 ### Script hangs after "Extracting site information..."
-- Ollama service may not be running
-- Run `ollama serve` in another terminal
+- The configured local vision service may not be running
+- If using the bundled Ollama path, run `ollama serve` in another terminal
 - Check network connectivity for website access
 
 ### "No MUPOLYGON features found"

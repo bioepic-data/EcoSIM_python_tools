@@ -7,6 +7,9 @@ import base64
 from typing import Dict, Any, Optional
 from playwright.sync_api import sync_playwright
 
+OLLAMA_API_URL = os.environ.get("OLLAMA_API_URL", "http://localhost:11434/api/chat")
+OLLAMA_VISION_MODEL = os.environ.get("OLLAMA_VISION_MODEL", "qwen2.5vl:7b")
+
 # Koppen mapping per SKILL.md
 koppenDict = {
     "Af": 11, "Am": 12, "As": 13, "Aw": 14, "BWk": 21, "BWh": 22, "BSk": 26, "BSh": 27,
@@ -20,7 +23,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 def query_vision_model(image_path: str, site_id: str):
-    """Integrates your vision_tool.py logic to query local Qwen via Ollama."""
+    """Query the configured local Ollama-compatible vision backend."""
     base64_image = encode_image(image_path)
     
     # Prompt optimized for structured JSON extraction from the AmeriFlux UI
@@ -32,13 +35,13 @@ def query_vision_model(image_path: str, site_id: str):
     )
 
     payload = {
-        "model": "qwen2.5vl:7b",
+        "model": OLLAMA_VISION_MODEL,
         "messages": [{"role": "user", "content": prompt, "images": [base64_image]}],
         "stream": False,
     }
 
     try:
-        response = requests.post("http://localhost:11434/api/chat", json=payload, timeout=300)
+        response = requests.post(OLLAMA_API_URL, json=payload, timeout=300)
         response.raise_for_status()
         content = response.json()["message"]["content"]
         
@@ -74,7 +77,7 @@ def run_vision_rag_flow(site_id: str, output_dir: str = None):
             page.screenshot(path=img_path)
             browser.close()
             
-            print(f"Step 2: Processing image with Qwen2.5-VL...")
+            print(f"Step 2: Processing image with local vision model {OLLAMA_VISION_MODEL}...")
             raw_data = query_vision_model(img_path, site_id)
             
             if raw_data:
@@ -96,8 +99,9 @@ def run_vision_rag_flow(site_id: str, output_dir: str = None):
                 print(json.dumps(final_json, indent=4))
             
         except Exception as e:            
-            print(f"Error during vision RAG flow: {e}")
-            print("Ensure that Ollama is running with the Qwen2.5-VL model and that Playwright dependencies are installed.")
+            print(f"Error during vision extraction flow: {e}")
+            print("Ensure that Playwright dependencies are installed and that the configured local vision backend is reachable.")
+            print("For Ollama, check OLLAMA_API_URL and OLLAMA_VISION_MODEL or run `ollama serve` with a vision model installed.")
             print(f"check image for {site_id} at {img_path}.")
 
 if __name__ == "__main__":

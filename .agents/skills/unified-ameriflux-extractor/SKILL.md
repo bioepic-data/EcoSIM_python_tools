@@ -13,7 +13,7 @@ description: Run the combined AmeriFlux to EcoSIM extraction workflow for site m
 
 ## Constraints
 - Do not extract climate data beyond site metadata (the script only extracts site metadata, NADP, tDEP, and gSSURGO soil data).
-- Requires local Ollama vision model `qwen2.5vl:7b` to be running.
+- Site metadata extraction requires some vision-capable workflow only when structured site metadata is unavailable or stale; this can be the active agent's vision capability, a hosted multimodal model, or a local model.
 
 ## Workflow
 
@@ -25,7 +25,7 @@ description: Run the combined AmeriFlux to EcoSIM extraction workflow for site m
 
 ## Purpose
 Combine multiple AmeriFlux data extraction capabilities into a single workflow:
-1. Retrieve site metadata (latitude, longitude, elevation, mean annual temperature, Koppen climate code, IGBP vegetation type) from the AmeriFlux website using a vision model (RAG).
+1. Retrieve site metadata (latitude, longitude, elevation, mean annual temperature, Koppen climate code, IGBP vegetation type) from the AmeriFlux website using a vision workflow when needed.
 2. Extract atmospheric chemistry (NADP) data for a range of years.
 3. Extract atmospheric deposition (tDEP) data for a range of years.
 4. Extract a dominant-component soil profile from a gSSURGO geodatabase using the `ameriflux-surgo-grid-extract` skill.
@@ -46,7 +46,7 @@ The result is a single JSON file containing all extracted information.
   pip install playwright requests rasterio pyproj pyogrio geopandas numpy pandas netCDF4
   playwright install chromium
   ```
-- Ollama must be running with the `qwen2.5vl:7b` model.
+- Vision model access for site metadata extraction. The bundled local script defaults to Ollama with `qwen2.5vl:7b` and can be configured with `OLLAMA_VISION_MODEL` and `OLLAMA_API_URL`, but an agent with native vision or another hosted/local multimodal model can perform the same screenshot-to-JSON extraction.
 - Access to the gSSURGO geodatabase (`gSSURGO_CONUS.gdb`).
 
 ## Usage

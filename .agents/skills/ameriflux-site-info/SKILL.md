@@ -15,18 +15,28 @@ description: Extract AmeriFlux site metadata and map it to EcoSIM JSON variables
 - NEVER use it extract climate data.
 
 ## Purpose
-Automate the identification and derivation of site-specific attributes (e.g., location, vegetation) using Retrieval-Augmented Generation (RAG) to search for information about the specified site and extract required variables.
+Automate the identification and derivation of site-specific attributes (e.g., location, vegetation) from AmeriFlux site pages and map the extracted values to EcoSIM variables. The visual step exists because some AmeriFlux metadata is easiest to recover from the rendered site page rather than from a stable structured API.
 
 ## Workflow
 
 1. Resolve the AmeriFlux site ID or site name.
-2. Capture source site information with the local vision workflow when needed.
+2. Capture source site information with a vision workflow when needed.
 3. Extract latitude, longitude, elevation, mean annual temperature, Koppen-Geiger code, and IGBP vegetation type.
 4. Map the extracted values to EcoSIM JSON variables and write under `result/<SITE_ID>/`.
 5. Check units: latitude/longitude are decimal degrees, elevation is meters, and temperature is degrees Celsius.
 
+## Vision Model Options
+
+Use the most direct vision path available in the active agent environment:
+
+1. If the agent running this skill already has image understanding, capture or load the AmeriFlux site screenshot and extract the metadata directly.
+2. If a hosted multimodal API is available, use a vision-capable model such as GPT-4o, Claude, Gemini, or a comparable provider and request strict JSON output.
+3. If local-only processing is preferred, the bundled script defaults to an Ollama endpoint with `qwen2.5vl:7b`; other local vision models such as LLaVA-family or newer Qwen-VL models can be substituted with `OLLAMA_VISION_MODEL` and `OLLAMA_API_URL`.
+
+Always inspect the extracted values for physical and ecological plausibility before using them in EcoSIM inputs.
+
 ## 1. Site Metadata Extraction (Flux Network)
-Given an American flux site name (e.g., "Blodgett Forest" or "US-Blo"), the skill first will use `pageres` to take an image of the website and then extract the required metadata use the vision RAG tool vision_tool.py. Finally, it will map the extracted metadata to the required JSON variables for the model.
+Given an AmeriFlux site name or ID (e.g., "Blodgett Forest" or "US-Blo"), capture the rendered site page or use an existing screenshot. Use the active agent's vision capability or an external vision model to read the site metadata, then map the extracted values to the required EcoSIM JSON variables.
 
 | JSON Variable | Source Attribute | Description |
 | :--- | :--- | :--- |
@@ -82,14 +92,22 @@ koppenDict = {
 ### Prerequisites
 * **Python 3.8+**
 * **Playwright**: Used to perform the `pageres` equivalent of capturing the site UI.
-* **Ollama (Local)**: Must be running with the `qwen2.5vl:7b` model to perform the Vision RAG extraction.
+* **Vision backend**: The skill can use the agent's built-in vision capabilities, a hosted multimodal API, or a local vision model. The bundled CLI script currently expects a local Ollama-compatible endpoint by default.
 
-### Setup
+### Setup for the Bundled Local Script
 ```bash
 pip install playwright requests
 playwright install chromium
 ollama pull qwen2.5vl:7b
 ```
+
+Optional local backend overrides:
+```bash
+export OLLAMA_VISION_MODEL=qwen2.5vl:7b
+export OLLAMA_API_URL=http://localhost:11434/api/chat
+```
+
+If you are using an agent or hosted API with native vision support, the Ollama setup is not required; capture the screenshot and have the model extract the metadata directly.
 
 ## Usage
 To execute the skill, run the following command from the project root. The resulting JSON will be saved under `./result/<SITE_ID>/` by default:

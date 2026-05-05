@@ -6,8 +6,16 @@
 # Install required packages
 pip install netCDF4 numpy pandas rasterio pyproj shapely pyogrio geopandas requests matplotlib playwright
 
-# Set up vision AI (one-time)
+# Optional local vision setup for bundled scripts
 ollama pull qwen2.5vl:7b
+```
+
+The site metadata step reads an AmeriFlux site page screenshot to recover latitude, longitude, elevation, mean annual temperature, climate class, and vegetation type. If your agent already has vision capabilities, or if you use a hosted multimodal model, you can use that instead of local Ollama. The bundled CLI scripts default to an Ollama-compatible local endpoint.
+
+To use a different local Ollama-compatible model or endpoint:
+```bash
+export OLLAMA_VISION_MODEL=qwen2.5vl:7b
+export OLLAMA_API_URL=http://localhost:11434/api/chat
 ```
 
 ## Usage
@@ -80,13 +88,15 @@ pip install netCDF4
 ```
 
 ### "Extracting site information..." hangs
-Ollama service needed:
+If you are using the bundled local script, confirm the local vision backend is running:
 ```bash
 # In separate terminal
 ollama serve
 
 # Then run script again
 ```
+
+If you are using an agent with native vision or a hosted multimodal API, skip Ollama and provide or capture the AmeriFlux site screenshot for direct metadata extraction.
 
 ### "No MUPOLYGON features found"
 - Site is outside CONUS

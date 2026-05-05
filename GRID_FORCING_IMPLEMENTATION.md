@@ -8,7 +8,7 @@ I have successfully created `create_ecosim_grid_forcing.py`, a comprehensive Pyt
 
 ### 1. **ameriflux-site-info**
    - **Purpose**: Extract AmeriFlux site metadata
-   - **Method**: Vision RAG (Qwen2.5-VL) screenshot analysis
+   - **Method**: Rendered site-page screenshot interpreted by a vision-capable workflow
    - **Outputs**: Site JSON with latitude, longitude, elevation, MAT, climate zone, vegetation type
    - **Status**: ✓ Working
 
@@ -206,7 +206,7 @@ DBF (Deciduous Broadleaf)  → 8 or 10 (Deciduous)
 - pyproj, shapely (spatial operations)
 - pyogrio (geodatabase access)
 - playwright (web automation)
-- ollama (vision AI service)
+- vision-capable model access for screenshot metadata extraction; the bundled local path uses Ollama, but native agent vision or hosted multimodal APIs can be used instead
 
 ### Performance
 - Single site processing: ~30-60 seconds (first run)
@@ -239,6 +239,7 @@ DBF (Deciduous Broadleaf)  → 8 or 10 (Deciduous)
 1. **Prepare Environment**
    ```bash
    pip install netCDF4 numpy pandas rasterio pyproj shapely pyogrio geopandas requests matplotlib playwright
+   # Optional when using the bundled local vision backend
    ollama pull qwen2.5vl:7b
    ```
 
