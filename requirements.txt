@@ -1,0 +1,12 @@
+# Core dependencies for EcoSIM Python tools
+pandas
+numpy
+netCDF4
+rasterio
+pyproj
+shapely
+pyogrio
+geopandas
+requests
+matplotlib
+playwright

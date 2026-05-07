@@ -2,7 +2,7 @@
 """Unified AmeriFlux site extraction script.
 
 Combines four functionalities:
-1. Extract site metadata (lat, lon, elevation, MAT, climate code, IGBP type) from the AmeriFlux website using a vision workflow when needed.
+1. Extract site metadata (lat, lon, elevation, MAT, climate code, IGBP type) from the AmeriFlux website.
 2. Extract NADP atmospheric chemistry data for a range of years.
 3. Extract tDEP atmospheric deposition data for a range of years.
 4. Extract a dominant-component soil profile from a gSSURGO geodatabase (via ameriflux-surgo-grid-extract skill).
@@ -14,103 +14,37 @@ import os
 import sys
 import json
 import argparse
-import base64
-import requests
 import subprocess
 import math
+import importlib.util
 from typing import Dict, Any, Optional
 
-# --- Vision extraction (from ameriflux_site_info) ---
-from playwright.sync_api import sync_playwright
+# --- Site metadata extraction (from ameriflux-site-info) ---
 
-OLLAMA_API_URL = os.environ.get("OLLAMA_API_URL", "http://localhost:11434/api/chat")
-OLLAMA_VISION_MODEL = os.environ.get("OLLAMA_VISION_MODEL", "qwen2.5vl:7b")
+def _load_site_info_module():
+    skill_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    candidates = [
+        os.path.join(skill_root, "ameriflux-site-info", "extract_ameriflux_site_data.py"),
+        os.path.join(skill_root, "ameriflux_site_info", "extract_ameriflux_site_data.py"),
+        os.path.join(os.getcwd(), ".agents", "skills", "ameriflux-site-info", "extract_ameriflux_site_data.py"),
+    ]
+    script_path = next((path for path in candidates if os.path.exists(path)), None)
+    if script_path is None:
+        raise FileNotFoundError("Could not locate ameriflux-site-info extractor script.")
 
-# Koppen mapping (from ameriflux_site_info)
-KOPPEN_MAP = {
-    "Af": 11, "Am": 12, "As": 13, "Aw": 14, "BWk": 21, "BWh": 22, "BSk": 26, "BSh": 27,
-    "Cfa": 31, "Cfb": 32, "Cfc": 33, "Csa": 34, "Csb": 35, "Csc": 36, "Cwa": 37, "Cwb": 38, "Cwc": 39,
-    "Dfa": 41, "Dfb": 42, "Dfc": 43, "Dfd": 44, "Dsa": 45, "Dsb": 46, "Dsc": 47, "Dsd": 48,
-    "Dwa": 49, "Dwb": 50, "Dwc": 51, "Dwd": 52, "ET": 61, "EF": 62,
-}
-
-
-def encode_image(image_path: str) -> str:
-    """Base64-encode an image for the configured local vision endpoint."""
-    with open(image_path, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
-
-
-def query_vision_model(image_path: str, site_id: str) -> Optional[Dict[str, Any]]:
-    """Send screenshot to the configured local vision model and parse JSON output."""
-    base64_image = encode_image(image_path)
-    prompt = (
-        f"Analyze this screenshot of AmeriFlux site {site_id}. "
-        "Extract the following values and return them in a strict JSON format: "
-        "latitude, longitude, elevation, MAT, climate_code (e.g., BSk, Af), "
-        "igbp_type (e.g., GRA, ENF, DBF). Only return the JSON object."
-    )
-    payload = {
-        "model": OLLAMA_VISION_MODEL,
-        "messages": [{"role": "user", "content": prompt, "images": [base64_image]}],
-        "stream": False,
-    }
-    try:
-        resp = requests.post(OLLAMA_API_URL, json=payload, timeout=300)
-        resp.raise_for_status()
-        content = resp.json()["message"]["content"]
-        # Strip possible markdown fences
-        json_str = content.replace("```json", "").replace("```", "").strip()
-        return json.loads(json_str)
-    except Exception as e:
-        print(f"Vision model query failed: {e}", file=sys.stderr)
-        return None
-
-
-def map_vegetation(igbp: str) -> int:
-    """Map IGBP type to EcoSIM integer (ENF→11, DBF→10, else 10)."""
-    igbp = str(igbp).upper()
-    if "ENF" in igbp:
-        return 11
-    if "DBF" in igbp:
-        return 10
-    return 10  # default fallback
+    spec = importlib.util.spec_from_file_location("ameriflux_site_info_extractor", script_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load site metadata extractor from {script_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def extract_site_info(site_id: str, output_dir: str = "result") -> Optional[Dict[str, Any]]:
-    """Capture a screenshot of the AmeriFlux site page and extract metadata.
-
-    Returns a dict with EcoSIM variable keys (ALATG, ALONG, ALTIG, ATCAG, IETYPG, IXTYP1).
-    """
-    url = f"https://ameriflux.lbl.gov/sites/siteinfo/{site_id}"
-    img_path = os.path.join(output_dir, "images", f"{site_id}_screenshot.png")
-    os.makedirs(os.path.dirname(img_path), exist_ok=True)
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.set_viewport_size({"width": 1280, "height": 1600})
-            page.goto(url, wait_until="networkidle")
-            page.screenshot(path=img_path)
-            browser.close()
-    except Exception as e:
-        print(f"Failed to capture screenshot: {e}", file=sys.stderr)
-        return None
-
-    raw = query_vision_model(img_path, site_id)
-    if not raw:
-        return None
-    final_json = {
-        "site_name": site_id,
-        "ALATG": float(raw.get("latitude", 0.0)),
-        "ALONG": float(raw.get("longitude", 0.0)),
-        "ALTIG": float(raw.get("elevation", 0.0)),
-        "ATCAG": float(raw.get("MAT", 0.0)),
-        "IETYPG": KOPPEN_MAP.get(raw.get("climate_code"), 0),
-        "IXTYP1": map_vegetation(raw.get("igbp_type", "")),
-        "_raw": raw,
-    }
-    return final_json
+    """Resolve EcoSIM site metadata with the structured AmeriFlux extractor."""
+    module = _load_site_info_module()
+    site_output_dir = os.path.join(output_dir, site_id)
+    return module.extract_site_info(site_id, output_dir=site_output_dir)
 
 # --- NADP extraction (from extract_nadp_range.py) ---
 import rasterio

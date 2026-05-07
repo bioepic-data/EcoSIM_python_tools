@@ -15,28 +15,28 @@ description: Extract AmeriFlux site metadata and map it to EcoSIM JSON variables
 - NEVER use it extract climate data.
 
 ## Purpose
-Automate the identification and derivation of site-specific attributes (e.g., location, vegetation) from AmeriFlux site pages and map the extracted values to EcoSIM variables. The visual step exists because some AmeriFlux metadata is easiest to recover from the rendered site page rather than from a stable structured API.
+Automate the identification and derivation of site-specific attributes (e.g., location, vegetation) from AmeriFlux site pages and map the extracted values to EcoSIM variables. The bundled script uses cached EcoSIM site JSON first, then structured AmeriFlux page text or rendered DOM extraction when a refresh is needed.
 
 ## Workflow
 
 1. Resolve the AmeriFlux site ID or site name.
-2. Capture source site information with a vision workflow when needed.
+2. Load existing `result/<SITE_ID>/<SITE_ID>_ecosim_site.json` metadata when present.
 3. Extract latitude, longitude, elevation, mean annual temperature, Koppen-Geiger code, and IGBP vegetation type.
 4. Map the extracted values to EcoSIM JSON variables and write under `result/<SITE_ID>/`.
 5. Check units: latitude/longitude are decimal degrees, elevation is meters, and temperature is degrees Celsius.
 
-## Vision Model Options
+## Metadata Extraction Policy
 
-Use the most direct vision path available in the active agent environment:
+Use deterministic sources in this order:
 
-1. If the agent running this skill already has image understanding, capture or load the AmeriFlux site screenshot and extract the metadata directly.
-2. If a hosted multimodal API is available, use a vision-capable model such as GPT-4o, Claude, Gemini, or a comparable provider and request strict JSON output.
-3. If local-only processing is preferred, the bundled script defaults to an Ollama endpoint with `qwen2.5vl:7b`; other local vision models such as LLaVA-family or newer Qwen-VL models can be substituted with `OLLAMA_VISION_MODEL` and `OLLAMA_API_URL`.
+1. Existing local EcoSIM site metadata JSON.
+2. AmeriFlux siteinfo HTML fetched with Python standard library URL tools, or `requests` when available.
+3. Rendered AmeriFlux DOM text fetched with Playwright if the static HTML is incomplete.
 
 Always inspect the extracted values for physical and ecological plausibility before using them in EcoSIM inputs.
 
 ## 1. Site Metadata Extraction (Flux Network)
-Given an AmeriFlux site name or ID (e.g., "Blodgett Forest" or "US-Blo"), capture the rendered site page or use an existing screenshot. Use the active agent's vision capability or an external vision model to read the site metadata, then map the extracted values to the required EcoSIM JSON variables.
+Given an AmeriFlux site name or ID (e.g., "Blodgett Forest" or "US-Blo"), read cached metadata or parse the rendered AmeriFlux site page text, then map the extracted values to the required EcoSIM JSON variables.
 
 | JSON Variable | Source Attribute | Description |
 | :--- | :--- | :--- |
@@ -91,23 +91,16 @@ koppenDict = {
 
 ### Prerequisites
 * **Python 3.8+**
-* **Playwright**: Used to perform the `pageres` equivalent of capturing the site UI.
-* **Vision backend**: The skill can use the agent's built-in vision capabilities, a hosted multimodal API, or a local vision model. The bundled CLI script currently expects a local Ollama-compatible endpoint by default.
+* **requests**: Optional HTTP fetch helper; the script also has a standard-library HTTP fallback.
+* **Playwright**: Optional fallback for rendered DOM extraction when static HTML is incomplete.
 
 ### Setup for the Bundled Local Script
 ```bash
 pip install playwright requests
 playwright install chromium
-ollama pull qwen2.5vl:7b
 ```
 
-Optional local backend overrides:
-```bash
-export OLLAMA_VISION_MODEL=qwen2.5vl:7b
-export OLLAMA_API_URL=http://localhost:11434/api/chat
-```
-
-If you are using an agent or hosted API with native vision support, the Ollama setup is not required; capture the screenshot and have the model extract the metadata directly.
+No local vision service is required.
 
 ## Usage
 To execute the skill, run the following command from the project root. The resulting JSON will be saved under `./result/<SITE_ID>/` by default:
@@ -119,6 +112,11 @@ python .agents/skills/ameriflux-site-info/extract_ameriflux_site_data.py <SITE_I
 Example:
 ```bash
 python .agents/skills/ameriflux-site-info/extract_ameriflux_site_data.py US-Ha1
+```
+
+To bypass cached metadata and refresh from AmeriFlux:
+```bash
+python .agents/skills/ameriflux-site-info/extract_ameriflux_site_data.py US-Ha1 --force-refresh
 ```
 
 ## Output

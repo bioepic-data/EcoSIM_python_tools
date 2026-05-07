@@ -28,20 +28,31 @@ from Tools.climate_quality import sanitize_era5_dataframe
 
 def get_site_metadata(site_id):
     """Get site metadata using ameriflux_site_info skill."""
-    script_path = os.path.join(os.path.dirname(__file__), "..", "ameriflux_site_info", "extract_ameriflux_site_data.py")
     result_root = "result"
     result_dir = os.path.join(result_root, site_id)
     os.makedirs(result_dir, exist_ok=True)
-    cmd = [sys.executable, script_path, site_id]
-    result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.getcwd())
-    if result.returncode != 0:
-        print(f"Error running site info: {result.stderr}")
-        return None
-    
+
     candidate_files = [
         os.path.join(result_dir, f"{site_id}_ecosim_site.json"),
         os.path.join(result_root, f"{site_id}_ecosim_site.json"),
     ]
+    for site_file in candidate_files:
+        if os.path.exists(site_file):
+            with open(site_file, 'r') as f:
+                return json.load(f)
+
+    skill_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    script_candidates = [
+        os.path.join(skill_root, "ameriflux-site-info", "extract_ameriflux_site_data.py"),
+        os.path.join(skill_root, "ameriflux_site_info", "extract_ameriflux_site_data.py"),
+    ]
+    script_path = next((path for path in script_candidates if os.path.exists(path)), script_candidates[0])
+    cmd = [sys.executable, script_path, site_id, result_dir]
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.getcwd())
+    if result.returncode != 0:
+        print(f"Error running site info: {result.stderr}")
+        return None
+
     for site_file in candidate_files:
         if os.path.exists(site_file):
             with open(site_file, 'r') as f:

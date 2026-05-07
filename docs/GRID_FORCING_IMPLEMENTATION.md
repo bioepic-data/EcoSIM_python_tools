@@ -241,8 +241,6 @@ DBF (Deciduous Broadleaf)  → 8 or 10 (Deciduous)
 1. **Prepare Environment**
    ```bash
    pip install netCDF4 numpy pandas rasterio pyproj shapely pyogrio geopandas requests matplotlib playwright
-   # Optional when using the bundled local vision backend
-   ollama pull qwen2.5vl:7b
    ```
 
 2. **Run for Your Sites**

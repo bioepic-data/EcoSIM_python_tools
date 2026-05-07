@@ -7,18 +7,9 @@
 ```bash
 # Install required packages
 pip install netCDF4 numpy pandas rasterio pyproj shapely pyogrio geopandas requests matplotlib playwright
-
-# Optional local vision setup for bundled scripts
-ollama pull qwen2.5vl:7b
 ```
 
-The site metadata step reads an AmeriFlux site page screenshot to recover latitude, longitude, elevation, mean annual temperature, climate class, and vegetation type. If your agent already has vision capabilities, or if you use a hosted multimodal model, you can use that instead of local Ollama. The bundled CLI scripts default to an Ollama-compatible local endpoint.
-
-To use a different local Ollama-compatible model or endpoint:
-```bash
-export OLLAMA_VISION_MODEL=qwen2.5vl:7b
-export OLLAMA_API_URL=http://localhost:11434/api/chat
-```
+The site metadata step reads cached EcoSIM site JSON first, then parses the AmeriFlux site page text or rendered DOM to recover latitude, longitude, elevation, mean annual temperature, climate class, and vegetation type. No local vision service is required.
 
 ## Usage
 
@@ -66,10 +57,10 @@ python -c "import netCDF4; ds = netCDF4.Dataset('result/US-Ha1_ecosim_grid.nc');
 
 | From | Variable | Units | Source |
 |------|----------|-------|--------|
-| AmeriFlux | Latitude (ALATG) | °N | Vision AI extraction |
-| AmeriFlux | Longitude (ALONG) | °E | Vision AI extraction |
-| AmeriFlux | Elevation (ALTIG) | m | Vision AI extraction |
-| AmeriFlux | MAT (ATCAG) | °C | Vision AI extraction |
+| AmeriFlux | Latitude (ALATG) | °N | Structured site page extraction |
+| AmeriFlux | Longitude (ALONG) | °E | Structured site page extraction |
+| AmeriFlux | Elevation (ALTIG) | m | Structured site page extraction |
+| AmeriFlux | MAT (ATCAG) | °C | Structured site page extraction |
 | AmeriFlux | Climate (IETYPG) | Code | Koppen-Geiger mapping |
 | AmeriFlux | Vegetation (IXTYP1) | Code | IGBP mapping |
 | gSSURGO | Soil depth (CDPTH) | m | Horizon boundaries |
@@ -89,16 +80,10 @@ python -c "import netCDF4; ds = netCDF4.Dataset('result/US-Ha1_ecosim_grid.nc');
 pip install netCDF4
 ```
 
-### "Extracting site information..." hangs
-If you are using the bundled local script, confirm the local vision backend is running:
-```bash
-# In separate terminal
-ollama serve
-
-# Then run script again
-```
-
-If you are using an agent with native vision or a hosted multimodal API, skip Ollama and provide or capture the AmeriFlux site screenshot for direct metadata extraction.
+### "Extracting site information..." fails
+- Check network connectivity for AmeriFlux site pages.
+- Reuse or inspect `result/<SITE_ID>/<SITE_ID>_ecosim_site.json` if cached metadata exists.
+- Use `--force-refresh` with the site metadata skill when you need to bypass cached metadata.
 
 ### "No MUPOLYGON features found"
 - Site is outside CONUS

@@ -22,13 +22,11 @@ The resulting NetCDF file follows the Blodget template structure and contains al
 - `pyogrio`
 - `playwright`
 - `requests`
-- Optional local vision backend such as Ollama when using the bundled screenshot-to-metadata script
 
 ### External Resources
 - gSSURGO geodatabase: `data/gSSURGO_CONUS.gdb`
 - Blodget template: `templates/Blodget_grid_20251115_modified.nc.template`
-- Vision model access for AmeriFlux site metadata extraction. This can be the active agent's built-in vision capability, a hosted multimodal model, or a local Ollama-compatible model such as `qwen2.5vl:7b`.
-- For the bundled local script, override the local backend with `OLLAMA_VISION_MODEL` and `OLLAMA_API_URL` when needed.
+- Network access to AmeriFlux site pages when cached site metadata is not already available.
 
 ### Site Data Requirements
 - AmeriFlux site must have a valid site ID (e.g., US-Ha1, US-MMS)
@@ -145,11 +143,10 @@ If certain soil variables are not available from gSSURGO:
 - Document in processing log
 
 ### Incomplete Site Information
-If the vision workflow fails to extract site metadata:
-- If using the bundled local script, check the Ollama service is running: `ollama serve`
-- If using local Ollama, verify the selected vision model is installed, for example: `ollama pull qwen2.5vl:7b`
-- If the active agent has native vision, provide the screenshot directly and ask it to extract the site metadata as JSON
-- As a fallback, manually enter values in intermediate JSON files
+If structured site metadata extraction fails:
+- Check network connectivity for AmeriFlux site pages.
+- Inspect or reuse `result/<SITE_ID>/<SITE_ID>_ecosim_site.json` if cached metadata exists.
+- As a fallback, manually enter values in intermediate JSON files.
 
 ### gSSURGO Database Issues
 If spatial query returns no data:
@@ -205,9 +202,8 @@ done
 ## Troubleshooting
 
 ### Script hangs after "Extracting site information..."
-- The configured local vision service may not be running
-- If using the bundled Ollama path, run `ollama serve` in another terminal
 - Check network connectivity for website access
+- Check whether the AmeriFlux site page is reachable and contains the standard metadata table.
 
 ### "No MUPOLYGON features found"
 - Site coordinates outside CONUS
