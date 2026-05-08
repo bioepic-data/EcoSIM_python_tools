@@ -1,0 +1,255 @@
+ ==============================================================================================================
+ PLANT traits for FUNCTIONAL TYPE (NZ,NY,NX)=           1           1           1 ndlf43
+Plant name                                                 :needleleaf tree (evergreen)             
+Koppen climate info                                        :Dfc,Subarctic climate                                       
+ --------------------------------------------------------------------------------------------------------------
+ PLANT CLASS INFORMATION
+ 1| ICTYP: Photosynthesis pathway                              :C3                                                          
+ 2| IEBTYP: Embrophyte type                                    :Gymnosperms                                                 
+ 3| IGTYP: Root profile pattern                                :Deep root profile, like trees (2)                           
+ 4| ISTYP: Life cycle                                          :Perennial                                                   
+ 5| IDTYP: Growth pattern                                      :Indeterminate                                               
+ 6| INTYP: N-fixation symbiosis                                :Not defined                                                 
+ 7| IWTYP: Phenology type                                      :Evergreen   0                                               
+ 8| IPTYP: Photoperiod                                         :Long day                                                    
+ 9| IBTYP: Biome turnover pattern                              :Very slow, like evergreen trees  2                          
+10| I2EXP: Secondary growth expression                         :Yes (1)
+11| ISNTYP: snow interception pattern                          :confierous tree  4                                          
+12| IRTYP: Storage organ                                       :Aboveground 0                                               
+13| MY   : Mycorrhizal association MY                          :YES                                                         
+14| ZTYPI: Growing season thermal adaptation zone              :Arctic, boreal   1.00                                       
+ --------------------------------------------------------------------------------------------------------------
+ PHOTOSYNTHETIC PROPERTIES
+ 1: VCMX     |  Saturated specific carboxylation rate by Rubisco at 25oC  [umol CO2 (gC rubisco)-1 s-1]                      :   30.000000000000000
+ 2: VOMX     |  Saturated specific oxygenation rate  at 25oC by Rubisco  [umol O2 (gC rubisco)-1 s-1]                        :   15.000000000000000
+ 3: XKCO2    |  Reference Km for rubisco carboxylation of CO2  at 25oC  [uM]                                                 :   12.000000000000000
+ 4: XKO2     |  Reference Km for rubisco oxygenation  at 25oC  [uM]                                                          :   450.00000000000000
+ 5: RUBP     |  Fraction of total leaf protein is Rubisco enzyme [gC rubisco/(gC protein)]                                   :  0.20000000298023224
+ 6: ETMX     |  Specific chlorophyll activity  [umol e- (gC chl)-1 s-1]                                                      :   300.00000000000000
+ 7: CHL      |  Fraction of total leaf protein that is chlorophyll-binded  [-]                                               :  0.20000000298023224
+ 8: FCO2     |  Intercellular-to-atmospheric CO2 concentration ratio  [-]                                                    :  0.69999998807907104
+ --------------------------------------------------------------------------------------------------------------
+ OPTICAL PROPERTIES
+ 1: ALBR     |  Leaf shortwave (0.3-2.5 um) radiation albedo [-]                               :   9.0000003576278687E-002
+ 2: ALBP     |  Leaf PAR (0.4-0.7 um) albedo [-]                                               :   5.0000000745058060E-002
+ 3: TAUR     |  Leaf shortwave radiation (0.3-2.5 um) transmittance [-]                        :   9.0000003576278687E-002
+ 4: TAUP     |  Leaf PAR (0.4-0.7 um) transmittance [-]                                        :   5.0000000745058060E-002
+ --------------------------------------------------------------------------------------------------------------
+ PHENOLOGICAL PROPERTIES
+ 1: XRNI     |  Rate of node initiation at 25oC [h-1]                                                              :   2.2499999031424522E-003
+ 2: XRLA     |  Rate of leaf (dis)appearance at 25oC [h-1]                                                         :   8.9999996125698090E-003
+ 3: CTC      |  Chilling temperature for CO2 fixation, seed loss [oC]                                              :  -10.000000000000000
+ 4: VRNLI    |  Hours of favorable conditions (temp or water) required for spring leafout [h]                      :   180.00000000000000
+ 5: VRNXI    |  Hours of senescence conditions (temp or water) required for autumn leafoff [h]                     :   920.00000000000000
+ 6: PB       |  Nonstructural C concentration needed for branching [gC nonst/gC structl]                           :  0.25000000000000000
+ 7: GROUPX   |  Maturity group, node number (on top of XTLI) required for floral initiation [-]                    :   10.000000000000000
+ 8: XTLI     |  Embryonic node number at planting [-]                                                              :   2.5000000000000000
+ 9: XDL      |  Critical photoperiod for leaf and flora development (<= maximum daylength;<0=maximum) [h]          :   15.309272224854752
+10: XPPD     |  Critical difference between critical photoperiod and current day length [h]                        :  0.50000000000000000
+ --------------------------------------------------------------------------------------------------------------
+ MORPHOLOGICAL PROPERTIES
+ 1: SLA1     |  Specific leaf area vs mass [m2 gC-1]                                                               :   4.0000001899898052E-003
+ 2: SSL1     |  Specific Petiole/Sheath length vs mass [m gC-1]                                                    :   1.4999999664723873E-002
+ 3: SNL1     |  Specific internode length vs mass [m gC-1]                                                         :  0.10000000149011612
+ 4: CLASS    |  Fraction of leaf area in 0-22.5,22.5-45,45-67.5,67.5-90 degrees inclination classes (0 being flat) :  0.25000000000000000       0.25000000000000000       0.25000000000000000       0.25000000000000000
+ 5: WDLF     |  Leaf length:width ratio [-]                                                                        :   10.000000000000000
+ 6: CFI      |  Initial clumping factor seedling [-]                                                               :  0.75000000000000000
+ 7: ANGBR    |  Stem angle from horizontal [degrees]                                                               :   90.000000000000000
+ 8: ANGSH    |  PetolSheth angle from horizontal [degrees]                                                         :   45.000000000000000
+ 9: STMX     |  Maximum potential seed sites for pre-anthesis stalk [sites (gC stalk)-1]                           :  0.10000000149011612
+10: SDMX     |  Maximum seed number per grain site [seeds site-1]                                                  :   75.000000000000000
+11: GRMX     |  Maximum seed size per seed [gC seed-1]                                                             :   7.0000000298023224E-002
+12: GRW2L    |  Seed width to length ratio at planting (assuming prolate spheroid)                                 :   1.0000000000000000
+13: GRDM     |  Seed carbon mass at planting [gC seed-1]                                                           :   3.9999999105930328E-002
+14: GFILL    |  Grain filling rate at 25 oC [gC seed-1 h-1]                                                        :   1.9999999552965164E-002
+15: WTSTDI   |  Mass of dead standing biomass at planting [gC m-2]                                                 :   1000.0000000000000
+ --------------------------------------------------------------------------------------------------------------
+ ROOT CHARACTERISTICS
+ 1: RRAD1M   |  Maximum radius of young primary roots [m]                                                               :   5.0000002374872565E-004
+ 2: RRAD2M   |  Maximum radius of fine roots [m]                                                                        :   2.5000001187436283E-004
+ 3: PORT     |  Primary/fine root air porosity [m3 m-3]                                                                 :   1.9999999552965164E-002
+ 4: KLGMAX   |  Maximum lignification rate of coarse roots [h-1]                                                        :   3.9999999105930328E-002
+ 5: KLGMAX   |  Half saturation parameter for coarse roots lignification [h-1]                                          :   3.9999999105930328E-002
+ 6: ROOTMAGE |  Root age to trigger secondary growth [h]                                                                :   1500.0000000000000
+ 7: PhiMIN   |  The lumen fraction found in the youngest coarse root xylem of woody vascular [m2/m2]                    :  0.40000000596046448
+ 8: PhiMAX   |  Asymptotic limit lumen fraction of the coarse root xyxlem area of woody vascular [m2/m2]                :  0.69999998807907104
+ 9: R95MAT   |  Critical radius where the woody root is considered 95% mature [m]                                       :   5.0000000745058060E-002
+10: PR       |  Nonstructural C concentration needed for root branching (gC nonst/gC structl)                           :  0.10000000149011612
+11: RSRR     |  Radial resistcance per m2 root surface area for water uptake [MPa h m-1]                                :   27777.777343750000
+12: RSRA     |  Axial resistance per m root length for water uptake defined at RRAD2M [MPa h m-4]                       :   141388896.00000000
+13: PTSHT    |  Rate scalar (<1) for equilibrating shoot-root nonstructural elemental concentrations [h-1]              :   8.0000003799796104E-003
+14: RTFQ     |  Square root of (fine root branching frequency on 1st roots) X (root hair frequency on fine roots) [m-1] :   400.00000000000000
+ --------------------------------------------------------------------------------------------------------------
+ ROOT UPTAKE PARAMETERS
+ 1: UPMXZH   |  Maximum rate for root uptake of NH4 [gN m-2 absorption area h-1]                                   :   4.0000001899898052E-003
+ 2: UPKMZH   |  Half saturation Km for root uptake of NH4 [uM]                                                     :  0.50000000000000000
+ 3: UPMNZH   |  Minimum concentration required for root uptake of NH4 [uM]                                         :   1.2500000186264515E-002
+ 4: UPMXZO   |  Maximum rate for root uptake of NO3 [gN m-2 absorption area h-1]                                   :   1.9999999552965164E-002
+ 5: UPKMZO   |  Half saturation Km for root uptake of NO3 [uM]                                                     :   2.0000000000000000
+ 6: UPMNZO   |  Minimum concentration for root uptake of NO3 [uM]                                                  :   2.9999999329447746E-002
+ 7: UPMXPO   |  Maximum rate for root uptake of H2PO4 or H1PO4 [gP m-2 absorption area h-1]                        :   5.0000002374872565E-004
+ 8: UPKMPO   |  Half saturation Km for root uptake of H2PO4 or H1PO4 [uM]                                          :   7.5000002980232239E-002
+ 9: UPMNPO   |  Minimum concentration required for root uptake of H2PO4 or H1PO4 [uM]                              :   2.0000000949949026E-003
+ --------------------------------------------------------------------------------------------------------------
+ WATER RELATIONS
+ 1: OSMO     |  Organ osmotic potential at full turgor i.e. zero water potential [MPa]                             :  -1.5000000000000000
+ 2: RCS      |  e-folding turgor pressure for stomatal resistance [MPa]                                            :  0.20000000298023224
+ 3: RSMX     |  Cuticular resistance for H2O [s m-1]                                                               :   3500.0000000000000
+ --------------------------------------------------------------------------------------------------------------
+ ORGAN GROWTH YIELDS
+ 1: DMLF     |  Leaf dry matter C production yield [gC leaf g-1 nonstrucal C]                                       :  0.75999999046325684
+ 2: DMSHE    |  PetolSheth dry matter C production yield [gC PetolSheth g-1 nonstrucal C]                           :  0.75999999046325684
+ 3: DMSTK    |  Stalk dry matter C production yield [gC stalk g-1 nonstrucal C]                                     :  0.80000001192092896
+ 4: DMRSV    |  Stalk reserve C production yield [g reserve g-1 nonstrucal C]                                       :  0.87999999523162842
+ 5: DMHSK    |  Husk dry matter C production yield [gC husk g-1 nonstrucal C]                                       :  0.75999999046325684
+ 6: DMEAR    |  Ear dry matter C production yiled [gC ear g-1 nonstrucal C]                                         :  0.75999999046325684
+ 7: DMGR     |  Grain C production yiled [gC grain g-1 nonstrucal C]                                                :  0.87999999523162842
+ 8: DMRT     |  Root dry matter C production yield [gC root g-1 nonstrucal C]                                       :  0.75999999046325684
+ --------------------------------------------------------------------------------------------------------------
+ ORGAN N AND P CONCENTRATIONS
+ 1: CNWR     |  Plant root protein C to N ratio [g protein C (g root N)-1]                                         :   2.3499999046325684
+ 2: CNWL     |  Plant leaf protein C to N ratio [g protein C (g leaf N)-1]                                         :   2.7000000476837158
+ 3: CNLF     |  Plant leaf NC mass ratio [gN (gC)-1]                                                               :   3.3300001174211502E-002
+ 4: CNSHE    |  Plant PetolSheth NC mass ratio [gN (gC)-1]                                                         :   1.9999999552965164E-002
+ 5: CNSTK    |  Plant stalk NC mass ratio [gN (gC)-1]                                                              :   4.0000001899898052E-003
+ 6: CNRTLIG  |  Plant lignified root NC mass ratio [gN (gC)-1]                                                     :   4.0000001899898052E-003
+ 7: CNRSV    |  Plant stalk reserve NC mass ratio [gN (gC)-1]                                                      :   2.9999999329447746E-002
+ 8: CNHSK    |  Plant husk NC mass ratio [gN (gC)-1]                                                               :   1.9999999552965164E-002
+ 9: CNEAR    |  Plant ear NC mass ratio [gN (gC)-1]                                                                :   1.9999999552965164E-002
+10: CNGR     |  Plant grain NC mass ratio [gN (gC)-1]                                                              :   3.9999999105930328E-002
+11: CNRT     |  Plant root NC mass ratio [gN (gC)-1]                                                               :   1.9999999552965164E-002
+12: CPWR     |  Plant root protein C to P ratio [g protein C (g root P)-1]                                         :   23.500000000000000
+13: CPWL     |  Plant leaf protein C to P ratio [g protein C (g leaf P)-1]                                         :   27.000000000000000
+14: CPLF     |  Plant leaf PC mass ratio [gP (gC)-1]                                                               :   3.3299999777227640E-003
+15: CPSHE    |  Plant PetolSheth PC mass ratio [gP (gC)-1]                                                         :   2.0000000949949026E-003
+16: CPSTK    |  Plant stalk PC mass ratio [gP (gC)-1]                                                              :   3.9999998989515007E-004
+17: CPRTLIG  |  Plant lignified root PC mass ratio [gP (gC)-1]                                                     :   4.0000001899898052E-003
+18: CPRSV    |  Plant stalk reserve PC mass ratio [gP (gC)-1]                                                      :   3.0000000260770321E-003
+19: CPHSK    |  Plant husk PC mass ratio [gP (gC)-1]                                                               :   2.0000000949949026E-003
+20: CPEAR    |  Plant ear PC mass ratio [gP (gC)-1]                                                                :   2.0000000949949026E-003
+21: CPGR     |  Plant grain PC mass ratio [gP (gC)-1]                                                              :   4.0000001899898052E-003
+22: CPRT     |  Plant root PC mass ratio [gP (gC)-1]                                                               :   2.0000000949949026E-003
+ ==============================================================================================================
+ PLANT traits for FUNCTIONAL TYPE (NZ,NY,NX)=           2           1           1 gr3s43
+Plant name                                                 :C3 grass perennial                      
+Koppen climate info                                        :Dfc,Subarctic climate                                       
+ --------------------------------------------------------------------------------------------------------------
+ PLANT CLASS INFORMATION
+ 1| ICTYP: Photosynthesis pathway                              :C3                                                          
+ 2| IEBTYP: Embrophyte type                                    :Pteridophytes                                               
+ 3| IGTYP: Root profile pattern                                :Intermediate root profile, like herbs (1)                   
+ 4| ISTYP: Life cycle                                          :Perennial                                                   
+ 5| IDTYP: Growth pattern                                      :Determinate                                                 
+ 6| INTYP: N-fixation symbiosis                                :Not defined                                                 
+ 7| IWTYP: Phenology type                                      :Cold deciduous   1                                          
+ 8| IPTYP: Photoperiod                                         :Long day                                                    
+ 9| IBTYP: Biome turnover pattern                              :Rapid all aboveground biome, herbaceous  0                  
+10| I2EXP: Secondary growth expression                         :No (0)
+11| ISNTYP: snow interception pattern                          :grasse  1                                                   
+12| IRTYP: Storage organ                                       :Aboveground 0                                               
+13| MY   : Mycorrhizal association MY                          :YES                                                         
+14| ZTYPI: Growing season thermal adaptation zone              :Arctic, boreal   1.00                                       
+ --------------------------------------------------------------------------------------------------------------
+ PHOTOSYNTHETIC PROPERTIES
+ 1: VCMX     |  Saturated specific carboxylation rate by Rubisco at 25oC  [umol CO2 (gC rubisco)-1 s-1]                      :   80.000000000000000
+ 2: VOMX     |  Saturated specific oxygenation rate  at 25oC by Rubisco  [umol O2 (gC rubisco)-1 s-1]                        :   9.5000000000000000
+ 3: XKCO2    |  Reference Km for rubisco carboxylation of CO2  at 25oC  [uM]                                                 :   12.500000000000000
+ 4: XKO2     |  Reference Km for rubisco oxygenation  at 25oC  [uM]                                                          :   500.00000000000000
+ 5: RUBP     |  Fraction of total leaf protein is Rubisco enzyme [gC rubisco/(gC protein)]                                   :  0.34999999403953552
+ 6: ETMX     |  Specific chlorophyll activity  [umol e- (gC chl)-1 s-1]                                                      :   500.00000000000000
+ 7: CHL      |  Fraction of total leaf protein that is chlorophyll-binded  [-]                                               :  0.20000000298023224
+ 8: FCO2     |  Intercellular-to-atmospheric CO2 concentration ratio  [-]                                                    :  0.69999998807907104
+ --------------------------------------------------------------------------------------------------------------
+ OPTICAL PROPERTIES
+ 1: ALBR     |  Leaf shortwave (0.3-2.5 um) radiation albedo [-]                               :  0.15000000596046448
+ 2: ALBP     |  Leaf PAR (0.4-0.7 um) albedo [-]                                               :   7.5000002980232239E-002
+ 3: TAUR     |  Leaf shortwave radiation (0.3-2.5 um) transmittance [-]                        :  0.15000000596046448
+ 4: TAUP     |  Leaf PAR (0.4-0.7 um) transmittance [-]                                        :   7.5000002980232239E-002
+ --------------------------------------------------------------------------------------------------------------
+ PHENOLOGICAL PROPERTIES
+ 1: XRNI     |  Rate of node initiation at 25oC [h-1]                                                              :   1.4999999664723873E-002
+ 2: XRLA     |  Rate of leaf (dis)appearance at 25oC [h-1]                                                         :   8.9999996125698090E-003
+ 3: CTC      |  Chilling temperature for CO2 fixation, seed loss [oC]                                              :  -10.000000000000000
+ 4: VRNLI    |  Hours of favorable conditions (temp or water) required for spring leafout [h]                      :   60.000000000000000
+ 5: VRNXI    |  Hours of senescence conditions (temp or water) required for autumn leafoff [h]                     :   720.00000000000000
+ 6: PB       |  Nonstructural C concentration needed for branching [gC nonst/gC structl]                           :  0.10000000149011612
+ 7: GROUPX   |  Maturity group, node number (on top of XTLI) required for floral initiation [-]                    :   6.5000000000000000
+ 8: XTLI     |  Embryonic node number at planting [-]                                                              :   2.5000000000000000
+ 9: XDL      |  Critical photoperiod for leaf and flora development (<= maximum daylength;<0=maximum) [h]          :   15.309272224854752
+10: XPPD     |  Critical difference between critical photoperiod and current day length [h]                        :  0.50000000000000000
+ --------------------------------------------------------------------------------------------------------------
+ MORPHOLOGICAL PROPERTIES
+ 1: SLA1     |  Specific leaf area vs mass [m2 gC-1]                                                               :   4.9999998882412910E-003
+ 2: SSL1     |  Specific Petiole/Sheath length vs mass [m gC-1]                                                    :  0.12500000000000000
+ 3: SNL1     |  Specific internode length vs mass [m gC-1]                                                         :  0.80000001192092896
+ 4: CLASS    |  Fraction of leaf area in 0-22.5,22.5-45,45-67.5,67.5-90 degrees inclination classes (0 being flat) :   0.0000000000000000        0.0000000000000000       0.50000000000000000       0.50000000000000000
+ 5: WDLF     |  Leaf length:width ratio [-]                                                                        :   5.0000000000000000
+ 6: CFI      |  Initial clumping factor seedling [-]                                                               :  0.89999997615814209
+ 7: ANGBR    |  Stem angle from horizontal [degrees]                                                               :   90.000000000000000
+ 8: ANGSH    |  PetolSheth angle from horizontal [degrees]                                                         :   75.000000000000000
+ 9: STMX     |  Maximum potential seed sites for pre-anthesis stalk [sites (gC stalk)-1]                           :   5.0000000000000000
+10: SDMX     |  Maximum seed number per grain site [seeds site-1]                                                  :   5.0000000000000000
+11: GRMX     |  Maximum seed size per seed [gC seed-1]                                                             :   2.4999999441206455E-003
+12: GRW2L    |  Seed width to length ratio at planting (assuming prolate spheroid)                                 :   1.0000000000000000
+13: GRDM     |  Seed carbon mass at planting [gC seed-1]                                                           :   1.0000000474974513E-003
+14: GFILL    |  Grain filling rate at 25 oC [gC seed-1 h-1]                                                        :   1.2499999684223440E-005
+15: WTSTDI   |  Mass of dead standing biomass at planting [gC m-2]                                                 :   0.0000000000000000
+ --------------------------------------------------------------------------------------------------------------
+ ROOT CHARACTERISTICS
+ 1: RRAD1M   |  Maximum radius of young primary roots [m]                                                               :   3.0000001424923539E-004
+ 2: RRAD2M   |  Maximum radius of fine roots [m]                                                                        :   9.9999997473787516E-005
+ 3: PORT     |  Primary/fine root air porosity [m3 m-3]                                                                 :  0.10000000149011612
+ 4: PhiMean  |  The mean lumen area fraction found in the seminal roots of non-tree roots, [m2/m2]                      :   5.0000000745058060E-002
+ 5: PR       |  Nonstructural C concentration needed for root branching (gC nonst/gC structl)                           :  0.10000000149011612
+ 6: RSRR     |  Radial resistcance per m2 root surface area for water uptake [MPa h m-1]                                :   10000.000000000000
+ 7: RSRA     |  Axial resistance per m root length for water uptake defined at RRAD2M [MPa h m-4]                       :   50000000.000000000
+ 8: PTSHT    |  Rate scalar (<1) for equilibrating shoot-root nonstructural elemental concentrations [h-1]              :   3.0000000260770321E-003
+ 9: RTFQ     |  Square root of (fine root branching frequency on 1st roots) X (root hair frequency on fine roots) [m-1] :   1000.0000000000000
+ --------------------------------------------------------------------------------------------------------------
+ ROOT UPTAKE PARAMETERS
+ 1: UPMXZH   |  Maximum rate for root uptake of NH4 [gN m-2 absorption area h-1]                                   :  0.60000002384185791
+ 2: UPKMZH   |  Half saturation Km for root uptake of NH4 [uM]                                                     :   10.000000000000000
+ 3: UPMNZH   |  Minimum concentration required for root uptake of NH4 [uM]                                         :   1.2500000186264515E-002
+ 4: UPMXZO   |  Maximum rate for root uptake of NO3 [gN m-2 absorption area h-1]                                   :  0.50000000000000000
+ 5: UPKMZO   |  Half saturation Km for root uptake of NO3 [uM]                                                     :   25.000000000000000
+ 6: UPMNZO   |  Minimum concentration for root uptake of NO3 [uM]                                                  :   2.9999999329447746E-002
+ 7: UPMXPO   |  Maximum rate for root uptake of H2PO4 or H1PO4 [gP m-2 absorption area h-1]                        :   1.0000000474974513E-003
+ 8: UPKMPO   |  Half saturation Km for root uptake of H2PO4 or H1PO4 [uM]                                          :   7.5000002980232239E-002
+ 9: UPMNPO   |  Minimum concentration required for root uptake of H2PO4 or H1PO4 [uM]                              :   2.0000000949949026E-003
+ --------------------------------------------------------------------------------------------------------------
+ WATER RELATIONS
+ 1: OSMO     |  Organ osmotic potential at full turgor i.e. zero water potential [MPa]                             :  -1.2500000000000000
+ 2: RCS      |  e-folding turgor pressure for stomatal resistance [MPa]                                            :  0.20000000298023224
+ 3: RSMX     |  Cuticular resistance for H2O [s m-1]                                                               :   2500.0000000000000
+ --------------------------------------------------------------------------------------------------------------
+ ORGAN GROWTH YIELDS
+ 1: DMLF     |  Leaf dry matter C production yield [gC leaf g-1 nonstrucal C]                                       :  0.72000002861022949
+ 2: DMSHE    |  PetolSheth dry matter C production yield [gC PetolSheth g-1 nonstrucal C]                           :  0.75999999046325684
+ 3: DMSTK    |  Stalk dry matter C production yield [gC stalk g-1 nonstrucal C]                                     :  0.80000001192092896
+ 4: DMRSV    |  Stalk reserve C production yield [g reserve g-1 nonstrucal C]                                       :  0.87999999523162842
+ 5: DMHSK    |  Husk dry matter C production yield [gC husk g-1 nonstrucal C]                                       :  0.75999999046325684
+ 6: DMEAR    |  Ear dry matter C production yiled [gC ear g-1 nonstrucal C]                                         :  0.75999999046325684
+ 7: DMGR     |  Grain C production yiled [gC grain g-1 nonstrucal C]                                                :  0.87999999523162842
+ 8: DMRT     |  Root dry matter C production yield [gC root g-1 nonstrucal C]                                       :  0.75999999046325684
+ --------------------------------------------------------------------------------------------------------------
+ ORGAN N AND P CONCENTRATIONS
+ 1: CNWR     |  Plant root protein C to N ratio [g protein C (g root N)-1]                                         :   2.2999999523162842
+ 2: CNWL     |  Plant leaf protein C to N ratio [g protein C (g leaf N)-1]                                         :   2.7999999523162842
+ 3: CNLF     |  Plant leaf NC mass ratio [gN (gC)-1]                                                               :  0.10000000149011612
+ 4: CNSHE    |  Plant PetolSheth NC mass ratio [gN (gC)-1]                                                         :   1.9999999552965164E-002
+ 5: CNSTK    |  Plant stalk NC mass ratio [gN (gC)-1]                                                              :   9.9999997764825821E-003
+ 6: CNRSV    |  Plant stalk reserve NC mass ratio [gN (gC)-1]                                                      :   1.9999999552965164E-002
+ 7: CNHSK    |  Plant husk NC mass ratio [gN (gC)-1]                                                               :   1.9999999552965164E-002
+ 8: CNEAR    |  Plant ear NC mass ratio [gN (gC)-1]                                                                :   1.9999999552965164E-002
+ 9: CNGR     |  Plant grain NC mass ratio [gN (gC)-1]                                                              :   3.9999999105930328E-002
+10: CNRT     |  Plant root NC mass ratio [gN (gC)-1]                                                               :   2.5000000372529030E-002
+11: CPWR     |  Plant root protein C to P ratio [g protein C (g root P)-1]                                         :   28.000000000000000
+12: CPWL     |  Plant leaf protein C to P ratio [g protein C (g leaf P)-1]                                         :   42.000000000000000
+13: CPLF     |  Plant leaf PC mass ratio [gP (gC)-1]                                                               :   9.9999997764825821E-003
+14: CPSHE    |  Plant PetolSheth PC mass ratio [gP (gC)-1]                                                         :   2.0000000949949026E-003
+15: CPSTK    |  Plant stalk PC mass ratio [gP (gC)-1]                                                              :   1.0000000474974513E-003
+16: CPRSV    |  Plant stalk reserve PC mass ratio [gP (gC)-1]                                                      :   2.0000000949949026E-003
+17: CPHSK    |  Plant husk PC mass ratio [gP (gC)-1]                                                               :   2.0000000949949026E-003
+18: CPEAR    |  Plant ear PC mass ratio [gP (gC)-1]                                                                :   2.0000000949949026E-003
+19: CPGR     |  Plant grain PC mass ratio [gP (gC)-1]                                                              :   4.0000001899898052E-003
+20: CPRT     |  Plant root PC mass ratio [gP (gC)-1]                                                               :   2.4999999441206455E-003
