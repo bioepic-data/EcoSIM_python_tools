@@ -1,0 +1,4 @@
+interface:
+  display_name: "SSP GHG Atmgas Generator"
+  short_description: "Build EcoSIM atmospheric GHG scenario NetCDFs."
+  default_prompt: "Generate SSP245 and SSP585 EcoSIM atmospheric CO2, CH4, and N2O NetCDF files by combining historical atmgas data with RCMIP SSP concentration pathways."
