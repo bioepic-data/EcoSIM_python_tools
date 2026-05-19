@@ -1,0 +1,4 @@
+interface:
+  display_name: "EcoSIM Vegetation Code"
+  short_description: "Map vegetation to EcoSIM PFT codes"
+  default_prompt: "Use $ecosim-vegetation-code to map site vegetation into EcoSIM PFT codes."
