@@ -1,0 +1,4 @@
+interface:
+  display_name: "EcoSIM Plant Trait Sanity"
+  short_description: "Check EcoSIM plant trait desc values"
+  default_prompt: "Use $ecosim-plant-trait-sanity-check to sanity-check EcoSIM plant_trait.desc values for the first grid."
