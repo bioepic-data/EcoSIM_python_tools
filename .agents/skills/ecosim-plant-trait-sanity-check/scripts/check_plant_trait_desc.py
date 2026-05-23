@@ -147,6 +147,12 @@ WOODY_SHORT_CODES = {
     "busn",
 }
 
+SECONDARY_GROWTH_HERBACEOUS_SHORT_CODES = {
+    "soyb",
+}
+
+SECONDARY_GROWTH_ROOT_TRAITS = ("ROOTMAGE", "PhiMIN", "PhiMAX", "R95MAT")
+
 
 @dataclass
 class Parameter:
@@ -523,6 +529,7 @@ def check_cross_parameters(block: PlantBlock, params: Dict[str, List[Parameter]]
 
 def check_woody_form(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
     is_woody = block.short_code in WOODY_SHORT_CODES
+    allows_secondary_growth_root_traits = block.short_code in SECONDARY_GROWTH_HERBACEOUS_SHORT_CODES
     woody_required = ("ROOTMAGE", "PhiMIN", "PhiMAX", "R95MAT", "CNRTLIG", "CPRTLIG")
 
     if is_woody:
@@ -534,11 +541,20 @@ def check_woody_form(block: PlantBlock, params: Dict[str, List[Parameter]], add)
         if "PhiMean" in params:
             add(block, "WARN", "PhiMean", params["PhiMean"][0].line, "woody PFT contains herbaceous PhiMean root trait")
     else:
-        if "PhiMean" not in params:
+        has_phi_min_max = "PhiMIN" in params and "PhiMAX" in params
+        if "PhiMean" not in params and not has_phi_min_max:
             add(block, "WARN", "PhiMean", block.start_line, f"non-woody PFT {block.code} is missing PhiMean")
-        for variable in ("ROOTMAGE", "PhiMIN", "PhiMAX", "R95MAT"):
+        for variable in SECONDARY_GROWTH_ROOT_TRAITS:
             if variable in params:
-                add(block, "WARN", variable, params[variable][0].line, f"non-woody PFT {block.code} contains woody root trait {variable}")
+                if allows_secondary_growth_root_traits:
+                    continue
+                add(
+                    block,
+                    "WARN",
+                    variable,
+                    params[variable][0].line,
+                    f"non-woody PFT {block.code} contains woody root trait {variable}",
+                )
 
 
 def check_web_evidence(blocks: Iterable[PlantBlock], evidence: Dict[str, Any]) -> List[Finding]:

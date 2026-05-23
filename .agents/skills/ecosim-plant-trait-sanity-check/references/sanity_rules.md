@@ -55,7 +55,13 @@ Woody blocks should include:
 - two `KLGMAX` rows when the format distinguishes maximum lignification rate from half-saturation parameter
 - lignified root concentrations `CNRTLIG` and `CPRTLIG`
 
-Herbaceous blocks should include `PhiMean` and normally should not include woody-only root maturation traits.
+Herbaceous blocks should include `PhiMean` unless both `PhiMIN` and `PhiMAX`
+are defined. When the root maturation pair `PhiMIN`/`PhiMAX` is present,
+`PhiMean` is not required.
+Exception: soybean (`soyb*`) is a eudicot crop that can express secondary root
+growth, so `ROOTMAGE`, `PhiMIN`, `PhiMAX`, and `R95MAT` are allowed for soybean
+without issuing the generic non-woody root-trait warning. Still check their
+numeric bounds and `PhiMIN <= PhiMAX`.
 
 ## Interpretation
 
