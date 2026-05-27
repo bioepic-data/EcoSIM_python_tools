@@ -31,6 +31,8 @@ The parser should keep duplicate variable names in file order. `KLGMAX` is the c
 ## High-Value Range Rules
 
 - In `PLANT CLASS INFORMATION`, any block with `ISTYP` set to annual should have `IWTYP` set to evergreen. This is an EcoSIM convention: all annual plants are considered evergreen for the phenology-type field.
+- `IEBTYP` should use EcoSIM embryophyte type codes `0=bryophyte`, `1=pteridophyte`, `2=gymnosperm`, `3=monocot`, and `4=eudicot`. The checker accepts either a valid integer code or a recognized label in `.desc` output, errors on missing, unrecognized, non-integer, or out-of-range values, and warns when the value conflicts with the inferred PFT form from the block code/name.
+- `ISNTYP` should use EcoSIM snow interception pattern codes `0=bryophyte`, `1=grass`, `2=shrub`, `3=deciduous tree`, and `4=conifer`. The checker errors on missing, non-integer, or out-of-range numeric codes, and warns when the code conflicts with the label text or the inferred PFT form from the block code/name.
 - Fraction traits such as `RUBP`, `CHL`, `FCO2`, `ALBR`, `ALBP`, `TAUR`, `TAUP`, `CFI`, `PORT`, `PhiMIN`, `PhiMAX`, and `PhiMean` should be within `[0, 1]`. In photosynthetic properties, `CHL` is the fraction of total leaf protein in chlorophyll-bound/light-harvesting proteins, including chlorophyll-protein complexes associated with PSI, PSII, and LHC.
 - `CHL` values in `PHOTOSYNTHETIC PROPERTIES` should normally fall in a broad screening range of `0.08-0.30` on the total-leaf-protein basis. Values below this range likely under-allocate protein to light harvesting, especially for evergreen needleleaf PFTs.
 - Do not use `SLA1` values for sanity-check decisions, including web-informed checks or derived leaf-area photosynthetic capacity calculations.

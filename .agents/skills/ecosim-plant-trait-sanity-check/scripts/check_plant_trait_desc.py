@@ -153,6 +153,91 @@ SECONDARY_GROWTH_HERBACEOUS_SHORT_CODES = {
 
 SECONDARY_GROWTH_ROOT_TRAITS = ("ROOTMAGE", "PhiMIN", "PhiMAX", "R95MAT")
 
+EMBRYOPHYTE_CODES = {
+    0: "bryophyte",
+    1: "pteridophyte",
+    2: "gymnosperm",
+    3: "monocot",
+    4: "eudicot",
+}
+
+EMBRYOPHYTE_SHORT_CODE_EXPECTATIONS = {
+    "lich": 0,
+    "moss": 0,
+    "fern": 1,
+    "pter": 1,
+    "bspr": 2,
+    "dfir": 2,
+    "jpin": 2,
+    "lpin": 2,
+    "ndld": 2,
+    "ndlf": 2,
+    "gr3a": 3,
+    "gr3s": 3,
+    "gr4a": 3,
+    "gr4s": 3,
+    "maiz": 3,
+    "rice": 3,
+    "sedg": 3,
+    "bdlf": 4,
+    "bdln": 4,
+    "bdlw": 4,
+    "bush": 4,
+    "busn": 4,
+    "shru": 4,
+    "soyb": 4,
+    "tasp": 4,
+    "woak": 4,
+}
+
+EMBRYOPHYTE_LABEL_TOKENS = (
+    (0, ("bryophyte", "lichen", "moss", "sphagnum")),
+    (1, ("pteridophyte", "fern")),
+    (2, ("gymnosperm", "conifer", "needleleaf")),
+    (3, ("monocot", "grass", "graminoid", "sedge", "maize", "rice")),
+    (4, ("eudicot", "broadleaf", "shrub", "soybean")),
+)
+
+SNOW_INTERCEPTION_CODES = {
+    0: "bryophyte",
+    1: "grass",
+    2: "shrub",
+    3: "deciduous tree",
+    4: "conifer",
+}
+
+SNOW_INTERCEPTION_SHORT_CODE_EXPECTATIONS = {
+    "lich": 0,
+    "moss": 0,
+    "gr3a": 1,
+    "gr3s": 1,
+    "gr4a": 1,
+    "gr4s": 1,
+    "sedg": 1,
+    "shru": 2,
+    "bush": 2,
+    "busn": 2,
+    "bdlf": 3,
+    "bdln": 3,
+    "bdlw": 3,
+    "tasp": 3,
+    "woak": 3,
+    "bspr": 4,
+    "dfir": 4,
+    "jpin": 4,
+    "lpin": 4,
+    "ndld": 4,
+    "ndlf": 4,
+}
+
+SNOW_INTERCEPTION_LABEL_TOKENS = (
+    (0, ("bryophyte", "lichen", "moss", "sphagnum")),
+    (1, ("grass", "grasse", "graminoid", "sedge")),
+    (2, ("shrub", "bush")),
+    (3, ("deciduous",)),
+    (4, ("conifer", "confier", "needleleaf")),
+)
+
 
 @dataclass
 class Parameter:
@@ -362,6 +447,8 @@ def check_blocks(blocks: Iterable[PlantBlock]) -> List[Finding]:
 
         check_class(block, params, add)
         check_class_information_conventions(block, params, add)
+        check_embryophyte_type(block, params, add)
+        check_snow_interception_pattern(block, params, add)
         check_variable_ranges(block, params, add)
         check_cross_parameters(block, params, add)
         check_woody_form(block, params, add)
@@ -419,6 +506,193 @@ def block_is_annual(params: Dict[str, List[Parameter]]) -> bool:
 
 def raw_has_token(parameter: Parameter, token: str) -> bool:
     return token.lower() in parameter.raw_value.lower()
+
+
+def check_embryophyte_type(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
+    iebt_params = params.get("IEBTYP", [])
+    if not iebt_params:
+        add(
+            block,
+            "ERROR",
+            "IEBTYP",
+            block.start_line,
+            f"missing embryophyte type; expected {format_embryophyte_mapping()}",
+        )
+        return
+
+    expected_code = expected_embryophyte_code(block)
+    for parameter in iebt_params:
+        code = embryophyte_numeric_code(parameter)
+        label_code = embryophyte_label_code(parameter.raw_value)
+
+        if parameter.numeric_values and code is None:
+            add(
+                block,
+                "ERROR",
+                "IEBTYP",
+                parameter.line,
+                f"embryophyte type code must be an integer; expected {format_embryophyte_mapping()}",
+            )
+            continue
+        if code is not None and code not in EMBRYOPHYTE_CODES:
+            add(
+                block,
+                "ERROR",
+                "IEBTYP",
+                parameter.line,
+                f"embryophyte type code {code} outside valid range; expected {format_embryophyte_mapping()}",
+            )
+            continue
+        if code is None and label_code is None:
+            add(
+                block,
+                "ERROR",
+                "IEBTYP",
+                parameter.line,
+                f"embryophyte type must include an integer code or recognized label; expected {format_embryophyte_mapping()}",
+            )
+            continue
+
+        actual_code = code if code is not None else label_code
+        if code is not None and label_code is not None and label_code != code:
+            add(
+                block,
+                "WARN",
+                "IEBTYP",
+                parameter.line,
+                "embryophyte label suggests "
+                f"{EMBRYOPHYTE_CODES[label_code]} ({label_code}) but numeric code is "
+                f"{EMBRYOPHYTE_CODES[code]} ({code})",
+            )
+
+        if expected_code is not None and actual_code is not None and expected_code != actual_code:
+            add(
+                block,
+                "WARN",
+                "IEBTYP",
+                parameter.line,
+                f"{block.code} {block.plant_name!r} is expected to use embryophyte type "
+                f"{EMBRYOPHYTE_CODES[expected_code]} ({expected_code}); found "
+                f"{EMBRYOPHYTE_CODES[actual_code]} ({actual_code})",
+            )
+
+
+def embryophyte_numeric_code(parameter: Parameter) -> Optional[int]:
+    if not parameter.numeric_values:
+        return None
+    value = parameter.numeric_values[-1]
+    if not math.isfinite(value):
+        return None
+    rounded = round(value)
+    if abs(value - rounded) > 1.0e-6:
+        return None
+    return int(rounded)
+
+
+def embryophyte_label_code(raw_value: str) -> Optional[int]:
+    raw_lower = raw_value.lower()
+    for code, tokens in EMBRYOPHYTE_LABEL_TOKENS:
+        if any(token in raw_lower for token in tokens):
+            return code
+    return None
+
+
+def expected_embryophyte_code(block: PlantBlock) -> Optional[int]:
+    if block.short_code in EMBRYOPHYTE_SHORT_CODE_EXPECTATIONS:
+        return EMBRYOPHYTE_SHORT_CODE_EXPECTATIONS[block.short_code]
+    return embryophyte_label_code(f"{block.code} {block.plant_name}")
+
+
+def format_embryophyte_mapping() -> str:
+    return ", ".join(f"{code}={name}" for code, name in EMBRYOPHYTE_CODES.items())
+
+
+def check_snow_interception_pattern(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
+    isntyp_params = params.get("ISNTYP", [])
+    if not isntyp_params:
+        add(
+            block,
+            "ERROR",
+            "ISNTYP",
+            block.start_line,
+            f"missing snow interception pattern; expected {format_snow_interception_mapping()}",
+        )
+        return
+
+    expected_code = expected_snow_interception_code(block)
+    for parameter in isntyp_params:
+        code = snow_interception_numeric_code(parameter)
+        if code is None:
+            add(
+                block,
+                "ERROR",
+                "ISNTYP",
+                parameter.line,
+                f"snow interception pattern must include an integer code; expected {format_snow_interception_mapping()}",
+            )
+            continue
+        if code not in SNOW_INTERCEPTION_CODES:
+            add(
+                block,
+                "ERROR",
+                "ISNTYP",
+                parameter.line,
+                f"snow interception code {code} outside valid range; expected {format_snow_interception_mapping()}",
+            )
+            continue
+
+        label_code = snow_interception_label_code(parameter.raw_value)
+        if label_code is not None and label_code != code:
+            add(
+                block,
+                "WARN",
+                "ISNTYP",
+                parameter.line,
+                "snow interception label suggests "
+                f"{SNOW_INTERCEPTION_CODES[label_code]} ({label_code}) but numeric code is "
+                f"{SNOW_INTERCEPTION_CODES[code]} ({code})",
+            )
+
+        if expected_code is not None and expected_code != code:
+            add(
+                block,
+                "WARN",
+                "ISNTYP",
+                parameter.line,
+                f"{block.code} {block.plant_name!r} is expected to use snow interception "
+                f"{SNOW_INTERCEPTION_CODES[expected_code]} ({expected_code}); found "
+                f"{SNOW_INTERCEPTION_CODES[code]} ({code})",
+            )
+
+
+def snow_interception_numeric_code(parameter: Parameter) -> Optional[int]:
+    if not parameter.numeric_values:
+        return None
+    value = parameter.numeric_values[-1]
+    if not math.isfinite(value):
+        return None
+    rounded = round(value)
+    if abs(value - rounded) > 1.0e-6:
+        return None
+    return int(rounded)
+
+
+def snow_interception_label_code(raw_value: str) -> Optional[int]:
+    raw_lower = raw_value.lower()
+    for code, tokens in SNOW_INTERCEPTION_LABEL_TOKENS:
+        if any(token in raw_lower for token in tokens):
+            return code
+    return None
+
+
+def expected_snow_interception_code(block: PlantBlock) -> Optional[int]:
+    if block.short_code in SNOW_INTERCEPTION_SHORT_CODE_EXPECTATIONS:
+        return SNOW_INTERCEPTION_SHORT_CODE_EXPECTATIONS[block.short_code]
+    return snow_interception_label_code(f"{block.code} {block.plant_name}")
+
+
+def format_snow_interception_mapping() -> str:
+    return ", ".join(f"{code}={name}" for code, name in SNOW_INTERCEPTION_CODES.items())
 
 
 def check_variable_ranges(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
