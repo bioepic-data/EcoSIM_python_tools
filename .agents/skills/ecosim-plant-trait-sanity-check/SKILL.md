@@ -50,6 +50,7 @@ The checker validates the plant blocks at the selected grid for:
 - positive rates, capacities, dimensions, uptake parameters, resistance terms, and nutrient ratios
 - `CLASS` as four inclination fractions that sum to one
 - optical albedo plus transmission not exceeding one
+- `ANGSH = 0` for plant forms without petiole or sheath tissue, including conifer, lichen, and moss PFTs
 - osmotic potential sign and standing dead biomass sign
 - growth yield bounds
 - N and P concentration magnitudes

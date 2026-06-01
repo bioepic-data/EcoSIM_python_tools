@@ -38,6 +38,7 @@ The parser should keep duplicate variable names in file order. `KLGMAX` is the c
 - Do not use `SLA1` values for sanity-check decisions, including web-informed checks or derived leaf-area photosynthetic capacity calculations.
 - `CLASS` must contain four numeric inclination fractions, each in `[0, 1]`, summing to one.
 - Optical checks should flag `ALBR + TAUR > 1` and `ALBP + TAUP > 1`.
+- `ANGSH` must be `0 degrees` for plant forms that lack petiole or sheath tissue. This includes conifer, lichen, and moss PFTs where a nonzero petiole/sheath angle would imply an organ that is not represented by the plant morphology.
 - Growth yields `DMLF`, `DMSHE`, `DMSTK`, `DMRSV`, `DMHSK`, `DMEAR`, `DMGR`, and `DMRT` should be positive and normally not exceed about `1.2`.
 - Phenological accumulation thresholds `VRNLI` and `VRNXI` should be nonnegative; zero can encode no accumulated leafout or leafoff requirement.
 - Organ N and P mass ratios (`CNLF`, `CNSHE`, `CNSTK`, `CNRTLIG`, `CNRSV`, `CNHSK`, `CNEAR`, `CNGR`, `CNRT`, `CPLF`, `CPSHE`, `CPSTK`, `CPRTLIG`, `CPRSV`, `CPHSK`, `CPEAR`, `CPGR`, `CPRT`) must be positive; values above `0.2 g element gC-1` are suspicious enough to warn.

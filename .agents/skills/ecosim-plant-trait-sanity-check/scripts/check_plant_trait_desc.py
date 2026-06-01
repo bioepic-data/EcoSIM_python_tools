@@ -238,6 +238,41 @@ SNOW_INTERCEPTION_LABEL_TOKENS = (
     (4, ("conifer", "confier", "needleleaf")),
 )
 
+NO_PETIOLE_SHEATH_SHORT_CODES = {
+    "bspr",
+    "dfir",
+    "fmos",
+    "jpin",
+    "lich",
+    "lpin",
+    "mosf",
+    "moss",
+    "ndld",
+    "ndlf",
+    "smos",
+}
+
+NO_PETIOLE_SHEATH_LABEL_TOKENS = (
+    "bryophyte",
+    "conifer",
+    "coniferous",
+    "confierous",
+    "douglas fir",
+    "feather moss",
+    "feathermoss",
+    "gymnosperm",
+    "jackpine",
+    "lichen",
+    "moss",
+    "needle leaf",
+    "needleleaf",
+    "pine",
+    "sphagnum",
+    "spruce",
+)
+
+ANGSH_ZERO_TOLERANCE = 1.0e-6
+
 
 @dataclass
 class Parameter:
@@ -450,6 +485,7 @@ def check_blocks(blocks: Iterable[PlantBlock]) -> List[Finding]:
         check_embryophyte_type(block, params, add)
         check_snow_interception_pattern(block, params, add)
         check_variable_ranges(block, params, add)
+        check_petiole_sheath_angle(block, params, add)
         check_cross_parameters(block, params, add)
         check_woody_form(block, params, add)
 
@@ -767,6 +803,45 @@ def check_variable_ranges(block: PlantBlock, params: Dict[str, List[Parameter]],
         for value in parameter.numeric_values:
             if value > 24 or value < -24:
                 add(block, "WARN", "XDL", parameter.line, f"critical photoperiod magnitude exceeds 24 h: {value:g}")
+
+
+def check_petiole_sheath_angle(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
+    if not block_lacks_petiole_or_sheath(block):
+        return
+
+    angsh_params = params.get("ANGSH", [])
+    if not angsh_params:
+        add(
+            block,
+            "ERROR",
+            "ANGSH",
+            block.start_line,
+            f"{block.code} {block.plant_name!r} lacks petiole/sheath tissue; ANGSH must be explicitly set to 0 degrees",
+        )
+        return
+
+    for parameter in angsh_params:
+        for value in parameter.numeric_values:
+            if abs(value) > ANGSH_ZERO_TOLERANCE:
+                add(
+                    block,
+                    "ERROR",
+                    "ANGSH",
+                    parameter.line,
+                    f"{block.code} {block.plant_name!r} lacks petiole/sheath tissue; ANGSH must be 0 degrees, found {value:g}",
+                )
+
+
+def block_lacks_petiole_or_sheath(block: PlantBlock) -> bool:
+    if block.short_code in NO_PETIOLE_SHEATH_SHORT_CODES:
+        return True
+
+    label = f"{block.code} {block.plant_name}".lower()
+    return any(label_has_token(label, token) for token in NO_PETIOLE_SHEATH_LABEL_TOKENS)
+
+
+def label_has_token(label: str, token: str) -> bool:
+    return re.search(rf"(?<![a-z]){re.escape(token)}(?![a-z])", label) is not None
 
 
 def check_cross_parameters(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
