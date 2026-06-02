@@ -1,0 +1,63 @@
+&regression_test
+ cells   =           3
+/
+
+&ecosim
+case_name='${case_name}'
+do_regression_test=.false.
+pft_file_in='${pft_file_in}'
+grid_file_in='${grid_file_in}'
+pft_mgmt_in='${pft_mgmt_in}'
+clm_hour_file_in='${clm_hour_file_in}'
+${micpar_line}clm_factor_in='${clm_factor_in}'
+soil_mgmt_in='${soil_mgmt_in}'
+llignification=${llignification}
+atm_ghg_in='${atm_ghg_in}'
+lsoilCompaction=${lsoilCompaction}
+lverbose=${lverbose}
+plantOM4Heat=${plantOM4Heat}
+disp_planttrait=${disp_planttrait}
+plant_model=${plant_model}
+microbial_model=${microbial_model}
+soichem_model=${soichem_model}
+!set up output variable lists
+!set up the first year of simulation
+start_date  = '${start_date}'
+grid_mode=${grid_mode}    !enable lateral runoff
+continue_run=${continue_run}
+!set up simulation periods, spinup starts at 1, ends at 2, with 3 cycles, regular starts at 4, ends at 5.
+forc_periods=${forc_periods}
+
+!set up solvers
+NPXS=${NPXS}      !number of cycles per hour for water,heat,solute flux calcns
+NPYS=${NPYS}      !number of cycles per NPX for gas flux calcns
+NCYC_LITR=${NCYC_LITR}
+NCYC_SNOW=${NCYC_SNOW}
+!set up output frequency
+hist_mfilt=${hist_mfilt}
+hist_fincl1='ECO_RA_col','ECO_RH_col','ECO_NPP_col', 'Root_AR_col','ECO_HR_CO2_col','Root1stSinkWeight_pvr',
+  'TEMP_vr','rWatFLP_vr','BOTDEPZ_vr','tSOC_vr','RootC_vr','RootC_2nd_pvr','CanopyLAIZ_plyr','Root2ndSinkWeight_pvr',
+  'RUB_ACTVN_pft','RootNutUptk_fClim_pvr','RootNutUptk_fNlim_pvr','RootNutUptk_fPlim_pvr','RootNutUptk_fProtC_pvr',
+  'HR_CO2_vr','Root_OXYSTRESS_pvr','Decomp_OStress_vr','Decomp_OStress_LITR','GasXSurfConduct_col','CO2_DIF_FLX_col',
+  'CO2_PLTROOT_FLX_col','TreeRingRadius_pft','RootLDS_pvr','RootKond2H2O_pvr','Growth_Stage_pft','PSI_vr','MycoArbuBiomC_pft',
+  'VcMax25C_RUBISCO_pft','VoMax25C_RUBISCO_pft','JMax25C_photo_pft','ShootRoot_XFER_C_pft','ShootRoot_XFER_N_pft',
+  'MicPFlo_vr','MacPFlo_vr','dCAN_GPP_CLIM_pft','dCAN_GPP_eLIM_pft','RootNonstC_pvr','Root1stRadius_pvr','ShootRoot_XFER_C_pft',
+  'Root2nd_AxesNumL_pvr','Root1st_AxesNumL_pvr','RootShootCX_pvr','Cd_Root2Soil_H2O_pft','Stalk_HT_pft'
+hist_nhtfrq=${hist_nhtfrq}
+/
+
+&bbgcforc
+/
+
+!namelist for timer
+&ecosim_time
+rest_opt='${rest_opt}'  !'ndays','nmonths','nyears'
+rest_frq=${rest_frq}
+delta_time=${delta_time}
+stop_n= ${stop_n}             !this shall overwrite what is set in forc_periods
+stop_option='${stop_option}' !run by nyears, nmonths, ndays,
+diag_frq=${diag_frq}
+diag_opt='${diag_opt}'
+/
+
+
