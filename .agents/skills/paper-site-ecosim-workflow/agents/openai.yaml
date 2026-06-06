@@ -1,4 +1,4 @@
 interface:
   display_name: "Paper Site EcoSIM Workflow"
-  short_description: "Extract paper sites; plan EcoSIM runs."
-  default_prompt: "Read this modeling paper, extract sites, observed variables, and cited data sources, then outline the EcoSIM simulation workflow for those sites."
+  short_description: "Assess paper feasibility; plan EcoSIM runs."
+  default_prompt: "Read this modeling paper for EcoSIM feasibility, extract sites, observed variables, and cited data sources, then outline the EcoSIM simulation workflow for those sites."

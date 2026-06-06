@@ -1,6 +1,6 @@
 ---
 name: paper-site-ecosim-workflow
-description: Extract study sites, observational variables, and cited data sources from ecosystem-modeling papers, PDFs, supplements, or article text, then plan or create EcoSIM simulation workflows and run folders for those sites. Use when Codex is asked to read a paper for sites/data availability, reproduce a published site simulation in EcoSIM, compare EcoSIM outputs to paper observations, or convert paper-derived AmeriFlux/FLUXNET/crop-site information into EcoSIM inputs and runnable cases.
+description: Extract study sites, observational variables, and cited data sources from ecosystem-modeling papers, PDFs, supplements, or article text, then plan or create EcoSIM simulation workflows and run folders for those sites. Use when Codex is asked to read a paper for EcoSIM feasibility, including requests phrased as "read paper for ecosim feasibility"; read a paper for sites/data availability; reproduce a published site simulation in EcoSIM; compare EcoSIM outputs to paper observations; or convert paper-derived AmeriFlux/FLUXNET/crop-site information into EcoSIM inputs and runnable cases.
 ---
 
 # Paper Site EcoSIM Workflow
@@ -13,6 +13,10 @@ Use this skill to turn a modeling paper into an actionable EcoSIM site-simulatio
 - a procedure for preparing, running, and evaluating EcoSIM simulations for those sites
 
 Do not edit source papers or model inputs unless the user explicitly asks for implementation.
+
+## Trigger Phrases
+
+Use this skill whenever the request asks to `read paper for ecosim feasibility`, `read the paper for ecosim feasibility`, assess whether a paper can be simulated in EcoSIM, or judge EcoSIM feasibility from a paper/PDF.
 
 ## Paper Reading Workflow
 
