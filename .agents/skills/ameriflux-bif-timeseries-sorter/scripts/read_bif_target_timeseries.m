@@ -10,12 +10,15 @@ function data = read_bif_target_timeseries(outputDir, makePlot)
 %   target_timeseries/leaf_mass_per_area.csv
 %   target_timeseries/aboveground_biomass.csv
 %   target_timeseries/canopy_height.csv
+%   target_timeseries/fruit_yield.csv
+%   target_timeseries/total_yield.csv
 %
 % Returned tables include Time as datetime and Value as double. Original BIF
 % values, units, comments, and qualifiers are preserved in the table columns.
 
 if nargin < 1 || isempty(outputDir)
     outputDir = fullfile("result", "US-Ne3", "bif_timeseries");
+    makePlot= false;
 end
 if nargin < 2 || isempty(makePlot)
     makePlot = false;
@@ -27,6 +30,8 @@ series = [
     struct("name", "leaf_mass_per_area", "label", "Leaf mass per area")
     struct("name", "aboveground_biomass", "label", "Above-ground biomass")
     struct("name", "canopy_height", "label", "Canopy height")
+    struct("name", "fruit_yield", "label", "Fruit / grain yield")
+    struct("name", "total_yield", "label", "Total crop production")
 ];
 
 data = struct();
@@ -129,7 +134,7 @@ xlabel("Time");
 end
 
 function groupColumn = chooseGroupColumn(T)
-candidateColumns = ["AG_BIOMASS_CROP_ORGAN", "HEIGHTC_STATISTIC", "LAI_TYPE", "LMA_SPP"];
+candidateColumns = ["AG_PROD_CROP_ORGAN", "AG_BIOMASS_CROP_ORGAN", "HEIGHTC_STATISTIC", "LAI_TYPE", "LMA_SPP"];
 groupColumn = "";
 for i = 1:numel(candidateColumns)
     column = candidateColumns(i);

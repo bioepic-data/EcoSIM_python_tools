@@ -45,6 +45,22 @@ TARGET_SERIES = [
         "variable": "HEIGHTC",
         "qualifiers": ["HEIGHTC_STATISTIC"],
     },
+    {
+        "name": "fruit_yield",
+        "label": "Fruit / grain yield",
+        "group": "GRP_AG_PROD_CROP",
+        "variable": "AG_PROD_CROP",
+        "qualifiers": ["AG_PROD_CROP_ORGAN"],
+        "filters": {"AG_PROD_CROP_ORGAN": "Fruits"},
+    },
+    {
+        "name": "total_yield",
+        "label": "Total crop production",
+        "group": "GRP_AG_PROD_CROP",
+        "variable": "AG_PROD_CROP",
+        "qualifiers": ["AG_PROD_CROP_ORGAN"],
+        "filters": {"AG_PROD_CROP_ORGAN": "Total"},
+    },
 ]
 
 OBSERVATION_GROUPS = {
@@ -365,6 +381,9 @@ def target_series_rows(records: list[dict[str, str]], spec: dict[str, Any]) -> l
     for record in records:
         if record.get("VARIABLE_GROUP") != spec["group"]:
             continue
+        filters = spec.get("filters", {})
+        if any(record.get(field, "").strip().lower() != str(expected).strip().lower() for field, expected in filters.items()):
+            continue
         value = record.get(spec["variable"], "")
         if not value:
             continue
@@ -393,6 +412,9 @@ def target_series_rows(records: list[dict[str, str]], spec: dict[str, Any]) -> l
 def write_target_series(records: list[dict[str, str]], out_dir: Path, outputs: dict[str, str]) -> dict[str, Any]:
     target_dir = out_dir / "target_timeseries"
     target_dir.mkdir(parents=True, exist_ok=True)
+    stale_yield_path = target_dir / "yield.csv"
+    if stale_yield_path.exists():
+        stale_yield_path.unlink()
     outputs["target_timeseries_dir"] = str(target_dir)
     summary = {}
     base_fields = [
@@ -422,6 +444,7 @@ def write_target_series(records: list[dict[str, str]], out_dir: Path, outputs: d
             "records": len(rows),
             "variable_group": spec["group"],
             "variable": spec["variable"],
+            "filters": spec.get("filters", {}),
             "start": min(dates) if dates else "",
             "end": max(dates) if dates else "",
             "path": str(path),

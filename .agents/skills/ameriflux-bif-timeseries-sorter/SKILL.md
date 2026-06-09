@@ -1,6 +1,6 @@
 ---
 name: ameriflux-bif-timeseries-sorter
-description: Sort AmeriFlux BASE-BADM BIF variables from Excel or CSV files into observation, management-event, static metadata, and plotting-ready target time-series tables. Use when Codex is asked to sort AmeriFlux BIF variables into time series; organize BADM/BIF variables by date; pivot AMF *_BIF_*.xlsx files by GROUP_ID; output total LAI, leaf mass per area, above-ground biomass, or canopy height time series; write MATLAB readers for BIF time-series plotting; or prepare dated AmeriFlux site observations and management records for EcoSIM workflows.
+description: Sort AmeriFlux BASE-BADM BIF variables from Excel or CSV files into observation, management-event, static metadata, and plotting-ready target time-series tables. Use when Codex is asked to sort AmeriFlux BIF variables into time series; organize BADM/BIF variables by date; pivot AMF *_BIF_*.xlsx files by GROUP_ID; output total LAI, leaf mass per area, above-ground biomass, canopy height, fruit yield, or total yield time series; write MATLAB readers for BIF time-series plotting; or prepare dated AmeriFlux site observations and management records for EcoSIM workflows.
 ---
 
 # AmeriFlux BIF Time-Series Sorter
@@ -52,6 +52,8 @@ Do not treat BIF files as continuous half-hourly BASE flux files. BIF/BADM recor
    - `target_timeseries/leaf_mass_per_area.csv`: plotting-ready rows from `GRP_LMA` variable `LMA`.
    - `target_timeseries/aboveground_biomass.csv`: plotting-ready rows from `GRP_AG_BIOMASS_CROP` variable `AG_BIOMASS_CROP`, preserving organ, phenology, unit, and comments.
    - `target_timeseries/canopy_height.csv`: plotting-ready rows from `GRP_HEIGHTC` variable `HEIGHTC`, preserving statistic qualifiers.
+   - `target_timeseries/fruit_yield.csv`: plotting-ready rows from `GRP_AG_PROD_CROP` variable `AG_PROD_CROP` where `AG_PROD_CROP_ORGAN` is `Fruits`.
+   - `target_timeseries/total_yield.csv`: plotting-ready rows from `GRP_AG_PROD_CROP` variable `AG_PROD_CROP` where `AG_PROD_CROP_ORGAN` is `Total`.
    - `static_metadata.csv`: wide records without usable dates.
    - `summary.json`: counts, groups, date fields, and output paths.
 
@@ -72,16 +74,16 @@ python3 .agents/skills/ameriflux-bif-timeseries-sorter/scripts/sort_bif_timeseri
 
 The script accepts `.xlsx`, `.xlsm`, and CSV files. It uses `openpyxl` for Excel input and writes only CSV/JSON outputs.
 
-Use `scripts/read_bif_target_timeseries.m` in MATLAB to read the four plotting-ready target files:
+Use `scripts/read_bif_target_timeseries.m` in MATLAB to read the plotting-ready target files:
 
 ```matlab
 data = read_bif_target_timeseries("result/US-Ne3/bif_timeseries", true);
 ```
 
-The returned struct contains `data.total_lai`, `data.leaf_mass_per_area`, `data.aboveground_biomass`, and `data.canopy_height` tables. Each table includes `Time` as `datetime` and `Value` as numeric when the source values can be parsed.
+The returned struct contains `data.total_lai`, `data.leaf_mass_per_area`, `data.aboveground_biomass`, `data.canopy_height`, `data.fruit_yield`, and `data.total_yield` tables. Each table includes `Time` as `datetime` and `Value` as numeric when the source values can be parsed.
 
 ## EcoSIM Notes
 
-- Use observation groups such as LAI, crop biomass, height, biomass chemistry, and soil chemistry for model-data comparison after checking units and aggregation windows.
+- Use observation groups such as LAI, crop biomass, yield/crop production, height, biomass chemistry, and soil chemistry for model-data comparison after checking units and aggregation windows.
 - Use `GRP_DM_*` groups as candidate management inputs, but check event semantics before converting to EcoSIM planting, harvest, fertilization, irrigation, tillage, or pesticide records.
 - Do not silently convert units. Preserve raw units and report missing units where comparisons or EcoSIM inputs require conversion.

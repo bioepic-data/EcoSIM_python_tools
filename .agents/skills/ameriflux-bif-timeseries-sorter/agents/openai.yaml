@@ -1,4 +1,4 @@
 interface:
   display_name: "AmeriFlux BIF Time-Series Sorter"
   short_description: "Sort BIF variables for plotting."
-  default_prompt: "Sort this AmeriFlux BIF workbook into dated tables, including total LAI, leaf mass per area, above-ground biomass, and canopy height target time series for plotting."
+  default_prompt: "Sort this AmeriFlux BIF workbook into dated tables, including total LAI, leaf mass per area, above-ground biomass, canopy height, fruit yield, and total yield target time series for plotting."
