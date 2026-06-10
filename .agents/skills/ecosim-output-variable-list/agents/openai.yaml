@@ -1,0 +1,4 @@
+interface:
+  display_name: "EcoSIM Output Variables"
+  short_description: "Rebuild EcoSIM history output catalogs"
+  default_prompt: "Use $ecosim-output-variable-list to update the EcoSIM output-variable list from HistDataType.F90."
