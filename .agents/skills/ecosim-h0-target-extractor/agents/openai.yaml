@@ -1,0 +1,4 @@
+interface:
+  display_name: "EcoSIM h0 Targets"
+  short_description: "Summarize key h0 model targets"
+  default_prompt: "Use $ecosim-h0-target-extractor to extract annual GPP, annual ET, mid-season biomass, LAI, canopy height, root depth, Vcmax, and Jmax from an EcoSIM h0 file."
