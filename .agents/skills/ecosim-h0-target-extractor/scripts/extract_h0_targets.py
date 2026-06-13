@@ -448,6 +448,26 @@ def collect_target_units(metrics: Dict[str, object]) -> Dict[str, Dict[str, str]
     }
 
 
+def collect_target_ranges(metrics: Dict[str, object]) -> Dict[str, Dict[str, object]]:
+    ranges: Dict[str, Dict[str, object]] = {}
+    for key, metric in metrics.items():
+        summary = metric["summary"]
+        range_min = summary["min"]
+        range_max = summary["max"]
+        finite = np.isfinite(float(range_min)) and np.isfinite(float(range_max))
+        ranges[key] = {
+            "variable": str(metric["variable"]),
+            "units": str(metric["units"]),
+            "range_min": range_min if finite else None,
+            "range_max": range_max if finite else None,
+            "range_width": float(range_max - range_min) if finite else None,
+            "n_years": int(summary["n_years"]),
+            "basis": "range of derived per-year target values",
+            "temporal_context": str(metric["temporal_context"]),
+        }
+    return ranges
+
+
 def extract_targets(args: argparse.Namespace) -> Dict[str, object]:
     path = Path(args.h0_file)
     if not path.exists():
@@ -586,6 +606,7 @@ def extract_targets(args: argparse.Namespace) -> Dict[str, object]:
             "selected_variables": selected,
             "capacity_weight_method": weight_method,
             "target_units": collect_target_units(metrics),
+            "target_ranges": collect_target_ranges(metrics),
             "warnings": warnings,
             "metrics": metrics,
         }
@@ -611,6 +632,8 @@ def metric_rows(result: Dict[str, object]) -> Iterable[Dict[str, object]]:
             "metric": key,
             "variable": metric["variable"],
             "typical_value": summary["typical_value"],
+            "range_min": summary["min"],
+            "range_max": summary["max"],
             "mean": summary["mean"],
             "std": summary["std"],
             "min": summary["min"],
@@ -632,6 +655,8 @@ def write_csv(result: Dict[str, object], out) -> None:
         "metric",
         "variable",
         "typical_value",
+        "range_min",
+        "range_max",
         "mean",
         "std",
         "min",
@@ -689,15 +714,33 @@ def write_markdown(result: Dict[str, object], out) -> None:
             )
             + " |\n"
         )
+    out.write("\n## Target Ranges\n\n")
+    out.write("| metric | variable | range_min | range_max | units | basis |\n")
+    out.write("| --- | --- | --- | --- | --- | --- |\n")
+    for metric, info in result["target_ranges"].items():
+        out.write(
+            "| "
+            + " | ".join(
+                [
+                    md_escape(metric),
+                    md_escape(info["variable"]),
+                    md_escape(fmt(info["range_min"])),
+                    md_escape(fmt(info["range_max"])),
+                    md_escape(info["units"]),
+                    md_escape(info["basis"]),
+                ]
+            )
+            + " |\n"
+        )
     out.write("\n## Metrics\n\n")
-    fields = ["metric", "variable", "typical_value", "mean", "std", "units", "method"]
+    fields = ["metric", "variable", "typical_value", "range_min", "range_max", "mean", "std", "units", "method"]
     out.write("| " + " | ".join(fields) + " |\n")
     out.write("| " + " | ".join(["---"] * len(fields)) + " |\n")
     for row in metric_rows(result):
         out.write(
             "| "
             + " | ".join(
-                md_escape(fmt(row[field]) if field in {"typical_value", "mean", "std"} else row[field])
+                md_escape(fmt(row[field]) if field in {"typical_value", "range_min", "range_max", "mean", "std"} else row[field])
                 for field in fields
             )
             + " |\n"

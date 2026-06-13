@@ -37,7 +37,7 @@ python3 .agents/skills/ecosim-h0-target-extractor/scripts/extract_h0_targets.py 
 ```
 
 4. Review warnings, especially time-coordinate inference, cumulative-variable handling, and the Vcmax/Jmax weighting method.
-5. Report each target value with its source NetCDF units. Do not summarize target values without units.
+5. Report each target value with its source NetCDF units and range when finite values are available. Do not summarize target values without units.
 
 ## Default Variable Mapping
 
@@ -68,7 +68,7 @@ Use command-line overrides such as `--gpp-var`, `--root-var`, `--vcmax-var`, or 
 - Maximum primary-root depth is derived from `Root1stDepz_pft` by taking the maximum over primary-root axes, active PFTs, and complete-year time steps, usually in `m`.
 - Vcmax and Jmax are weighted by the shoot-C/SLA leaf-area proxy when available. If unavailable, use the active-PFT mean and report that choice.
 - Preserve source units and variable metadata in JSON output. Treat annual totals as source mass or water-depth units per year by temporal context, not by silently rewriting NetCDF units.
-- JSON output must include the top-level `target_units` lookup as well as per-metric `units` fields. Markdown and CSV output must include a units column.
+- JSON output must include the top-level `target_units` and `target_ranges` lookups as well as per-metric `units`, `min`, and `max` fields. Markdown output must include dedicated units and range tables. CSV output must include units and range columns.
 
 ## Date Handling
 
@@ -76,4 +76,4 @@ The script uses a real `time` coordinate when present. Some EcoSIM h0 files cont
 
 ## Reporting
 
-Report the output file path, selected h0 file, complete years used, mid-season window, typical median values with units, and warnings. If the annual GPP or ET method is `year_end_cumulative`, explicitly mention that the script did not sum daily cumulative rows.
+Report the output file path, selected h0 file, complete years used, mid-season window, typical median values with units and ranges, and warnings. If the annual GPP or ET method is `year_end_cumulative`, explicitly mention that the script did not sum daily cumulative rows.
