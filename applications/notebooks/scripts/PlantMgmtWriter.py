@@ -42,7 +42,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 import numpy as np
-from netCDF4 import Dataset, stringtochar
+from netCDF4 import Dataset
 
 
 STRING10 = 10
@@ -62,7 +62,7 @@ def pad_or_truncate(value: Any, max_len: int) -> str:
 
 def write_fixed_strlen(var, data: np.ndarray, strlen: int) -> None:
     arr = np.asarray(data, dtype=f"S{strlen}")
-    var[:] = stringtochar(arr)
+    var[:] = arr.view("S1").reshape(arr.shape + (strlen,))
 
 
 def fmt_date_ddmmyyyy(value: Any) -> str:
@@ -195,8 +195,8 @@ def create_nc(json_cfg: Dict[str, Any], out_path: str | Path) -> None:
         ds.createDimension("year", dims["year"])
         ds.createDimension("maxpfts", dims["maxpfts"])
         ds.createDimension("maxpmgt", dims["maxpmgt"])
-        ds.createDimension("string10", STRING10)
-        ds.createDimension("string128", STRING128)
+        ds.createDimension("nchar1", STRING10)
+        ds.createDimension("ncharmgnt", STRING128)
 
         v_NH1 = ds.createVariable("NH1", "i4", ("ntopou",))
         v_NV1 = ds.createVariable("NV1", "i4", ("ntopou",))
@@ -211,13 +211,13 @@ def create_nc(json_cfg: Dict[str, Any], out_path: str | Path) -> None:
             fill_value=DEFAULT_FILL_SHORT,
         )
         v_pft_type = ds.createVariable(
-            "pft_type", "S1", ("year", "ntopou", "maxpfts", "string10")
+            "pft_type", "S1", ("year", "ntopou", "maxpfts", "nchar1")
         )
         v_pft_pltinfo = ds.createVariable(
-            "pft_pltinfo", "S1", ("year", "ntopou", "maxpfts", "string128")
+            "pft_pltinfo", "S1", ("year", "ntopou", "maxpfts", "ncharmgnt")
         )
         v_pft_mgmt = ds.createVariable(
-            "pft_mgmt", "S1", ("year", "ntopou", "maxpfts", "maxpmgt", "string128")
+            "pft_mgmt", "S1", ("year", "ntopou", "maxpfts", "maxpmgt", "ncharmgnt")
         )
         v_pft_dflag = ds.createVariable("pft_dflag", "i4")
 
@@ -229,7 +229,6 @@ def create_nc(json_cfg: Dict[str, Any], out_path: str | Path) -> None:
         v_NZ[:] = np.array([tu["NZ"] for tu in topo_units], dtype=np.int32)
         v_pft_dflag.assignValue(pft_dflag)
         v_nmgnts[:] = DEFAULT_FILL_SHORT
-        print('here1')
 
         pft_type_data = np.full(
             (dims["year"], dims["ntopou"], dims["maxpfts"]),
