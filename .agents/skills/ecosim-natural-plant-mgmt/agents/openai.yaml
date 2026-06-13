@@ -1,4 +1,4 @@
 interface:
   display_name: "EcoSIM Natural Plant Mgmt"
-  short_description: "Write natural-ecosystem plant management inputs"
-  default_prompt: "Use $ecosim-natural-plant-mgmt to prepare EcoSIM plant management JSON or NetCDF for natural ecosystem PFTs."
+  short_description: "Edit EcoSIM plant management NetCDF, Excel, and JSON"
+  default_prompt: "Use $ecosim-natural-plant-mgmt to prepare, validate, or round-trip EcoSIM plant management NetCDF, Excel, and JSON files."

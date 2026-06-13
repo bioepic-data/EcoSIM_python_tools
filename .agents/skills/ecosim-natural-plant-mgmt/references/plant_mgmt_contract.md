@@ -1,6 +1,6 @@
 # EcoSIM Plant Management Contract
 
-Use this reference for exact file layout and natural-ecosystem conventions. The reader is `f90src/IOutils/PlantInfoMod.F90`; harvest type constants are in `f90src/Modelconfig/ElmIDMod.F90`; the preferred JSON-to-NetCDF helper is `applications/notebooks/scripts/PlantMgmtWriter.py`.
+Use this reference for exact file layout, Excel editing schema, and natural-ecosystem conventions. The reader is `f90src/IOutils/PlantInfoMod.F90`; harvest type constants are in `f90src/Modelconfig/ElmIDMod.F90`; the preferred JSON-to-NetCDF helper is `applications/notebooks/scripts/PlantMgmtWriter.py`; the bundled Excel bridge is `scripts/plant_mgmt_excel_bridge.py`.
 
 ## NetCDF Layout
 
@@ -14,6 +14,8 @@ maxpmgt     24 management events per PFT per year
 nchar1      10 chars for pft_type
 ncharmgnt   128 chars for planting/management strings
 ```
+
+Some existing files use `string10` and `string128` instead of `nchar1` and `ncharmgnt`. The Fortran reader indexes variables, not dimension names, so either naming convention is acceptable when the variable shapes match.
 
 Required variables:
 
@@ -40,6 +42,8 @@ pft_mgmt(year, ntopou, maxpfts, maxpmgt, ncharmgnt)  required if any nmgnts > 0
 other nonzero  reader matches yearc, the current model year
 ```
 
+In the selected `uptakSep/f90src/IOutils/PlantInfoMod.F90`, `pft_dflag=1` also sets `pft_changed` true during management reads. `readq` passes that into plant-property/trait handling, so transient files may trigger trait/property refresh behavior even when the PFT code itself is unchanged.
+
 ## String Formats
 
 `pft_type` is read for each active PFT. If `KoppenClimZone_col > 0`, EcoSIM replaces the suffix with the grid Koppen code by using the first four chars plus the two-digit climate code. Keep six-character validated codes in JSON anyway.
@@ -62,6 +66,8 @@ Management event string:
 DDMMYYYY ICUT JCUT HCUT PCUT ECUT11 ECUT12 ECUT13 ECUT14 ECUT21 ECUT22 ECUT23 ECUT24
 ```
 
+`PlantMgmtWriter.py` writes this as a comma-separated string. The Fortran reader uses list-directed `READ`, so comma-separated and whitespace-separated fields are both valid as long as all 13 fields are present.
+
 `ICUT` values:
 
 ```text
@@ -83,6 +89,100 @@ DDMMYYYY ICUT JCUT HCUT PCUT ECUT11 ECUT12 ECUT13 ECUT14 ECUT21 ECUT22 ECUT23 EC
 ```
 
 For `ICUT=4` or `ICUT=6`, the reader treats event pairs as grazing/herbivory start and end dates, filling the intervening days with the same settings. Do not use that pairing for the default tree thinning events.
+
+The PFT-level fractions select how much of the component is harvested from the PFT. The ecosystem-level fractions are conditional on that harvested amount:
+
+```text
+harvested_from_pft = component_pool * pft_level_harvest_fraction
+exported_from_ecosystem = harvested_from_pft * ecosystem_level_harvest_fraction
+litter_return = harvested_from_pft * (1 - ecosystem_level_harvest_fraction)
+```
+
+Date caveat: the selected `PlantInfoMod.F90` parses `DDMMYYYY`, calls `isLeap(IYR)`, and then computes ordinal day. `MiniMathMod.isLeap(0)` is true, so dates with year `0000` are treated as leap-year dates. For transient annual schedules, use the actual year in `DDMMYYYY` if exact non-leap day alignment is important; reserve `0000` for deliberately yearless management conventions.
+
+## Excel Editing Schema
+
+Use `scripts/plant_mgmt_excel_bridge.py` to round-trip NetCDF, Excel, and JSON. The workbook has four sheets:
+
+```text
+control
+topo_units
+pft_years
+management
+```
+
+`control` columns:
+
+```text
+key
+value
+```
+
+Required `control` row:
+
+```text
+pft_dflag
+```
+
+`topo_units` columns:
+
+```text
+topou
+NH1
+NV1
+NH2
+NV2
+NZ
+```
+
+`pft_years` columns:
+
+```text
+year
+topou
+pft_slot
+pft_type
+planting_DDMMYYYY
+Planting_population
+Planting_depth
+nmgnts
+```
+
+The bridge writes `nmgnts` for inspection, but derives the actual output count from rows in the `management` sheet when converting Excel back to JSON or NetCDF.
+
+`management` columns:
+
+```text
+year
+topou
+pft_slot
+event_index
+DDMMYYYY
+iHarvType
+jHarvType
+CutHeight
+FractionCut
+FineFractionLeafHarvested_pft
+FineFractionNonleafHarvested_pft
+StalkFractionHarvested_pft
+StandeadFractionHarvested_pft
+FineFractionLeafHarvested_col
+FineFractionNonleafHarvested_col
+StalkFractionHarvested_col
+StandeadFractionHarvested_col
+```
+
+Each management row must reference an existing `(year, topou, pft_slot)` row in `pft_years`. PFT slots must be contiguous starting at 1 for each `(topou, year)` because `PlantMgmtWriter.py` writes PFT lists by array position.
+
+Common commands:
+
+```bash
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py nc-to-xlsx input.nc editable.xlsx
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py xlsx-to-json editable.xlsx edited.json
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py xlsx-to-nc editable.xlsx edited.nc --json-output edited.json
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py json-to-xlsx input.json editable.xlsx
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py json-to-nc input.json output.nc
+```
 
 ## Natural Ecosystem JSON Pattern
 

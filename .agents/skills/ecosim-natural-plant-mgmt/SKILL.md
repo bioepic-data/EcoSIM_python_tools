@@ -1,35 +1,43 @@
 ---
 name: ecosim-natural-plant-mgmt
-description: "Prepare EcoSIM plant management inputs for natural ecosystems using pft_mgmt_in JSON and NetCDF files. Use when creating or validating natural PFT plant management data, pft_type blocks, pft_pltinfo planting strings, monthly tree thinning events, or PlantMgmtWriter.py inputs for EcoSIM."
+description: "Prepare, validate, and edit EcoSIM plant management inputs using pft_mgmt_in NetCDF, editable Excel workbooks, and optional PlantMgmtWriter.py JSON files. Use when creating or checking natural PFT management data, converting pft-mngt NetCDF to an Excel sheet for editing, converting edited Excel back to JSON or NetCDF, validating pft_type/pft_pltinfo/pft_mgmt entries, or preparing PlantMgmtWriter.py inputs for EcoSIM."
 ---
 
 # EcoSIM Natural Plant Management
 
 ## Overview
 
-Use this skill to build EcoSIM `pft_mgmt_in` inputs for natural ecosystems. Natural PFTs normally need only planting information; tree PFTs also receive an annual 1% thinning rate spread uniformly over 12 monthly events.
+Use this skill to build, validate, or edit EcoSIM `pft_mgmt_in` inputs for natural ecosystems. Natural PFTs normally need planting information; tree PFTs also receive an annual 1% thinning rate spread uniformly over 12 monthly events. Existing NetCDF files can be exported to an Excel workbook for editing, then converted back to JSON or NetCDF.
 
-Read `references/plant_mgmt_contract.md` when you need exact NetCDF dimensions, variable names, string formats, thinning event fields, or JSON examples.
+Read `references/plant_mgmt_contract.md` when you need exact NetCDF dimensions, Excel sheet columns, variable names, string formats, thinning event fields, or JSON examples.
 
 ## Workflow
 
-1. Identify active PFTs for each topo unit and validate their EcoSIM vegetation codes with `$ecosim-vegetation-code` against `templates/ecosim_pftpar_20260303.nc.cdl`.
-2. Use `pft_dflag = 0` for constant natural vegetation unless the user explicitly needs transient yearly PFT composition. With `pft_dflag = 0`, include one year record such as `2000`; EcoSIM uses record 1.
-3. Set each topo unit `NZ` to the active PFT count. Do not exceed `maxpfts = 5`; only the first `NZ` PFT entries matter.
-4. For each PFT, set `pft_type` to the validated six-character EcoSIM code. EcoSIM will use the first four characters plus grid Koppen code when `KoppenClimZone_col > 0`, but keep the full validated code for clarity.
-5. For planting, use `DDMMYYYY = "01019999"` unless the user provides a site-specific date. Derive `Planting_population` from web/literature evidence as plants or shoots per square meter, and derive `Planting_depth` in meters from species/PFT establishment information.
-6. For non-tree natural PFTs, set `mgmt: []`.
-7. For tree PFTs, add 12 monthly thinning events using `FractionCut = 0.01 / 12 = 0.0008333333`. Use no exported harvest fractions unless the user requests biomass removal from the ecosystem.
-8. Write JSON first, then convert to NetCDF with the existing helper. Use a Python environment with `netCDF4` installed; in this repo `.venv-cmip6/bin/python` is known to work.
+1. Identify active PFTs for each topo unit and validate EcoSIM vegetation codes with `$ecosim-vegetation-code` against the active PFT parameter CDL.
+2. Choose the editing path:
+   - For an existing `.nc`, export to Excel, edit the workbook, then convert the edited workbook back to JSON or NetCDF.
+   - For a new file, create either JSON directly or an Excel workbook matching the contract schema.
+3. Set `pft_dflag = 0` for constant natural vegetation unless year-specific PFT composition or management is needed. With `pft_dflag = 0`, EcoSIM uses record 1. With `pft_dflag = 1`, the selected `PlantInfoMod.F90` matches the forcing year (`yeari`) to the NetCDF `year` record.
+4. Set each topo unit `NZ` to the active PFT count. Do not exceed `maxpfts = 5`; only the first `NZ` PFT entries matter.
+5. For each PFT, set `pft_type` to the validated six-character EcoSIM code. EcoSIM will use the first four characters plus the grid Koppen code when `KoppenClimZone_col > 0`, but keep the full validated code for clarity.
+6. For planting, use `DDMMYYYY = "01019999"` unless the user provides a site-specific date. Derive `Planting_population` as plants, shoots, tillers, or stems per square meter and `Planting_depth` in meters.
+7. For non-tree natural PFTs, set `mgmt` empty. For tree PFTs, add 12 monthly thinning events using `FractionCut = 0.01 / 12 = 0.0008333333`.
+
+## Conversion Commands
+
+Use the bundled bridge for NetCDF, Excel, and JSON conversions:
 
 ```bash
-.venv-cmip6/bin/python applications/notebooks/scripts/PlantMgmtWriter.py input.json output.nc
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py nc-to-xlsx pft-mngt.nc pft-mngt.xlsx
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py xlsx-to-json pft-mngt.xlsx pft-mngt.json
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py xlsx-to-nc pft-mngt.xlsx pft-mngt-edited.nc --json-output pft-mngt-edited.json
 ```
 
-If that helper is not present in the active repo, use:
+JSON remains supported. To create NetCDF directly from JSON, use either the bridge or `PlantMgmtWriter.py`:
 
 ```bash
-python /Users/jinyuntang/work/github/ecosim_workspace/main/python_tools/applications/notebooks/scripts/PlantMgmtWriter.py input.json output.nc
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py json-to-nc input.json output.nc
+.venv-cmip6/bin/python applications/notebooks/scripts/PlantMgmtWriter.py input.json output.nc
 ```
 
 ## Evidence Rules
@@ -71,13 +79,22 @@ Each thinning event should use:
 
 This represents natural mortality/thinning without ecosystem biomass export. Flag the mass-flow assumption if changing ecosystem-level export fractions.
 
-## Validation
+For harvested biomass, the ecosystem-level harvest fraction applies to the harvested component, not to the original component pool. Litter return is:
 
-Run the writer and check:
-
-```bash
-.venv-cmip6/bin/python applications/notebooks/scripts/PlantMgmtWriter.py input.json output.nc
-ncdump -h output.nc
+```text
+component_pool * pft_harvest_fraction * (1 - ecosystem_harvest_fraction)
 ```
 
-Verify that `pft_dflag`, `year`, `NH1/NV1/NH2/NV2/NZ`, `pft_type`, `pft_pltinfo`, `nmgnts`, and `pft_mgmt` exist; `NZ` equals active PFT count; non-tree PFTs have zero management events; tree PFTs have 12 events.
+For transient yearly schedules, prefer actual calendar years in `DDMMYYYY` if exact day-of-year alignment matters. The selected `PlantInfoMod.F90` treats year `0000` as a leap year when converting dates to ordinal day.
+
+## Validation
+
+Run the bridge round trip on a scratch path and inspect the decoded JSON:
+
+```bash
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py nc-to-json input.nc /tmp/pft-mgmt.json
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py nc-to-xlsx input.nc /tmp/pft-mgmt.xlsx
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py xlsx-to-nc /tmp/pft-mgmt.xlsx /tmp/pft-mgmt-roundtrip.nc --json-output /tmp/pft-mgmt-roundtrip.json
+```
+
+Verify that `pft_dflag`, `year`, `NH1/NV1/NH2/NV2/NZ`, `pft_type`, `pft_pltinfo`, `nmgnts`, and `pft_mgmt` exist; `NZ` equals active PFT count; `nmgnts` equals populated management rows; non-tree PFTs have zero management events unless explicitly managed; tree PFTs have 12 thinning events when using the natural-tree convention.
