@@ -1,0 +1,4 @@
+interface:
+  display_name: "EcoSIM Soil Mgmt"
+  short_description: "Inspect and edit EcoSIM soil management NetCDF, Excel, and JSON"
+  default_prompt: "Use $ecosim-soil-mgmt to inspect, validate, or round-trip EcoSIM soil management NetCDF, Excel, and JSON files."
