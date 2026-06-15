@@ -1,0 +1,4 @@
+interface:
+  display_name: "BIF EcoSIM Mgmt"
+  short_description: "Extract AmeriFlux BIF management into EcoSIM plant and soil workbooks"
+  default_prompt: "Use $ameriflux-bif-ecosim-mgmt to extract planting, harvest, fertilizer, and tillage records from an AmeriFlux BIF workbook into EcoSIM-editable Excel files."
