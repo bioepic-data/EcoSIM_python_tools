@@ -1,6 +1,6 @@
 ---
 name: ameriflux-surgo-grid-extract
-description: Extract dominant-component soil profile variables for EcoSIM grid or template inputs from gSSURGO, with FAO HWSD v2.0 fallback when gSSURGO data are unavailable or incomplete. Use when deriving soil depth, bulk density, field capacity, wilting point, hydraulic conductivity, texture, rock fraction, pH, CEC, or soil organic carbon.
+description: Extract dominant-component soil profile variables for EcoSIM grid or template inputs from gSSURGO, with FAO HWSD v2.0 fallback when gSSURGO data are unavailable or incomplete. Use when deriving soil depth, bulk density, field capacity, wilting point, hydraulic conductivity, texture, rock fraction, pH, CEC, or soil organic carbon; or when converting EcoSIM grid NetCDF files to editable Excel workbooks and back.
 ---
 
 # AmeriFlux gSSURGO/FAO Grid Extractor
@@ -11,10 +11,15 @@ description: Extract dominant-component soil profile variables for EcoSIM grid o
 - You need FAO HWSD v2.0 fallback values when gSSURGO is outside coverage, unavailable, or has missing layer values.
 - You need EcoSIM template variables such as `CDPTH`, `BKDSI`, `FC`, `WP`, `SCNV`, `SCNH`, `CSAND`, `CSILT`, `ROCK`, `PH`, `CEC`, or `CORGC`.
 - You need depth-weighted interpolation from source horizons or HWSD2 layers to EcoSIM soil layers.
+- You need to inspect or edit an existing EcoSIM grid NetCDF as an Excel
+  workbook, then rebuild the NetCDF after edits.
 
 ## Constraints
 
 - NEVER use it extract climate data.
+- Do not require atmospheric gas scalar variables in EcoSIM grid files. Treat
+  `OXYEG` (or typo `OXYGE`), `Z2GEG`, `CO2EIG`, `CH4EG`, `Z2OEG`, and
+  `ZNH3EG` as optional legacy/template variables, not derivation gaps.
 
 ## Workflow
 
@@ -130,6 +135,11 @@ external datasets or modeling assumptions:
 - Exchange coefficients (GKC*)
 - Water table dynamics
 
+The atmospheric gas scalar variables `OXYEG`/`OXYGE`, `Z2GEG`, `CO2EIG`,
+`CH4EG`, `Z2OEG`, and `ZNH3EG` are not part of this soil-grid derivation
+contract. If they are absent from a generated grid NetCDF, do not flag the file
+as incomplete for this skill.
+
 ## Vertical Interpolation
 
 - Use overlap-weighted averaging for most variables.
@@ -140,6 +150,11 @@ external datasets or modeling assumptions:
 
 A Python script (`extract_gssurgo_profile.py`) automates spatial lookup, horizon
 extraction, variable conversion, vertical interpolation, and FAO HWSD2 fallback.
+
+The companion bridge script
+(`scripts/grid_netcdf_excel_bridge.py`) converts an EcoSIM grid NetCDF to an
+editable `.xlsx` workbook and back. Use it for file-wide parameter inspection
+or manual edits to grid parameters.
 
 ## Example Usage
 
@@ -156,6 +171,33 @@ python .agents/skills/ameriflux-surgo-grid-extract/extract_gssurgo_profile.py \
 The FAO fallback is enabled by default and looks under `data/FAO_HWSD2`. Use
 `--fao-hwsd2-dir /path/to/FAO_HWSD2` to override the location, or
 `--no-fao-fallback` for a strict gSSURGO-only run.
+
+## Grid NetCDF Excel Bridge
+
+Use the bundled bridge for grid NetCDF, Excel, and NetCDF round trips:
+
+```bash
+.venv-cmip6/bin/python .agents/skills/ameriflux-surgo-grid-extract/scripts/grid_netcdf_excel_bridge.py \
+  nc-to-xlsx input_grid.nc editable_grid.xlsx
+
+.venv-cmip6/bin/python .agents/skills/ameriflux-surgo-grid-extract/scripts/grid_netcdf_excel_bridge.py \
+  xlsx-to-nc editable_grid.xlsx edited_grid.nc --format NETCDF3_CLASSIC
+```
+
+Workbook sheets:
+
+- `dimensions`: NetCDF dimension names, lengths, and unlimited flags.
+- `global_attrs`: global NetCDF attributes.
+- `variables`: variable names, dtypes, dimensions, and fill values.
+- `variable_attrs`: per-variable metadata such as `long_name`, `units`, and
+  `flags`.
+- `values`: flattened variable values with zero-based index tuples.
+
+After editing, run a scratch round trip and compare dimensions, variables,
+attributes, and data values before using the rebuilt grid file in EcoSIM. Pay
+special attention to units and mass-balance-sensitive pools; the bridge edits
+values mechanically and does not make non-derivable parameters scientifically
+valid.
 
 ## Notes
 
