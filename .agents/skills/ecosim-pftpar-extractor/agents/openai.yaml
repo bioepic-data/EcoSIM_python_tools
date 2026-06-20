@@ -1,0 +1,4 @@
+interface:
+  display_name: "EcoSIM PFT Parameter Extractor"
+  short_description: "Extract one EcoSIM PFT parameter record"
+  default_prompt: "Use $ecosim-pftpar-extractor to extract one PFT code from an EcoSIM PFT-parameter NetCDF file."
