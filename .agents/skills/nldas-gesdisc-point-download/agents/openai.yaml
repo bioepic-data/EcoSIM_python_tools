@@ -1,0 +1,4 @@
+interface:
+  display_name: "NLDAS GES DISC Point Download"
+  short_description: "Download NLDAS point forcing from GES DISC"
+  default_prompt: "Use $nldas-gesdisc-point-download to download NLDAS_FORA0125_H primary forcing data for a longitude/latitude point."
