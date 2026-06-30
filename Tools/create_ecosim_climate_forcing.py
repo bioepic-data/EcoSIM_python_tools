@@ -105,13 +105,18 @@ def run_site_info(site_id, output_dir="result"):
 
 def find_era5_file(site_id, data_dir="data"):
     """Find the ERA5 CSV file for the site."""
-    # Look for directories starting with AMF_<site_id>
-    for item in os.listdir(data_dir):
-        if item.startswith(f"AMF_{site_id}_") and os.path.isdir(os.path.join(data_dir, item)):
-            # Accept both legacy ERA5_HR and current ERA5_HH filenames.
-            for file in os.listdir(os.path.join(data_dir, item)):
-                if ("ERA5_HR" in file or "ERA5_HH" in file) and file.endswith(".csv"):
-                    return os.path.join(data_dir, item, file)
+    # Look for directories starting with AMF_<site_id>. Some local archives,
+    # such as data/amf300, are symlinked and add another directory level.
+    for root, dirs, files in os.walk(data_dir, followlinks=True):
+        dirs[:] = [
+            directory for directory in dirs
+            if directory.startswith("AMF_") or directory.lower() in {"amf300", "data"}
+        ]
+        if not os.path.basename(root).startswith(f"AMF_{site_id}_"):
+            continue
+        for file in files:
+            if ("ERA5_HR" in file or "ERA5_HH" in file) and file.endswith(".csv"):
+                return os.path.join(root, file)
     return None
 
 def run_era5_conversion(era5_file, output_file, site_id, quality_report_file=None):
