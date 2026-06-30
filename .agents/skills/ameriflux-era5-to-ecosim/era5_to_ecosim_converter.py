@@ -78,6 +78,21 @@ def parse_timestamps(timestamp_str):
     minute = int(timestamp_str[10:12])
     return datetime(year, month, day, hour, minute)
 
+def infer_source_frequency(timestamps):
+    """Infer the AmeriFlux source timestep for QC reindexing."""
+    deltas = timestamps.sort_values().diff().dropna().dt.total_seconds()
+    if deltas.empty:
+        return "30min"
+    median_seconds = float(deltas.median())
+    if 3300 <= median_seconds <= 3900:
+        return "1h"
+    if 1500 <= median_seconds <= 2100:
+        return "30min"
+    inferred = pd.infer_freq(timestamps.sort_values())
+    if inferred:
+        return inferred
+    return "30min"
+
 def convert_era5_to_ecosim(era5_file, output_file, longitude, elevation=None, quality_report_file=None):
     """
     Convert ERA5 half-hourly data to ECOSIM hourly format.
@@ -94,81 +109,62 @@ def convert_era5_to_ecosim(era5_file, output_file, longitude, elevation=None, qu
     # Parse timestamps
     df['timestamp_start'] = df['TIMESTAMP_START'].apply(parse_timestamps)
     df['timestamp_end'] = df['TIMESTAMP_END'].apply(parse_timestamps)
-    df, quality_report = sanitize_era5_dataframe(df, elevation_m=elevation)
+    source_frequency = infer_source_frequency(df['timestamp_start'])
+    df, quality_report = sanitize_era5_dataframe(
+        df,
+        elevation_m=elevation,
+        frequency=source_frequency,
+    )
 
-    # Convert to hourly data by averaging consecutive half-hourly values
-    # We need to group by hour and average the values
+    # Convert to hourly data by averaging consecutive half-hourly values.
     df['hour'] = df['timestamp_start'].dt.hour
     df['day_of_year'] = df['timestamp_start'].dt.dayofyear
     df['year'] = df['timestamp_start'].dt.year
 
-    # Create hourly data by grouping consecutive half-hourly data
-    hourly_data = []
-
-    # Get unique years
-    years = df['year'].unique()
-
-    for year in years:
-        year_data = df[df['year'] == year]
-
-        # For each day of the year, we need to process the data
-        for day in range(1, 367):  # 1-366 days
-            day_data = year_data[year_data['day_of_year'] == day]
-
-            # If we have data for this day, we need to convert to hourly
-            if len(day_data) > 0:
-                # Process each hour - we need to pair up consecutive half-hourly records
-                for hour in range(24):
-                    # Get the two half-hourly records for this hour
-                    hour_data = day_data[day_data['hour'] == hour]
-
-                    # Check if we have 2 records (one for each half-hour)
-                    if len(hour_data) == 2:
-                        # Average the two half-hourly values
-                        hourly_row = {
-                            'year': year,
-                            'day': day,
-                            'hour': hour,
-                            'TMPH': hour_data['TA_ERA'].mean(),  # Air temperature
-                            'WINDH': hour_data['WS_ERA'].mean(),  # Wind speed
-                            'RAINH': hour_data['P_ERA'].sum(),    # Precipitation (sum over half-hour)
-                            'DWPTH': hour_data['VPD_ERA'].mean(), # Vapor pressure (using VPD, need to convert)
-                            'SRADH': hour_data['SW_IN_ERA'].mean(), # Solar radiation
-                            'PATM': hour_data['PA_ERA'].mean()    # Atmospheric pressure
-                        }
-                    elif len(hour_data) == 1:
-                        # If only one value, use it
-                        hourly_row = {
-                            'year': year,
-                            'day': day,
-                            'hour': hour,
-                            'TMPH': hour_data['TA_ERA'].iloc[0],
-                            'WINDH': hour_data['WS_ERA'].iloc[0],
-                            'RAINH': hour_data['P_ERA'].iloc[0],
-                            'DWPTH': hour_data['VPD_ERA'].iloc[0],
-                            'SRADH': hour_data['SW_IN_ERA'].iloc[0],
-                            'PATM': hour_data['PA_ERA'].iloc[0]   # Atmospheric pressure
-                        }
-                    else:
-                        # No data for this hour, fill with missing value
-                        hourly_row = {
-                            'year': year,
-                            'day': day,
-                            'hour': hour,
-                            'TMPH': 1e30,
-                            'WINDH': 1e30,
-                            'RAINH': 1e30,
-                            'DWPTH': 1e30,
-                            'SRADH': 1e30,
-                            'PATM': 1e30
-                        }
-                    hourly_data.append(hourly_row)
-
-    # Create a DataFrame for hourly data
-    hourly_df = pd.DataFrame(hourly_data)
+    hourly_df = (
+        df.groupby(['year', 'day_of_year', 'hour'], as_index=False)
+        .agg(
+            TMPH=('TA_ERA', 'mean'),
+            WINDH=('WS_ERA', 'mean'),
+            RAINH=('P_ERA', 'sum'),
+            DWPTH=('VPD_ERA', 'mean'),
+            SRADH=('SW_IN_ERA', 'mean'),
+            PATM=('PA_ERA', 'mean'),
+        )
+        .rename(columns={'day_of_year': 'day'})
+    )
+    # AmeriFlux ERA5 reports VPD_ERA in hPa; EcoSIM climate files use kPa.
+    hourly_df['DWPTH'] = hourly_df['DWPTH'] / 10.0
 
     # Create the netCDF file
     create_ecosim_climate_file(hourly_df, output_file, longitude)
+
+    # Record the output in a YAML file
+    try:
+        import yaml
+        site_id = args.site_id if 'args' in locals() else "unknown_site"
+        # Attempt to resolve a result directory based on site_id
+        result_dir = f"result/{site_id}"
+        os.makedirs(result_dir, exist_ok=True)
+        yaml_path = os.path.join(result_dir, f"{site_id}_forcing.yaml")
+
+        forcing_data = {"clm_hour_file_in": os.path.abspath(output_file)}
+
+        # If YAML already exists, preserve other keys (like grid_file_in)
+        if os.path.exists(yaml_path):
+            with open(yaml_path, 'r') as f:
+                existing_data = yaml.safe_load(f) or {}
+                forcing_data.update(existing_data)
+                forcing_data["clm_hour_file_in"] = os.path.abspath(output_file)
+
+        with open(yaml_path, 'w') as f:
+            yaml.dump(forcing_data, f, default_flow_style=False)
+        print(f"Climate forcing path recorded in {yaml_path}")
+    except ImportError:
+        print("PyYAML not installed; could not record forcing path to YAML.", file=sys.stderr)
+    except Exception as e:
+        print(f"Error recording forcing path to YAML: {e}", file=sys.stderr)
+
     if quality_report_file:
         quality_report_dir = os.path.dirname(quality_report_file)
         if quality_report_dir:
@@ -298,32 +294,24 @@ def create_ecosim_climate_file(df, output_file, longitude):
     # Create a simple mapping of years to indices
     unique_years = sorted(df['year'].unique())
 
-    # Fill in the data
-    for i, year in enumerate(unique_years):
-        year_mask = df['year'] == year
-        year_data = df[year_mask]
+    year_var[:] = unique_years
 
-        # Set year value
-        year_var[i] = year
+    year_lookup = {year: idx for idx, year in enumerate(unique_years)}
+    year_idx = df['year'].map(year_lookup).to_numpy(dtype=np.int64)
+    day_idx = df['day'].to_numpy(dtype=np.int64) - 1
+    hour_idx = df['hour'].to_numpy(dtype=np.int64)
 
-        # Fill data for each day and hour
-        for day in range(1, 367):
-            day_mask = year_data['day'] == day
-            if day_mask.any():
-                day_data = year_data[day_mask]
-
-                for hour in range(24):
-                    hour_mask = day_data['hour'] == hour
-                    if hour_mask.any():
-                        row = day_data[hour_mask].iloc[0]
-
-                        # Fill variables
-                        tmp_var[i, day-1, hour, 0] = row['TMPH']
-                        wind_var[i, day-1, hour, 0] = row['WINDH']
-                        rain_var[i, day-1, hour, 0] = row['RAINH']
-                        dwpt_var[i, day-1, hour, 0] = row['DWPTH']
-                        srad_var[i, day-1, hour, 0] = row['SRADH']
-                        patm_var[i, day-1, hour, 0] = row['PATM']
+    for variable, column in (
+        (tmp_var, 'TMPH'),
+        (wind_var, 'WINDH'),
+        (rain_var, 'RAINH'),
+        (dwpt_var, 'DWPTH'),
+        (srad_var, 'SRADH'),
+        (patm_var, 'PATM'),
+    ):
+        data = np.full((nyears, ndays, nhours, ngrid), 1e30, dtype='f4')
+        data[year_idx, day_idx, hour_idx, 0] = df[column].to_numpy(dtype='f4')
+        variable[:] = data
 
     # Set other fixed variables
     for i, year in enumerate(unique_years):

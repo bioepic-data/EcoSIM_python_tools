@@ -1,6 +1,6 @@
 ---
 name: ameriflux-era5-to-ecosim
-description: Convert AmeriFlux ERA5 half-hourly meteorological CSV files into EcoSIM hourly climate forcing NetCDF files. Use when preparing EcoSIM climate inputs from AmeriFlux ERA5 variables and when validating physical ranges or writing quality reports.
+description: Convert AmeriFlux ERA5 half-hourly meteorological CSV files into EcoSIM hourly climate forcing NetCDF files. Use when preparing EcoSIM climate inputs from AmeriFlux ERA5 variables and when validating physical ranges or writing quality reports. For non-AmeriFlux paper sites that need a fresh Copernicus CDS ERA5 point download by longitude/latitude, use era5-cds-point-download first.
 ---
 
 # AmeriFlux ERA5 to EcoSIM Converter
@@ -10,6 +10,7 @@ description: Convert AmeriFlux ERA5 half-hourly meteorological CSV files into Ec
 - You need to convert AmeriFlux ERA5 CSV forcing data to EcoSIM NetCDF climate forcing.
 - You need hourly `TMPH`, `WINDH`, `RAINH`, `DWPTH`, `SRADH`, or `PATM` variables.
 - You need range-aware quality control and a JSON quality report for climate forcing.
+- You already have an AmeriFlux-format ERA5 CSV. If the task is to download global CDS ERA5 point data for a non-AmeriFlux literature site, use `era5-cds-point-download` before any EcoSIM conversion.
 
 ## Constraints
 - NEVER use it extract soil data.
@@ -17,6 +18,8 @@ description: Convert AmeriFlux ERA5 half-hourly meteorological CSV files into Ec
 ## Overview
 
 This skill converts Ameriflux ERA5 half-hourly climate forcing data into the ECOSIM hourly climate format. The conversion process transforms climate data from the ERA5 format (provided by Ameriflux) to the ECOSIM climate forcing format as specified in the `Blodget.clim.2012-2022.template` file.
+
+For ordinary paper-derived sites outside AmeriFlux/FLUXNET, keep ERA5 acquisition separate: use `era5-cds-point-download` to retrieve Copernicus CDS point time series by longitude/latitude, inspect source units and accumulation conventions, then adapt or convert the data into the AmeriFlux-format columns expected here only after those units are verified.
 
 ## Input Data Format
 
@@ -30,6 +33,11 @@ The input is a CSV file with the following columns:
 - `PA_ERA`: Atmospheric pressure (kPa)
 - `P_ERA`: Precipitation (mm h⁻¹)
 - `WS_ERA`: Wind speed (m s⁻¹)
+
+Pay close attention to the source ERA5 time step before conversion. AmeriFlux
+archives may provide `ERA5_HH` half-hourly files or `ERA5_HR` hourly files, and
+precipitation aggregation must match that cadence to avoid doubling or otherwise
+distorting the water input.
 
 ## Output Data Format
 
