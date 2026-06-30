@@ -1,0 +1,4 @@
+interface:
+  display_name: "Global Aux Climate Chemistry"
+  short_description: "Derive non-US EcoSIM chemistry forcing."
+  default_prompt: "Use $global-aux-climate-chemistry to choose and stage CAMS, EBAS, EANET, or MERRA-2 auxiliary precipitation chemistry for this non-US EcoSIM site."

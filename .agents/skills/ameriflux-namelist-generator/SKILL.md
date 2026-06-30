@@ -1,15 +1,17 @@
 ---
 name: ameriflux-namelist-generator
-description: Create EcoSIM Fortran namelist files for AmeriFlux site runs from site-specific grid, plant management, climate forcing, and greenhouse-gas inputs. Use when preparing or updating an EcoSIM `.namelist` for AmeriFlux or FLUXNET sites, especially after generating `*_ecosim_grid.nc`, `*_ecosim_climate.nc`, and `*_pft_mgmt.nc` inputs.
+description: Create EcoSIM Fortran namelist files and workable EcoSIM run folders for AmeriFlux site runs from site-specific grid, plant management, climate forcing, and greenhouse-gas inputs. Use when preparing or updating an EcoSIM `.namelist`, run folder, runfolder, run directory, or executable-ready site case for AmeriFlux or FLUXNET sites, especially after generating `*_ecosim_grid.nc`, `*_ecosim_climate.nc`, and `*_pft_mgmt.nc` inputs.
 ---
 
 # AmeriFlux Namelist Generator
 
 ## Overview
 
-Use this skill to create EcoSIM run namelists for AmeriFlux sites. The workflow follows the Blodgett `Blodget.ndlf.nolig.namelist` pattern: one `regression_test` block, one `ecosim` block with site-specific forcing paths and output controls, an empty `bbgcforc` block, and one `ecosim_time` block.
+Use this skill to create EcoSIM run namelists and executable-ready run folders for AmeriFlux sites. The namelist follows the Blodgett `Blodget.ndlf.nolig.namelist` pattern: one `regression_test` block, one `ecosim` block with site-specific forcing paths and output controls, an empty `bbgcforc` block, and one `ecosim_time` block.
 
 Read [references/namelist_contract.md](references/namelist_contract.md) when you need the field contract, forcing-period rules, path conventions, or validation checklist.
+
+For any request to create a run folder, runfolder, run directory, or runnable site case, read and follow [references/runfolder_workflow.md](references/runfolder_workflow.md) before writing files.
 
 ## Workflow
 

@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -21,6 +22,9 @@ COLLECTION = "NLDAS_FORA0125_H.2.0"
 COLLECTION_CONCEPT_ID = "C2033151148-GES_DISC"
 GIOVANNI_ENDPOINT = "https://api.giovanni.earthdata.nasa.gov/proxy-timeseries"
 FILL_VALUE = 1.0e30
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 NLDAS_VARIABLES = ["Tair", "Wind_E", "Wind_N", "Rainf", "Qair", "SWdown", "PSurf"]
 DATAFIELD_IDS = {var: f"NLDAS_FORA0125_H_2_0_{var}" for var in NLDAS_VARIABLES}
 UNITS = {
@@ -193,6 +197,24 @@ def parse_args() -> argparse.Namespace:
             "Optional existing EcoSIM climate NetCDF to copy annual chemistry "
             "forcing variables from. Defaults to <site-output-dir>/<site-id>_ecosim_climate.nc when present."
         ),
+    )
+    parser.add_argument(
+        "--add-us-chemistry",
+        choices=["auto", "always", "never"],
+        default="auto",
+        help=(
+            "Add annual EcoSIM precipitation chemistry variables from NADP. "
+            "Auto adds them for NLDAS/US-domain coordinates."
+        ),
+    )
+    parser.add_argument(
+        "--chemistry-input",
+        default="data/nadp_data_grids",
+        help="NADP raster directory used for US precipitation chemistry variables.",
+    )
+    parser.add_argument(
+        "--chemistry-output",
+        help="Optional JSON path for extracted NADP chemistry before NetCDF insertion.",
     )
     parser.add_argument("--credential-profile", default=os.path.expanduser("~/.bashrc"))
     parser.add_argument("--username")
@@ -647,6 +669,68 @@ def write_ecosim_netcdf(
     }
 
 
+def is_us_auxiliary_climate_domain(lon: float, lat: float) -> bool:
+    return -125.0 <= lon <= -67.0 and 25.0 <= lat <= 53.0
+
+
+def add_us_chemistry_if_requested(
+    netcdf_path: Path,
+    site_id: str,
+    lon: float,
+    lat: float,
+    years: np.ndarray,
+    args: argparse.Namespace,
+) -> Dict[str, object]:
+    in_us_auxiliary_domain = is_us_auxiliary_climate_domain(lon, lat)
+    should_add = args.add_us_chemistry == "always" or (
+        args.add_us_chemistry == "auto" and in_us_auxiliary_domain
+    )
+    report: Dict[str, object] = {
+        "requested_mode": args.add_us_chemistry,
+        "us_auxiliary_domain": in_us_auxiliary_domain,
+        "added_to_netcdf": False,
+        "source": "NADP precipitation chemistry rasters",
+        "chemistry_input": str(Path(args.chemistry_input).resolve()),
+        "chemistry_output": None,
+        "notes": [],
+    }
+    if not should_add:
+        if args.add_us_chemistry == "never":
+            report["notes"].append("Skipped because --add-us-chemistry=never was requested.")
+        else:
+            report["notes"].append("Skipped because coordinate is outside the US/NLDAS auxiliary climate domain.")
+        return report
+
+    from Tools.create_ecosim_climate_forcing import add_chemistry_to_netcdf, extract_chemistry
+
+    chemistry_output = args.chemistry_output
+    if not chemistry_output:
+        chemistry_output = str(Path(args.site_output_dir) / f"{site_id}_nadp_chemistry.json")
+    report["chemistry_output"] = str(Path(chemistry_output).resolve())
+
+    chemistry_data = None
+    if Path(args.chemistry_input).exists():
+        Path(chemistry_output).parent.mkdir(parents=True, exist_ok=True)
+        chemistry_data = extract_chemistry(
+            lat=lat,
+            lon=lon,
+            years=[int(year) for year in years],
+            output_file=chemistry_output,
+            chem_dir=args.chemistry_input,
+        )
+        if chemistry_data is None:
+            report["notes"].append(
+                "NADP extraction returned no usable chemistry; template defaults/gap policy were applied."
+            )
+    else:
+        report["notes"].append("NADP chemistry directory not found; template defaults/gap policy were applied.")
+
+    chemistry_report = add_chemistry_to_netcdf(str(netcdf_path), chemistry_data, years)
+    report["added_to_netcdf"] = True
+    report["chemistry_report"] = chemistry_report
+    return report
+
+
 def quality_report(
     native: pd.DataFrame,
     ecosim: pd.DataFrame,
@@ -735,7 +819,16 @@ def main() -> int:
         args.end_year,
         template_climate_file=template_climate_file,
     )
-    annual = annual_forcing_table(years, grid_lon, annual_info, template_climate_file)
+    chemistry_info = add_us_chemistry_if_requested(
+        netcdf_path=netcdf_path,
+        site_id=args.site_id,
+        lon=grid_lon,
+        lat=grid_lat,
+        years=years,
+        args=args,
+    )
+    annual_info["auxiliary_climate_variables"] = chemistry_info
+    annual = annual_forcing_table(years, grid_lon, annual_info, netcdf_path)
 
     report = quality_report(native, ecosim, annual, metadata)
     report.update(

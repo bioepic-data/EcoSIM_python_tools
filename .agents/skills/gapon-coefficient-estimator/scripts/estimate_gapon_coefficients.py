@@ -3,7 +3,8 @@
 
 The script intentionally refuses to hide data gaps: standard SSURGO/gSSURGO
 inputs usually need lab exchangeable bases plus solution chemistry before a
-Gapon coefficient can be estimated.
+Gapon coefficient can be estimated. Computed values are checked against the
+cation adsorption lyotropic prior Al=Fe>Ca>Mg>K=NH4, but are not overwritten.
 """
 
 from __future__ import annotations
@@ -16,14 +17,28 @@ import sys
 from pathlib import Path
 
 
+LYOTROPIC_SERIES = "Al=Fe>Ca>Mg>K=NH4"
+
 CATIONS = {
+    "al": {"charge": 3, "label": "Ca-Al", "lyotropic_rank": 1},
+    "fe": {"charge": 3, "label": "Ca-Fe", "lyotropic_rank": 1},
+    "mg": {"charge": 2, "label": "Ca-Mg", "lyotropic_rank": 3},
+    "k": {"charge": 1, "label": "Ca-K", "lyotropic_rank": 4},
+    "nh4": {"charge": 1, "label": "Ca-NH4", "lyotropic_rank": 4},
     "na": {"charge": 1, "label": "Ca-Na"},
-    "mg": {"charge": 2, "label": "Ca-Mg"},
-    "k": {"charge": 1, "label": "Ca-K"},
-    "nh4": {"charge": 1, "label": "Ca-NH4"},
-    "al": {"charge": 3, "label": "Ca-Al"},
     "h": {"charge": 1, "label": "Ca-H"},
 }
+
+LYOTROPIC_COMPARISONS = (
+    ("al", "mg"),
+    ("al", "k"),
+    ("al", "nh4"),
+    ("fe", "mg"),
+    ("fe", "k"),
+    ("fe", "nh4"),
+    ("mg", "k"),
+    ("mg", "nh4"),
+)
 
 
 ALIASES = {
@@ -33,6 +48,7 @@ ALIASES = {
     "exchange_k": ["exchange_k_cmolc_kg", "exch_k", "kx", "k_x", "kex"],
     "exchange_nh4": ["exchange_nh4_cmolc_kg", "exch_nh4", "nh4x", "nh4_x", "nh4ex"],
     "exchange_al": ["exchange_al_cmolc_kg", "exch_al", "alx", "al_x", "alex", "extral_r"],
+    "exchange_fe": ["exchange_fe_cmolc_kg", "exch_fe", "fex", "fe_x", "feex"],
     "exchange_h": ["exchange_h_cmolc_kg", "exch_h", "hx", "h_x", "hex"],
     "exchange_acidity": ["exchange_acidity_cmolc_kg", "extracid_r", "acid_r", "acidity"],
     "cec7": ["cec7_r", "cec7", "cec_cmolc_kg"],
@@ -112,22 +128,40 @@ def estimate_ca(row: dict[str, str], flags: list[str]) -> float | None:
     mg = find_value(row, "exchange_mg") or 0.0
     na = find_value(row, "exchange_na") or 0.0
     k = find_value(row, "exchange_k") or 0.0
+    nh4 = find_value(row, "exchange_nh4") or 0.0
     al = find_value(row, "exchange_al") or 0.0
+    fe = find_value(row, "exchange_fe") or 0.0
     h = estimate_h_from_acidity(row, flags) or 0.0
     ph = find_value(row, "ph")
     ecec = find_value(row, "ecec")
     cec7 = find_value(row, "cec7")
+    base_competitors = mg + na + k + nh4 + fe
+    acidic_competitors = base_competitors + al + h
 
     if ph is not None and ph < 7 and ecec is not None:
         flags.append("exchange_ca_estimated_by_ecec_acidic_closure")
-        return ecec - (mg + na + k + al + h)
+        return ecec - acidic_competitors
     if cec7 is not None:
         flags.append("exchange_ca_estimated_by_cec7_base_closure")
-        return cec7 - (mg + na + k)
+        return cec7 - base_competitors
     if ecec is not None:
         flags.append("exchange_ca_estimated_by_ecec_closure_without_ph")
-        return ecec - (mg + na + k + al + h)
+        return ecec - acidic_competitors
     return None
+
+
+def add_lyotropic_flags(out: dict[str, str], flags: list[str]) -> None:
+    values = {
+        ion: parse_float(out.get(f"kg_ca_{ion}"))
+        for ion in ("al", "fe", "mg", "k", "nh4")
+    }
+    for stronger, weaker in LYOTROPIC_COMPARISONS:
+        strong_value = values.get(stronger)
+        weak_value = values.get(weaker)
+        if strong_value is None or weak_value is None:
+            continue
+        if strong_value < weak_value:
+            flags.append(f"possible_lyotropic_inversion_{stronger}_below_{weaker}")
 
 
 def compute_row(row: dict[str, str], allow_estimate_ca: bool) -> dict[str, str]:
@@ -169,6 +203,8 @@ def compute_row(row: dict[str, str], allow_estimate_ca: bool) -> dict[str, str]:
         kg = (ex / ca_x) * (ca_a ** 0.5) / (aq ** (1.0 / z))
         out[kg_key] = f"{kg:.8g}"
 
+    add_lyotropic_flags(out, flags)
+    out["lyotropic_series"] = LYOTROPIC_SERIES
     out["exchange_ca_used_cmolc_kg"] = "" if ca_x is None else f"{ca_x:.8g}"
     out["qc_flags"] = ";".join(sorted(set(flags)))
     return out
@@ -186,7 +222,7 @@ def write_csv(path: Path, input_rows: list[dict[str, str]], computed: list[dict[
         for key in row:
             if key not in fieldnames:
                 fieldnames.append(key)
-    for key in ["exchange_ca_used_cmolc_kg", *[f"kg_ca_{ion}" for ion in CATIONS], "qc_flags"]:
+    for key in ["exchange_ca_used_cmolc_kg", *[f"kg_ca_{ion}" for ion in CATIONS], "lyotropic_series", "qc_flags"]:
         if key not in fieldnames:
             fieldnames.append(key)
 
@@ -203,13 +239,16 @@ def write_csv(path: Path, input_rows: list[dict[str, str]], computed: list[dict[
 def self_test() -> int:
     sample = io.StringIO(
         "id,exchange_ca_cmolc_kg,exchange_na_cmolc_kg,exchange_mg_cmolc_kg,"
-        "exchange_k_cmolc_kg,exchange_al_cmolc_kg,exchange_acidity_cmolc_kg,"
-        "activity_ca,activity_na,activity_mg,activity_k,activity_al,ph\n"
-        "a,4,0.4,1.2,0.2,0.1,0.3,0.0025,0.001,0.0016,0.0002,0.000001,5.5\n"
+        "exchange_k_cmolc_kg,exchange_nh4_cmolc_kg,"
+        "exchange_al_cmolc_kg,exchange_fe_cmolc_kg,"
+        "exchange_acidity_cmolc_kg,activity_ca,activity_na,activity_mg,"
+        "activity_k,activity_nh4,activity_al,activity_fe,ph\n"
+        "a,4,0.4,1.2,0.2,0.2,0.8,0.8,1.8,"
+        "0.0025,0.001,0.0016,0.1,0.1,0.000001,0.000001,5.5\n"
     )
     rows = [{normalize(k): v for k, v in row.items()} for row in csv.DictReader(sample)]
     result = compute_row(rows[0], allow_estimate_ca=True)
-    required = ["kg_ca_na", "kg_ca_mg", "kg_ca_k", "kg_ca_al", "kg_ca_h"]
+    required = ["kg_ca_na", "kg_ca_mg", "kg_ca_k", "kg_ca_nh4", "kg_ca_al", "kg_ca_fe", "kg_ca_h"]
     missing = [key for key in required if not result.get(key)]
     if missing:
         print(f"self-test failed; missing {missing}", file=sys.stderr)

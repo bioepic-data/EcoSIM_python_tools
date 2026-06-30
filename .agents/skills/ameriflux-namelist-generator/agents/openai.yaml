@@ -1,4 +1,4 @@
 interface:
   display_name: "AmeriFlux Namelist Generator"
-  short_description: "Create EcoSIM namelists for AmeriFlux sites"
-  default_prompt: "Use $ameriflux-namelist-generator to create an EcoSIM namelist for an AmeriFlux site."
+  short_description: "Create EcoSIM namelists and run folders"
+  default_prompt: "Use $ameriflux-namelist-generator to create an EcoSIM run folder for an AmeriFlux site."

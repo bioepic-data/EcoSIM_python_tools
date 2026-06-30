@@ -1,13 +1,13 @@
 ---
 name: paper-site-ecosim-workflow
-description: Extract study sites, observational variables, and cited data sources from ecosystem-modeling papers, PDFs, supplements, or article text, then plan or create EcoSIM simulation workflows and run folders for those sites. Use when Codex is asked to read a paper for EcoSIM feasibility, including requests phrased as "read paper for ecosim feasibility"; read a paper for sites/data availability; reproduce a published site simulation in EcoSIM; compare EcoSIM outputs to paper observations; or convert paper-derived AmeriFlux/FLUXNET/crop-site information into EcoSIM inputs and runnable cases.
+description: Extract study sites, observational variables, coordinates, climate-forcing sources, and cited data sources from ecosystem-modeling papers, PDFs, supplements, or article text, then plan or create EcoSIM simulation workflows and run folders for those sites. Use when Codex is asked to read a paper for EcoSIM feasibility, including requests phrased as "read paper for ecosim feasibility"; read a paper for sites/data availability; reproduce a published site simulation in EcoSIM; compare EcoSIM outputs to paper observations; or convert paper-derived AmeriFlux, FLUXNET, US NLDAS-domain, non-US ERA5, crop, peatland, forest, grassland, wetland, or unmanaged field-site information into EcoSIM inputs and runnable cases.
 ---
 
 # Paper Site EcoSIM Workflow
 
 ## Overview
 
-Use this skill to turn a modeling paper into an actionable EcoSIM site-simulation plan. The workflow has two linked products:
+Use this skill to turn a modeling paper into an actionable EcoSIM site-simulation plan for AmeriFlux, FLUXNET, or ordinary literature sites worldwide. The workflow has two linked products:
 
 - a site-by-site evidence table of observations and literature/data sources
 - a procedure for preparing, running, and evaluating EcoSIM simulations for those sites
@@ -23,11 +23,11 @@ Use this skill whenever the request asks to `read paper for ecosim feasibility`,
 1. Identify the paper artifact: PDF, DOCX, HTML, plain text, supplement, or citation/DOI.
 2. For local PDFs, extract text page by page with the bundled Python runtime. If `pdftotext` is unavailable, use `pypdf`. If text extraction is poor or tables are image-only, render pages or use OCR only for the needed pages.
 3. Search the extracted text for:
-   - `Experimental sites`, `site`, `AmeriFlux`, `FLUXNET`, `location`
+   - `Experimental sites`, `site`, `AmeriFlux`, `FLUXNET`, `location`, `latitude`, `longitude`, `coordinates`, `field site`, `study area`
    - `observed`, `measured`, `validation`, `calibration`, `data`
    - variables such as `biomass`, `LAI`, `GLAI`, `yield`, `NEE`, `ET`, `SWC`, `soil water`, `soil temperature`, `SOC`, `POC`, `MAOC`, `N2O`
    - `References`, `Supporting Information`, `Table`, `Figure`
-4. Build a site inventory. Normalize site IDs exactly, for example `US-Ne1`, `US-Ne2`, `US-Ne3`, `US-Pon`.
+4. Build a site inventory. Normalize site IDs exactly when formal IDs exist, for example `US-Ne1`, `US-Ne2`, `US-Ne3`, `US-Pon`. For ordinary literature sites, create a stable concise ID from the site name, such as `Forbonnet-peatland`, and preserve the paper's exact site name in the table.
 5. For each site, distinguish:
    - variables directly measured and used for calibration or validation
    - variables available only as management/forcing inputs
@@ -40,9 +40,10 @@ Use this skill whenever the request asks to `read paper for ecosim feasibility`,
    - current paper figure/table if no external data source is cited
 7. Report a compact table with columns:
    - site
-   - location or cropping/vegetation system
+   - location, coordinates, and cropping/vegetation system
    - observational variables available
    - calibration/validation role when stated
+   - climate forcing route (`NLDAS`, `ERA5`, AmeriFlux/FLUXNET forcing, or paper-only)
    - cited source(s)
    - caveats
 
@@ -54,12 +55,17 @@ After the paper-derived site table is complete, use this workflow to prepare Eco
 
 1. Resolve each site.
    - For AmeriFlux/FLUXNET sites, use `ameriflux-site-info` for metadata.
-   - Record latitude, longitude, elevation, site name, vegetation/crop identity, and years used in the paper.
+   - For non-AmeriFlux literature sites, extract coordinates from the paper, supplement, DOI landing page, or cited site-method paper. Convert DMS coordinates to decimal degrees and preserve the original coordinate string in notes.
+   - Record latitude, longitude, elevation when available, country or region, site name, vegetation/crop identity, treatment structure, and years used in the paper.
    - If the site has a known Koppen label, convert it with `koppen-climate-codec`; otherwise derive it from coordinates.
 
 2. Gather forcing and input data.
    - Use `unified-ameriflux-extractor` when a complete AmeriFlux input package is needed.
-   - Use `ameriflux-era5-to-ecosim` for hourly climate forcing from AmeriFlux ERA5 CSVs.
+   - Choose climate forcing by coordinate domain:
+     - If the point is inside the NLDAS domain (`-125 <= lon <= -67`, `25 <= lat <= 53`) and the paper site is in the United States or otherwise explicitly intended for NLDAS coverage, use `nldas-gesdisc-point-download`.
+     - For US/NLDAS-domain grids, also add EcoSIM annual precipitation-chemistry climate variables using the same NADP source used by US AmeriFlux workflows via `ameriflux-atmchem-info`: `PHRG`, `CN4RIG`, `CNORIG`, `CSORG`, `CCARG`, and any other template chemistry variables with available NADP rasters. Validate chemistry values and document gap fills or defaults.
+     - Otherwise use `era5-cds-point-download` to download CDS ERA5 single-level point time series by longitude/latitude, then convert or stage it for EcoSIM climate forcing. If the non-US site also needs annual auxiliary precipitation chemistry, use `global-aux-climate-chemistry` after ERA5 conversion.
+     - If the site is AmeriFlux/FLUXNET and has curated site forcing covering the target years, prefer the curated forcing for observational consistency, but still record whether NLDAS or ERA5 is the fallback route.
    - Use `ameriflux-surgo-grid-extract` for soil/grid variables, with documented fallback if gSSURGO is incomplete.
    - Use `ameriflux-atmchem-info` when atmospheric deposition or precipitation chemistry is needed.
    - Use `ssp-ghg-atmgas-generator` for future or scenario greenhouse-gas forcing; historical-only GHG files are not sufficient for post-2023 SSP runs.
@@ -121,7 +127,13 @@ When the user asks for simulation procedures or run folders, also report:
 - skill chain used to create missing artifacts
 - run folder path and namelist path
 - forcing year range, spinup assumptions, and output targets
+- climate forcing decision: US/NLDAS-domain versus ERA5/CDS, plus selected longitude/latitude
 - validation checks completed and unresolved assumptions
+
+## Climate Forcing Selection Examples
+
+- For a US AmeriFlux or literature site inside the NLDAS domain, such as Harvard Forest (`US-Ha1`, `-72.1715`, `42.5378`), use `nldas-gesdisc-point-download` unless curated AmeriFlux forcing is explicitly preferred.
+- For a non-US site, such as Jassey et al. (2013)'s Forbonnet peatland in the Jura Mountains, France (`46°49′35″N, 6°10′20″E`; decimal approximately `46.8264`, `6.1722`), use CDS ERA5 through `era5-cds-point-download`. The key paper-derived targets for EcoSIM feasibility include Sphagnum and vascular plant cover, microbial functional-group biomass, testate amoebae, Sphagnum polyphenols, DOC, dissolved N, `NH4`, `NO3`, `PO4`, total P, and water-table or water-content context.
 
 ## Worked Example: Zhang et al. 2024 MEMS 2 Cropping Paper
 

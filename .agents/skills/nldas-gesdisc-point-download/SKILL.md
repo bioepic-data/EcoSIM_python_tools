@@ -64,6 +64,13 @@ EcoSIM climate-native variables downloaded/extracted by default:
 - `SWdown`: maps to `SRADH`.
 - `PSurf`: maps to `PATM` after Pa to kPa conversion.
 
+EcoSIM annual auxiliary variables written by the Giovanni EcoSIM writer:
+
+- `Z0G`, `IFLGW`, and `ZNOONG` are derived directly from site/grid assumptions and longitude.
+- For US/NLDAS-domain grids, precipitation chemistry variables are added from the same NADP source used by US AmeriFlux workflows: `PHRG`, `CN4RIG`, `CNORIG`, `CSORG`, `CCARG`, and other supported template variables when source rasters exist.
+- The Giovanni EcoSIM writer defaults to `--add-us-chemistry auto`, which adds NADP chemistry for coordinates in `[-125, -67]` longitude and `[25, 53]` latitude. Use `--add-us-chemistry never` to skip or `--add-us-chemistry always` to force.
+- Use `--chemistry-input` to point to an alternate NADP raster directory and `--chemistry-output` to choose the intermediate extracted-chemistry JSON path.
+
 Other primary File A variables, only when explicitly requested:
 
 - `LWdown`: downward longwave radiation, `W m-2`.
@@ -84,6 +91,7 @@ Other primary File A variables, only when explicitly requested:
    - Check that the variable set is `ecosim-climate` unless the user explicitly requested another set.
    - Check units before converting to EcoSIM forcing names.
    - Check the quality report's `validity_checks.all_passed` field before using the NetCDF in an EcoSIM run.
+   - For EcoSIM NetCDF outputs, check `annual_forcing.auxiliary_climate_variables` to confirm whether NADP chemistry was added, skipped, or default-filled.
 
 ## Output Rules
 
@@ -133,6 +141,8 @@ Annual auxiliary checks:
 - `ZNOONG`: `0` to `24 hour`.
 - `PHRG`: `0` to `14 pH`.
 - Precipitation chemistry concentrations: non-negative.
+
+NADP chemistry values must be finite and non-negative, with `PHRG` constrained to pH `0-14`. Annual gaps are filled by linear interpolation with nearest-edge filling. If no valid NADP pH is available, use neutral `PHRG=7` and record the fallback in the quality report. Do not silently apply NADP chemistry outside the US/NLDAS auxiliary domain.
 
 ## Validation
 

@@ -1,3 +1,3 @@
 display_name: Gapon Coefficient Estimator
-short_description: Estimate Ca-normalized Gapon selectivity coefficients from paired exchange and solution cation data.
-default_prompt: Estimate Gapon selectivity coefficients for Ca-normalized soil cation exchange using paired exchange-phase and solution-phase data.
+short_description: Estimate Ca-normalized Gapon coefficients with paired chemistry and lyotropic-series QC.
+default_prompt: Estimate Ca-normalized Gapon selectivity coefficients from paired exchange-phase and solution-phase data, using Al=Fe>Ca>Mg>K=NH4 as the cation adsorption lyotropic prior.

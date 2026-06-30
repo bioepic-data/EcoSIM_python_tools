@@ -226,6 +226,91 @@ def run_gssurgo_extraction(gdb_path: str, lon: float, lat: float, template_path:
         print(f"Failed to read gSSURGO output JSON: {e}", file=sys.stderr)
         return None
 
+
+def run_namelist_generation(
+    site_id: str,
+    output_path: str,
+    result_dir: str = "result",
+    case_name: str = "",
+    grid_file: str = "",
+    pft_mgmt_file: str = "",
+    climate_file: str = "",
+    pft_file: str = "",
+    atm_ghg_file: str = "",
+    micpar_file: str = "",
+    run_dir: str = "",
+    clm_factor_in: str = "NO",
+    soil_mgmt_in: str = "NO",
+    lignification: str = "false",
+) -> Optional[str]:
+    """Create an EcoSIM namelist for a site package.
+
+    The namelist generator performs the final existence checks for climate,
+    grid, plant-management, PFT-parameter, and atmospheric GHG files. Missing
+    core forcing files should fail instead of being silently set to ``NO``.
+    """
+    if not site_id:
+        print("Namelist generation requires --site-id.", file=sys.stderr)
+        return None
+
+    namelist_script_path = os.path.join(
+        os.getcwd(),
+        ".agents",
+        "skills",
+        "ameriflux-namelist-generator",
+        "scripts",
+        "create_ameriflux_namelist.py",
+    )
+    if not output_path:
+        output_path = os.path.join(result_dir, site_id, f"{site_id}.namelist")
+
+    cmd = [
+        sys.executable,
+        namelist_script_path,
+        "--site-id",
+        site_id,
+        "--repo-root",
+        os.getcwd(),
+        "--output",
+        output_path,
+        "--clm-factor-in",
+        clm_factor_in,
+        "--soil-mgmt-in",
+        soil_mgmt_in,
+        "--lignification",
+        lignification,
+    ]
+    optional_args = [
+        ("--case-name", case_name),
+        ("--grid-file", grid_file),
+        ("--pft-mgmt-file", pft_mgmt_file),
+        ("--climate-file", climate_file),
+        ("--pft-file", pft_file),
+        ("--atm-ghg-file", atm_ghg_file),
+        ("--micpar-file", micpar_file),
+        ("--run-dir", run_dir),
+    ]
+    for flag, value in optional_args:
+        if value:
+            cmd.extend([flag, value])
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"EcoSIM namelist generation failed: {result.stderr}", file=sys.stderr)
+        return None
+
+    generated_path = output_path
+    stdout_path = result.stdout.strip().splitlines()
+    if stdout_path:
+        generated_path = stdout_path[-1]
+    print(f"EcoSIM namelist generated: {generated_path}")
+    return os.path.abspath(generated_path)
+
+
+def existing_site_artifact(result_dir: str, site_id: str, filename: str) -> str:
+    path = os.path.join(result_dir, site_id, filename)
+    return path if os.path.exists(path) else ""
+
 # --- Unified workflow ---
 
 def run_unified_extraction(
@@ -245,6 +330,17 @@ def run_unified_extraction(
     grid_output: str = "",
     climate_data_dir: str = "data",
     result_dir: str = "result",
+    create_namelist: bool = False,
+    namelist_output: str = "",
+    namelist_run_dir: str = "",
+    case_name: str = "",
+    pft_mgmt_file: str = "",
+    pft_file: str = "",
+    atm_ghg_file: str = "",
+    micpar_file: str = "",
+    clm_factor_in: str = "NO",
+    soil_mgmt_in: str = "NO",
+    lignification: str = "false",
 ) -> None:
     # Resolve coordinates
     if site_id:
@@ -305,7 +401,7 @@ def run_unified_extraction(
         if result.returncode != 0:
             print(f"EcoSIM grid forcing generation failed: {result.stderr}", file=sys.stderr)
         else:
-            default_grid_path = os.path.join(result_dir, f"{site_id}_ecosim_grid.nc")
+            default_grid_path = os.path.join(result_dir, site_id, f"{site_id}_ecosim_grid.nc")
             if os.path.abspath(grid_output) != os.path.abspath(default_grid_path):
                 try:
                     os.rename(default_grid_path, grid_output)
@@ -314,6 +410,58 @@ def run_unified_extraction(
                     print(f"Failed to move grid output: {e}", file=sys.stderr)
             else:
                 print(f"EcoSIM grid forcing generated: {default_grid_path}")
+
+    namelist_path = ""
+    if create_namelist or namelist_output:
+        if not site_id:
+            print("EcoSIM namelist generation skipped: --site-id is required.", file=sys.stderr)
+        else:
+            climate_for_namelist = climate_output or existing_site_artifact(
+                result_dir, site_id, f"{site_id}_ecosim_climate.nc"
+            )
+            grid_for_namelist = grid_output or existing_site_artifact(
+                result_dir, site_id, f"{site_id}_ecosim_grid.nc"
+            )
+            pft_mgmt_for_namelist = pft_mgmt_file or existing_site_artifact(
+                result_dir, site_id, f"{site_id}_pft_mgmt.nc"
+            )
+            namelist_path = run_namelist_generation(
+                site_id=site_id,
+                output_path=namelist_output,
+                result_dir=result_dir,
+                case_name=case_name,
+                grid_file=grid_for_namelist,
+                pft_mgmt_file=pft_mgmt_for_namelist,
+                climate_file=climate_for_namelist,
+                pft_file=pft_file,
+                atm_ghg_file=atm_ghg_file,
+                micpar_file=micpar_file,
+                run_dir=namelist_run_dir,
+                clm_factor_in=clm_factor_in,
+                soil_mgmt_in=soil_mgmt_in,
+                lignification=lignification,
+            ) or ""
+
+    # Record forcing files in YAML
+    forcing_data = {}
+    if climate_output:
+        # Determine actual final path
+        actual_climate_path = climate_output if climate_output else os.path.join(result_dir, f"{site_id}_ecosim_climate.nc")
+        forcing_data["clm_hour_file_in"] = os.path.abspath(actual_climate_path)
+    if grid_output:
+        actual_grid_path = grid_output if grid_output else os.path.join(result_dir, site_id, f"{site_id}_ecosim_grid.nc")
+        forcing_data["grid_file_in"] = os.path.abspath(actual_grid_path)
+    if namelist_path:
+        forcing_data["namelist_file"] = os.path.abspath(namelist_path)
+
+    if forcing_data:
+        import yaml
+        yaml_dir = os.path.join(result_dir, site_id) if site_id else result_dir
+        os.makedirs(yaml_dir, exist_ok=True)
+        yaml_path = os.path.join(yaml_dir, f"{site_id}_forcing.yaml")
+        with open(yaml_path, "w") as f:
+            yaml.dump(forcing_data, f, default_flow_style=False)
+        print(f"Forcing file paths recorded in {yaml_path}")
 
 
 def main():
@@ -334,6 +482,17 @@ def main():
     parser.add_argument("--grid-output", help="Path to EcoSIM grid forcing NetCDF output.")
     parser.add_argument("--climate-data-dir", default="data", help="Data directory for climate forcing (contains ERA5 files).")
     parser.add_argument("--result-dir", default="result", help="Directory for intermediate results and output files.")
+    parser.add_argument("--create-namelist", action="store_true", help="Generate an EcoSIM namelist after site files are available.")
+    parser.add_argument("--namelist-output", help="Path to EcoSIM namelist output. Defaults to result/<SITE_ID>/<SITE_ID>.namelist when --create-namelist is used.")
+    parser.add_argument("--namelist-run-dir", help="EcoSIM run directory; namelist input paths are written relative to this directory.")
+    parser.add_argument("--case-name", help="EcoSIM case_name for the namelist; default is site ID.")
+    parser.add_argument("--pft-mgmt-file", help="Plant management NetCDF for namelist generation; defaults to discovery under result/<SITE_ID>.")
+    parser.add_argument("--pft-file", help="EcoSIM PFT parameter NetCDF for namelist generation.")
+    parser.add_argument("--atm-ghg-file", help="Atmospheric GHG forcing NetCDF for namelist generation.")
+    parser.add_argument("--micpar-file", help="Optional microbial parameter NetCDF for namelist generation.")
+    parser.add_argument("--clm-factor-in", default="NO", help="Optional climate factor input for namelist generation.")
+    parser.add_argument("--soil-mgmt-in", default="NO", help="Optional soil management input for namelist generation.")
+    parser.add_argument("--lignification", choices=("true", "false"), default="false", help="Set namelist llignification flag.")
     args = parser.parse_args()
 
     run_unified_extraction(
@@ -353,6 +512,17 @@ def main():
         grid_output=args.grid_output or "",
         climate_data_dir=args.climate_data_dir,
         result_dir=args.result_dir,
+        create_namelist=args.create_namelist,
+        namelist_output=args.namelist_output or "",
+        namelist_run_dir=args.namelist_run_dir or "",
+        case_name=args.case_name or "",
+        pft_mgmt_file=args.pft_mgmt_file or "",
+        pft_file=args.pft_file or "",
+        atm_ghg_file=args.atm_ghg_file or "",
+        micpar_file=args.micpar_file or "",
+        clm_factor_in=args.clm_factor_in,
+        soil_mgmt_in=args.soil_mgmt_in,
+        lignification=args.lignification,
     )
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ERA5 CDS Point Download"
+  short_description: "Download ERA5 point climate forcing."
+  default_prompt: "Download CDS ERA5 single-level point time-series forcing for this site using longitude and latitude, then report the output file, manifest, variables, date range, and any EcoSIM unit-conversion cautions."

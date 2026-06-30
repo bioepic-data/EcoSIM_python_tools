@@ -25,7 +25,8 @@ description: Run the combined AmeriFlux to EcoSIM extraction workflow for site m
 2. Extract NADP and tDEP chemistry with `ameriflux-atmchem-info`.
 3. Extract soil profile data with `ameriflux-surgo-grid-extract` when gSSURGO inputs are provided.
 4. Optionally invoke `Tools/create_ecosim_climate_forcing.py` or `Tools/create_ecosim_grid_forcing.py`.
-5. Write merged JSON and site-specific outputs under `result/<SITE_ID>/`.
+5. When climate, grid, and plant-management NetCDF files are available, create a site namelist with `ameriflux-namelist-generator`.
+6. Write merged JSON and site-specific outputs under `result/<SITE_ID>/`.
 
 ## Purpose
 Combine multiple AmeriFlux data extraction capabilities into a single workflow:
@@ -67,6 +68,9 @@ python .agents/skills/unified-ameriflux-extractor/unified_ameriflux_extractor.py
     --output result/US-Ha1/unified_output.json \
     --climate-output result/${site_id}/${site_id}_ecosim_climate.nc \
     --grid-output result/${site_id}/${site_id}_ecosim_grid.nc \
+    --create-namelist \
+    --pft-file /path/to/ecosim_pftpar_YYYYMMDD.nc \
+    --atm-ghg-file /path/to/fatm_hist_GHGs_1750-2025.nc \
     --climate-data-dir data \
     --result-dir result
 ```
@@ -76,12 +80,18 @@ python .agents/skills/unified-ameriflux-extractor/unified_ameriflux_extractor.py
 - `--grid-output` (optional) specifies where to write the EcoSIM grid forcing NetCDF file. The script will invoke the grid forcing script located at `Tools/create_ecosim_grid_forcing.py`.
 - `--climate-data-dir` points to the directory containing ERA5 files (default: `data`).
 - `--result-dir` is the directory for intermediate results (default: `result`).
+- `--create-namelist` creates `result/<SITE_ID>/<SITE_ID>.namelist` after site forcing files are available.
+- `--namelist-output` can override the namelist destination; otherwise `--create-namelist` uses the standard site result directory.
+- `--namelist-run-dir` writes namelist input paths relative to an EcoSIM run directory.
+- `--pft-file`, `--atm-ghg-file`, `--pft-mgmt-file`, and `--micpar-file` are passed through to `ameriflux-namelist-generator`. If `--pft-mgmt-file` is omitted, the generator searches for `result/<SITE_ID>/<SITE_ID>_pft_mgmt.nc`.
 
-The script will create the unified JSON output, generate any requested NetCDF forcing files, and print confirmation messages. Site-specific outputs should be placed under `result/<SITE_ID>/`.
+The script will create the unified JSON output, generate any requested NetCDF forcing files and namelist, and print confirmation messages. Site-specific outputs should be placed under `result/<SITE_ID>/`.
 
 When climate or grid NetCDF files are generated, the workflow should also emit derivation report JSON files that list template variables which could not be derived from source data and were left as fill/default values.
 Do not include the optional atmospheric gas scalar variables `OXYEG`/`OXYGE`,
 `Z2GEG`, `CO2EIG`, `CH4EG`, `Z2OEG`, or `ZNH3EG` in those gap lists.
+
+Namelist generation must fail loudly if grid, climate, plant-management, PFT-parameter, or atmospheric GHG inputs are unavailable. Do not set missing grid, climate, or plant-management files to `NO`; that creates an EcoSIM setup with invalid forcing or no active vegetation management. Validate the chosen PFT parameter catalog against the plant-management PFT code before using the namelist for a run.
 
 Climate NetCDF generation must apply range-aware gap filling:
 - ERA5 meteorology values outside legitimate physical bounds are masked and filled by time interpolation before hourly aggregation.
