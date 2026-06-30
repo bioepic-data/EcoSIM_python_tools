@@ -25,8 +25,12 @@ description: Run the combined AmeriFlux to EcoSIM extraction workflow for site m
 2. Extract NADP and tDEP chemistry with `ameriflux-atmchem-info`.
 3. Extract soil profile data with `ameriflux-surgo-grid-extract` when gSSURGO inputs are provided.
 4. Optionally invoke `Tools/create_ecosim_climate_forcing.py` or `Tools/create_ecosim_grid_forcing.py`.
-5. When climate, grid, and plant-management NetCDF files are available, create a site namelist with `ameriflux-namelist-generator`.
-6. Write merged JSON and site-specific outputs under `result/<SITE_ID>/`.
+5. When grid, PFT-management, or soil-management NetCDF files are created or found, also create editable Excel sidecars under `result/<SITE_ID>/`:
+   - `result/<SITE_ID>/<SITE_ID>_ecosim_grid.xlsx`
+   - `result/<SITE_ID>/<SITE_ID>_pft_mgmt.xlsx`
+   - `result/<SITE_ID>/<SITE_ID>_soil_mgmt.xlsx`
+6. When climate, grid, plant-management, and soil-management files are available, create a site namelist with `ameriflux-namelist-generator`.
+7. Write merged JSON and site-specific outputs under `result/<SITE_ID>/`.
 
 ## Purpose
 Combine multiple AmeriFlux data extraction capabilities into a single workflow:
@@ -53,6 +57,16 @@ The result is a single JSON file containing all extracted information.
   ```
 - Site metadata extraction uses cached JSON, static AmeriFlux HTML, or rendered DOM text. No local vision service is required.
 - Access to the gSSURGO geodatabase (`gSSURGO_CONUS.gdb`).
+
+## User-Downloaded Data
+
+Before running the full workflow, confirm the user has downloaded or can access the source data needed for the requested outputs:
+
+- AmeriFlux BASE/FULLSET meteorological files and BADM/BIF metadata for the target site when using curated AmeriFlux forcing or management records. Store local copies under `data/` or pass explicit paths.
+- NADP precipitation-chemistry rasters and EPA tDEP deposition rasters for US atmospheric chemistry and deposition inputs.
+- `gSSURGO_CONUS.gdb` for US soil/grid extraction, plus any EcoSIM grid template NetCDF requested by downstream grid tools.
+- ERA5 source forcing files when `--climate-output` is requested through the local climate-forcing tool. For AmeriFlux downloads, pay attention to whether the source is half-hourly `ERA5_HH` or hourly `ERA5_HR`.
+- EcoSIM assets that this workflow references but does not download: PFT parameter NetCDF, atmospheric GHG NetCDF, plant-management NetCDF for existing cases, and microbial parameter files when required by the namelist.
 
 ## Usage
 ```bash
@@ -84,6 +98,7 @@ python .agents/skills/unified-ameriflux-extractor/unified_ameriflux_extractor.py
 - `--namelist-output` can override the namelist destination; otherwise `--create-namelist` uses the standard site result directory.
 - `--namelist-run-dir` writes namelist input paths relative to an EcoSIM run directory.
 - `--pft-file`, `--atm-ghg-file`, `--pft-mgmt-file`, and `--micpar-file` are passed through to `ameriflux-namelist-generator`. If `--pft-mgmt-file` is omitted, the generator searches for `result/<SITE_ID>/<SITE_ID>_pft_mgmt.nc`.
+- The workflow should keep editable Excel copies for review. Use `ameriflux-surgo-grid-extract/scripts/grid_netcdf_excel_bridge.py` for grid NetCDF, `ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py` for PFT management, and `ecosim-soil-mgmt/scripts/soil_mgmt_excel_bridge.py` for soil management.
 
 The script will create the unified JSON output, generate any requested NetCDF forcing files and namelist, and print confirmation messages. Site-specific outputs should be placed under `result/<SITE_ID>/`.
 

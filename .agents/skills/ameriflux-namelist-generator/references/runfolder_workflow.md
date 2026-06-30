@@ -18,8 +18,9 @@ Produce a run directory that contains or can resolve:
 3. Use `ameriflux-surgo-grid-extract` or `unified-ameriflux-extractor` to derive soil/grid profile values.
 4. Use `ameriflux-era5-to-ecosim` or `unified-ameriflux-extractor` to create hourly climate forcing.
 5. Use `ecosim-vegetation-code` to validate the EcoSIM PFT code from site vegetation and Koppen code.
-6. Use `ecosim-natural-plant-mgmt` to create `pft_mgmt_in` JSON and NetCDF.
-7. Use `ameriflux-namelist-generator` to create the namelist and wire input paths into the run folder.
+6. Use `ecosim-natural-plant-mgmt` to create editable PFT-management Excel, JSON, and NetCDF files.
+7. Use `ecosim-soil-mgmt` to create editable soil-management Excel, JSON, and NetCDF files when fertilizer, tillage, irrigation, or other soil management is active.
+8. Use `ameriflux-namelist-generator` to create the namelist and wire input paths into the run folder.
 
 ## Expected Artifacts
 
@@ -28,14 +29,46 @@ Prefer these paths:
 ```text
 result/<SITE_ID>/<SITE_ID>_ecosim_site.json
 result/<SITE_ID>/<SITE_ID>_ecosim_grid.nc
+result/<SITE_ID>/<SITE_ID>_ecosim_grid.xlsx
 result/<SITE_ID>/<SITE_ID>_ecosim_climate.nc
+result/<SITE_ID>/<SITE_ID>_pft_mgmt.xlsx
 result/<SITE_ID>/<SITE_ID>_pft_mgmt.json
 result/<SITE_ID>/<SITE_ID>_pft_mgmt.nc
+result/<SITE_ID>/<SITE_ID>_soil_mgmt.xlsx
+result/<SITE_ID>/<SITE_ID>_soil_mgmt.json
+result/<SITE_ID>/<SITE_ID>_soil_mgmt.nc
 result/<SITE_ID>/<SITE_ID>_climate_derivation_report.json
 result/<SITE_ID>/<SITE_ID>_grid_derivation_report.json
 ```
 
 Use existing artifacts if they are current and plausible. Do not regenerate large inputs unless requested or clearly required.
+
+## Editable Excel Sidecars
+
+Create Excel workbooks for every editable grid and management NetCDF so users can review values before running EcoSIM:
+
+```bash
+.venv-cmip6/bin/python .agents/skills/ameriflux-surgo-grid-extract/scripts/grid_netcdf_excel_bridge.py \
+  nc-to-xlsx result/<SITE_ID>/<SITE_ID>_ecosim_grid.nc result/<SITE_ID>/<SITE_ID>_ecosim_grid.xlsx
+
+.venv-cmip6/bin/python .agents/skills/ecosim-natural-plant-mgmt/scripts/plant_mgmt_excel_bridge.py \
+  nc-to-xlsx result/<SITE_ID>/<SITE_ID>_pft_mgmt.nc result/<SITE_ID>/<SITE_ID>_pft_mgmt.xlsx
+
+.venv-cmip6/bin/python .agents/skills/ecosim-soil-mgmt/scripts/soil_mgmt_excel_bridge.py \
+  nc-to-xlsx result/<SITE_ID>/<SITE_ID>_soil_mgmt.nc result/<SITE_ID>/<SITE_ID>_soil_mgmt.xlsx
+```
+
+If the workflow starts from edited workbooks, convert the reviewed Excel files back to JSON and NetCDF with the same bridge scripts before wiring the namelist. Keep the workbook, JSON, and NetCDF together under `result/<SITE_ID>/`.
+
+## User-Provided Data Checklist
+
+Before declaring a run folder workable, make sure the user has downloaded or provided all source data that cannot be inferred from the namelist alone:
+
+- Site forcing data: AmeriFlux/FLUXNET `BASE` or `FULLSET` meteorological files, NLDAS point forcing, or CDS ERA5 point files for the selected forcing route.
+- Site metadata and management data: AmeriFlux BADM/BIF files, paper supplement tables, or explicit crop/treatment records for planting, harvest, fertilization, tillage, irrigation, grazing, or disturbance.
+- Soil and chemistry data: `gSSURGO_CONUS.gdb` for US soils, NADP precipitation-chemistry rasters, EPA tDEP deposition rasters, or selected non-US chemistry products such as CAMS, MERRA-2, EBAS, or EANET.
+- EcoSIM static assets: PFT parameter NetCDF, atmospheric GHG NetCDF, plant trait files, microbial parameter files if used, and any site-specific existing management NetCDF files.
+- Observational target data needed for post-run checks, such as fluxes, biomass, LAI, yield, soil water, soil temperature, or SOC tables from AmeriFlux, FLUXNET, paper figures, or supplements.
 
 ## Run Folder Layout
 
@@ -80,11 +113,13 @@ Before declaring the folder workable:
 1. Confirm the namelist exists.
 2. From the run folder, resolve every namelist file path that is not `'NO'`.
 3. Confirm `grid_file_in`, `pft_mgmt_in`, and `clm_hour_file_in` point to the intended site artifacts.
-4. Confirm `forc_periods` uses climate forcing years that exist in the source ERA5 or climate NetCDF.
-5. Confirm `delta_time=3600.` for hourly AmeriFlux/EcoSIM forcing.
-6. Confirm `atm_ghg_in` spans the requested simulation period; historical GHGs through 2023 are not sufficient for future SSP runs.
-7. Confirm `pft_mgmt_in` has active PFTs and reasonable planting density/depth units.
-8. Confirm output frequency and `hist_fincl1` are appropriate for expected output volume.
+4. Confirm editable Excel sidecars exist for `grid_file_in`, `pft_mgmt_in`, and soil management when active, and that they were generated from the current NetCDF or reviewed before NetCDF conversion.
+5. Confirm `forc_periods` uses climate forcing years that exist in the source ERA5 or climate NetCDF.
+6. Confirm `delta_time=3600.` for hourly AmeriFlux/EcoSIM forcing.
+7. Confirm `atm_ghg_in` spans the requested simulation period; historical GHGs through 2023 are not sufficient for future SSP runs.
+8. Confirm `pft_mgmt_in` has active PFTs and reasonable planting density/depth units.
+9. Confirm soil-management selectors and event tables are plausible for fertilizer, tillage, and irrigation schedules.
+10. Confirm output frequency and `hist_fincl1` are appropriate for expected output volume.
 
 ## Scientific Cautions
 
@@ -100,5 +135,6 @@ When finished, report:
 - run folder path
 - namelist path
 - input files referenced by the namelist
+- grid, PFT-management, and soil-management Excel workbook paths
 - forcing year range and `stop_n`
 - any missing assumptions, fallback data, or validation steps that could not be completed

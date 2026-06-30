@@ -67,13 +67,23 @@ After the paper-derived site table is complete, use this workflow to prepare Eco
      - Otherwise use `era5-cds-point-download` to download CDS ERA5 single-level point time series by longitude/latitude, then convert or stage it for EcoSIM climate forcing. If the non-US site also needs annual auxiliary precipitation chemistry, use `global-aux-climate-chemistry` after ERA5 conversion.
      - If the site is AmeriFlux/FLUXNET and has curated site forcing covering the target years, prefer the curated forcing for observational consistency, but still record whether NLDAS or ERA5 is the fallback route.
    - Use `ameriflux-surgo-grid-extract` for soil/grid variables, with documented fallback if gSSURGO is incomplete.
+   - When an EcoSIM grid NetCDF is created, also create an editable Excel workbook sidecar with `ameriflux-surgo-grid-extract/scripts/grid_netcdf_excel_bridge.py`; prefer `result/<SITE_ID>/<SITE_ID>_ecosim_grid.xlsx`.
    - Use `ameriflux-atmchem-info` when atmospheric deposition or precipitation chemistry is needed.
    - Use `ssp-ghg-atmgas-generator` for future or scenario greenhouse-gas forcing; historical-only GHG files are not sufficient for post-2023 SSP runs.
+   - Note what the user must download or provide before the workflow can run locally:
+     - AmeriFlux or FLUXNET site data when using curated site forcing, including BASE/FULLSET meteorological CSV files and BADM/BIF management metadata for crop or managed sites.
+     - NASA Earthdata access for NLDAS, or predownloaded NLDAS point forcing files covering the required years.
+     - Copernicus CDS access and `cdsapi` configuration for ERA5, or predownloaded CDS ERA5 point NetCDF files for non-US or non-NLDAS sites.
+     - US soil and chemistry source data when needed: `gSSURGO_CONUS.gdb`, NADP NTN precipitation-chemistry rasters, and EPA tDEP deposition rasters.
+     - Non-US auxiliary chemistry sources when needed, such as CAMS, MERRA-2, EBAS, or EANET products selected by `global-aux-climate-chemistry`.
+     - EcoSIM model assets that are not produced by extraction scripts, including the PFT parameter NetCDF catalog, atmospheric GHG forcing NetCDF, plant trait files, and any crop or treatment management records from paper supplements.
+     - Observational datasets or paper supplement tables required for calibration and validation targets.
 
 3. Build vegetation or crop management inputs.
    - Use `ecosim-vegetation-code` to map observed vegetation/crops to EcoSIM PFT codes and climate-code suffixes.
    - For natural ecosystems, use `ecosim-natural-plant-mgmt`.
    - For crop sites, construct year-specific planting, harvest, irrigation, fertilization, tillage, and rotation records from the paper, AmeriFlux metadata, supplements, or prior input-paper sources. Do not silently substitute natural-vegetation management for crops.
+   - Create editable Excel workbooks for both PFT management and soil management before or alongside NetCDF conversion. Prefer `result/<SITE_ID>/<SITE_ID>_pft_mgmt.xlsx` and `result/<SITE_ID>/<SITE_ID>_soil_mgmt.xlsx`, then convert reviewed workbooks to the corresponding `.nc` and `.json` files with `ecosim-natural-plant-mgmt` and `ecosim-soil-mgmt`.
    - For repeated crop rotations, preserve the paper's calibration/validation years and document any assumed management before the observation period.
 
 4. Prepare or verify plant traits.
@@ -126,6 +136,7 @@ When the user asks for simulation procedures or run folders, also report:
 - existing artifacts found and missing artifacts
 - skill chain used to create missing artifacts
 - run folder path and namelist path
+- editable Excel workbook paths for the grid file, PFT management file, and soil management file
 - forcing year range, spinup assumptions, and output targets
 - climate forcing decision: US/NLDAS-domain versus ERA5/CDS, plus selected longitude/latitude
 - validation checks completed and unresolved assumptions
