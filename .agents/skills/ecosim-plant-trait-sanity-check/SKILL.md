@@ -14,6 +14,8 @@ The check has two layers:
 - deterministic file checks for malformed values, units, ranges, and block consistency
 - web-informed ecological checks using species, genus, or plant-functional-type evidence gathered during the task
 
+Always back parameter-value judgments for `plant_trait.*.desc` files with web search unless the user explicitly asks for an offline/local-only check. Treat deterministic checker results as a first pass, not as sufficient evidence that ecological or physiological parameter values are correct.
+
 ## Workflow
 
 1. Locate the target `plant_trait.*.desc` file. If the user gives no path, prefer a local path they recently mentioned, then search under `data/`, then under the repository.
