@@ -39,7 +39,9 @@ NUMBER_RE = re.compile(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[Ee][-+]?\d+)?")
 
 FRACTION_VARS = {
     "RUBP",
+    "PEPC",
     "CHL",
+    "fCHLMESO",
     "FCO2",
     "ALBR",
     "ALBP",
@@ -57,6 +59,8 @@ POSITIVE_VARS = {
     "VOMX",
     "XKCO2",
     "XKO2",
+    "VCMX4",
+    "XKCO24",
     "ETMX",
     "XRNI",
     "XRLA",
@@ -104,6 +108,76 @@ PHOTOSYNTHETIC_WARN_RANGES = {
         0.08,
         0.30,
         "chlorophyll-bound/light-harvesting protein fraction of total leaf protein",
+    ),
+}
+
+# Protein C:N varies modestly among enzymes. This representative mass ratio
+# converts enzyme protein C per leaf N into an implied enzyme-N allocation.
+PROTEIN_C_TO_N_MASS_RATIO = 3.3
+C4_PEPC_LEAF_N_FRACTION_WARN_RANGE = (0.01, 0.06)
+C4_RUBISCO_LEAF_N_FRACTION_WARN_RANGE = (0.05, 0.16)
+C3_RUBISCO_LEAF_N_FRACTION_WARN_RANGE = (0.08, 0.30)
+
+PHYSIOLOGY_PATHWAY_RANGES = {
+    "C4": {
+        "XKCO2": (10.0, 35.0, "Rubisco aqueous CO2 Km at 25 C"),
+        "XKO2": (120.0, 400.0, "Rubisco aqueous O2 Km at 25 C"),
+        "XKCO24": (0.5, 20.0, "effective aqueous CO2 Km for PEPC at 25 C"),
+        "FCO2": (0.25, 0.50, "intercellular-to-atmospheric CO2 ratio"),
+        "fCHLMESO": (0.40, 0.75, "fraction of chlorophyll-bound protein in mesophyll cells"),
+    },
+    "C3": {
+        "XKCO2": (8.0, 30.0, "Rubisco aqueous CO2 Km at 25 C"),
+        "XKO2": (180.0, 650.0, "Rubisco aqueous O2 Km at 25 C"),
+        "FCO2": (0.55, 0.85, "intercellular-to-atmospheric CO2 ratio"),
+    },
+}
+
+RUBISCO_SPECIFICITY_WARN_RANGE = (70.0, 140.0)
+C4_CARBOXYLATION_TO_OXYGENATION_WARN_RANGE = (6.0, 14.0)
+C3_CARBOXYLATION_TO_OXYGENATION_WARN_RANGE = (2.0, 8.0)
+C4_VPMAX_TO_VCMAX_WARN_RANGE = (0.8, 2.5)
+C4_JMAX_TO_VCMAX_WARN_RANGE = (4.0, 8.0)
+C3_JMAX_TO_VCMAX_WARN_RANGE = (1.2, 3.0)
+PAR_ABSORPTANCE_WARN_RANGE = (0.80, 0.95)
+SHORTWAVE_ABSORPTANCE_WARN_RANGE = (0.30, 0.85)
+PHOTOSYNTHETIC_PROTEIN_ALLOCATION_MAX = 0.65
+PHYSIOLOGY_FLOAT_TOLERANCE = 1.0e-6
+
+PHYSIOLOGY_REQUIRED_VARS = {
+    "C3": (
+        "VCMX",
+        "VOMX",
+        "XKCO2",
+        "XKO2",
+        "RUBP",
+        "ETMX",
+        "CHL",
+        "FCO2",
+        "CNWL",
+        "ALBR",
+        "TAUR",
+        "ALBP",
+        "TAUP",
+    ),
+    "C4": (
+        "VCMX",
+        "VOMX",
+        "XKCO2",
+        "XKO2",
+        "RUBP",
+        "ETMX",
+        "VCMX4",
+        "XKCO24",
+        "PEPC",
+        "CHL",
+        "fCHLMESO",
+        "FCO2",
+        "CNWL",
+        "ALBR",
+        "TAUR",
+        "ALBP",
+        "TAUP",
     ),
 }
 
@@ -317,6 +391,7 @@ class Finding:
     line: int
     parameter: str
     message: str
+    category: str = "general"
 
     def as_dict(self) -> Dict[str, object]:
         return {
@@ -328,6 +403,7 @@ class Finding:
             "line": self.line,
             "parameter": self.parameter,
             "message": self.message,
+            "category": self.category,
         }
 
 
@@ -449,7 +525,14 @@ def first_value(params: Dict[str, List[Parameter]], variable: str) -> Optional[f
 def check_blocks(blocks: Iterable[PlantBlock]) -> List[Finding]:
     findings: List[Finding] = []
 
-    def add(block: PlantBlock, severity: str, parameter: str, line: int, message: str) -> None:
+    def add(
+        block: PlantBlock,
+        severity: str,
+        parameter: str,
+        line: int,
+        message: str,
+        category: str = "general",
+    ) -> None:
         findings.append(
             Finding(
                 severity=severity,
@@ -460,6 +543,7 @@ def check_blocks(blocks: Iterable[PlantBlock]) -> List[Finding]:
                 line=line,
                 parameter=parameter,
                 message=message,
+                category=category,
             )
         )
 
@@ -487,6 +571,7 @@ def check_blocks(blocks: Iterable[PlantBlock]) -> List[Finding]:
         check_variable_ranges(block, params, add)
         check_petiole_sheath_angle(block, params, add)
         check_cross_parameters(block, params, add)
+        check_physiological_parameterization(block, params, add)
         check_woody_form(block, params, add)
 
     return sort_findings(findings)
@@ -755,13 +840,14 @@ def check_variable_ranges(block: PlantBlock, params: Dict[str, List[Parameter]],
             if parameter.section != "PHOTOSYNTHETIC PROPERTIES":
                 continue
             for value in parameter.numeric_values:
-                if value < lower or value > upper:
+                if not in_range(value, (lower, upper)):
                     add(
                         block,
                         "WARN",
                         variable,
                         parameter.line,
                         f"{meaning} outside broad expected range [{lower:g}, {upper:g}]: {value:g}",
+                        "physiology",
                     )
 
     for variable in YIELD_VARS:
@@ -857,12 +943,6 @@ def check_cross_parameters(block: PlantBlock, params: Dict[str, List[Parameter]]
         line = params["ALBP"][0].line
         add(block, "ERROR", "ALBP/TAUP", line, f"PAR albedo plus transmission is {albp + taup:g}, expected <= 1")
 
-    vcmx = first_value(params, "VCMX")
-    vomx = first_value(params, "VOMX")
-    if vcmx is not None and vomx is not None and vomx > vcmx:
-        line = params["VOMX"][0].line
-        add(block, "WARN", "VOMX", line, f"oxygenation capacity {vomx:g} exceeds carboxylation capacity {vcmx:g}")
-
     rrad1m = first_value(params, "RRAD1M")
     rrad2m = first_value(params, "RRAD2M")
     if rrad1m is not None and rrad2m is not None and rrad2m > rrad1m:
@@ -874,6 +954,267 @@ def check_cross_parameters(block: PlantBlock, params: Dict[str, List[Parameter]]
     if phimin is not None and phimax is not None and phimin > phimax:
         line = params["PhiMIN"][0].line
         add(block, "ERROR", "PhiMIN/PhiMAX", line, f"PhiMIN {phimin:g} exceeds PhiMAX {phimax:g}")
+
+
+def block_is_c4(params: Dict[str, List[Parameter]]) -> bool:
+    return photosynthesis_pathway(params) == "C4"
+
+
+def photosynthesis_pathway(params: Dict[str, List[Parameter]]) -> Optional[str]:
+    for parameter in params.get("ICTYP", []):
+        raw = parameter.raw_value.lower()
+        if re.search(r"(?<![a-z0-9])c4(?![a-z0-9])", raw):
+            return "C4"
+        if re.search(r"(?<![a-z0-9])c3(?![a-z0-9])", raw):
+            return "C3"
+    return None
+
+
+def check_physiological_parameterization(
+    block: PlantBlock,
+    params: Dict[str, List[Parameter]],
+    add,
+) -> None:
+    """Flag compensating photosynthetic inputs that are not physiologically clean."""
+
+    pathway = photosynthesis_pathway(params)
+    if pathway is None:
+        line = params["ICTYP"][0].line if params.get("ICTYP") else block.start_line
+        add(
+            block,
+            "WARN",
+            "ICTYP",
+            line,
+            "cannot determine C3 or C4 pathway; pathway-specific physiological checks were skipped",
+            "physiology",
+        )
+        return
+
+    def warn(parameter: str, line: int, message: str) -> None:
+        add(block, "WARN", parameter, line, message, "physiology")
+
+    for variable in PHYSIOLOGY_REQUIRED_VARS[pathway]:
+        if first_value(params, variable) is None:
+            warn(
+                variable,
+                block.start_line,
+                f"{pathway} clean-physiology check requires {variable}, but no numeric value was found",
+            )
+
+    for variable, (lower, upper, meaning) in PHYSIOLOGY_PATHWAY_RANGES[pathway].items():
+        value = first_value(params, variable)
+        if value is not None and not in_range(value, (lower, upper)):
+            warn(
+                variable,
+                params[variable][0].line,
+                f"{pathway} {meaning} {value:g} is outside broad physiological range "
+                f"[{lower:g}, {upper:g}]",
+            )
+
+    vcmx = first_value(params, "VCMX")
+    vomx = first_value(params, "VOMX")
+    kc = first_value(params, "XKCO2")
+    ko = first_value(params, "XKO2")
+    rubp = first_value(params, "RUBP")
+    cnwl = first_value(params, "CNWL")
+    pepc = first_value(params, "PEPC")
+    vcmx4 = first_value(params, "VCMX4")
+    etmx = first_value(params, "ETMX")
+    chl = first_value(params, "CHL")
+    fchlmeso = first_value(params, "fCHLMESO")
+
+    if all(value is not None and value > 0 for value in (vcmx, vomx, kc, ko)):
+        turnover_ratio = vcmx / vomx
+        turnover_range = (
+            C4_CARBOXYLATION_TO_OXYGENATION_WARN_RANGE
+            if pathway == "C4"
+            else C3_CARBOXYLATION_TO_OXYGENATION_WARN_RANGE
+        )
+        if not in_range(turnover_ratio, turnover_range):
+            warn(
+                "VCMX/VOMX",
+                params["VCMX"][0].line,
+                f"{pathway} Rubisco VCMX/VOMX turnover ratio is {turnover_ratio:.2f}, outside "
+                f"[{turnover_range[0]:g}, {turnover_range[1]:g}]; do not compensate an "
+                "implausible turnover ratio with Km values",
+            )
+
+        specificity = vcmx * ko / (vomx * kc)
+        lower, upper = RUBISCO_SPECIFICITY_WARN_RANGE
+        if not in_range(specificity, (lower, upper)):
+            warn(
+                "VCMX/VOMX/XKCO2/XKO2",
+                params["VCMX"][0].line,
+                f"Rubisco CO2/O2 specificity implied by VCMX*XKO2/(VOMX*XKCO2) is "
+                f"{specificity:.1f}, outside [{lower:g}, {upper:g}]",
+            )
+
+    if rubp is not None and cnwl is not None and rubp >= 0 and cnwl > 0:
+        implied_rubisco_n_fraction = rubp * cnwl / PROTEIN_C_TO_N_MASS_RATIO
+        rubisco_range = (
+            C4_RUBISCO_LEAF_N_FRACTION_WARN_RANGE
+            if pathway == "C4"
+            else C3_RUBISCO_LEAF_N_FRACTION_WARN_RANGE
+        )
+        if not in_range(implied_rubisco_n_fraction, rubisco_range):
+            warn(
+                "RUBP/CNWL",
+                params["RUBP"][0].line,
+                f"RUBP {rubp:g} and CNWL {cnwl:g} imply "
+                f"{100.0 * implied_rubisco_n_fraction:.2f}% of total leaf N in Rubisco, "
+                f"outside broad {pathway} range [{100.0 * rubisco_range[0]:g}, "
+                f"{100.0 * rubisco_range[1]:g}]%",
+            )
+
+    if pathway == "C4" and pepc is not None and cnwl is not None and pepc >= 0 and cnwl > 0:
+        pepc_c_per_leaf_n = pepc * cnwl
+        implied_pepc_n_fraction = pepc_c_per_leaf_n / PROTEIN_C_TO_N_MASS_RATIO
+        if not in_range(implied_pepc_n_fraction, C4_PEPC_LEAF_N_FRACTION_WARN_RANGE):
+            lower, upper = C4_PEPC_LEAF_N_FRACTION_WARN_RANGE
+            warn(
+                "PEPC/CNWL",
+                params["PEPC"][0].line,
+                f"PEPC {pepc:g} and CNWL {cnwl:g} imply "
+                f"{100.0 * implied_pepc_n_fraction:.2f}% of total leaf N allocated to PEPC "
+                f"(PEPC*CNWL={pepc_c_per_leaf_n:g} gC PEPC gN-1; "
+                f"protein C:N={PROTEIN_C_TO_N_MASS_RATIO:g}), outside broad C4 range "
+                f"[{100.0 * lower:g}, {100.0 * upper:g}]%",
+            )
+
+    allocations = [("RUBP", rubp), ("CHL", chl)]
+    if pathway == "C4":
+        allocations.append(("PEPC", pepc))
+    if all(value is not None and value >= 0 for _, value in allocations):
+        allocation_sum = sum(value for _, value in allocations)
+        if allocation_sum > PHOTOSYNTHETIC_PROTEIN_ALLOCATION_MAX + PHYSIOLOGY_FLOAT_TOLERANCE:
+            warn(
+                "+".join(variable for variable, _ in allocations),
+                params[allocations[0][0]][0].line,
+                f"photosynthetic protein fractions sum to {allocation_sum:.3f}, above "
+                f"{PHOTOSYNTHETIC_PROTEIN_ALLOCATION_MAX:g}; allocations must share the "
+                "same total-leaf-protein pool",
+            )
+
+    rubisco_capacity = None
+    if vcmx is not None and rubp is not None and vcmx > 0 and rubp > 0:
+        rubisco_capacity = vcmx * rubp
+
+    if (
+        pathway == "C4"
+        and rubisco_capacity is not None
+        and vcmx4 is not None
+        and pepc is not None
+        and vcmx4 > 0
+        and pepc > 0
+    ):
+        vpmax_to_vcmax = vcmx4 * pepc / rubisco_capacity
+        if not in_range(vpmax_to_vcmax, C4_VPMAX_TO_VCMAX_WARN_RANGE):
+            lower, upper = C4_VPMAX_TO_VCMAX_WARN_RANGE
+            warn(
+                "VCMX4*PEPC/VCMX*RUBP",
+                params["VCMX4"][0].line,
+                f"protein-normalized Vpmax:Vcmax is {vpmax_to_vcmax:.2f}, outside broad "
+                f"C4 range [{lower:g}, {upper:g}]; VCMX4 and PEPC must be calibrated "
+                "together against the Rubisco capacity pair",
+            )
+
+    if rubisco_capacity is not None and etmx is not None and chl is not None and etmx > 0 and chl > 0:
+        if pathway == "C4" and fchlmeso is not None and fchlmeso > 0:
+            jmax_to_vcmax = etmx * chl * fchlmeso / (3.7 * rubisco_capacity)
+            jmax_range = C4_JMAX_TO_VCMAX_WARN_RANGE
+        elif pathway == "C3":
+            jmax_to_vcmax = etmx * chl / (3.5 * rubisco_capacity)
+            jmax_range = C3_JMAX_TO_VCMAX_WARN_RANGE
+        else:
+            jmax_to_vcmax = None
+            jmax_range = None
+
+        if jmax_to_vcmax is not None and jmax_range is not None and not in_range(jmax_to_vcmax, jmax_range):
+            warn(
+                "ETMX*CHL/VCMX*RUBP",
+                params["ETMX"][0].line,
+                f"protein-normalized Jmax:Vcmax is {jmax_to_vcmax:.2f}, outside broad "
+                f"{pathway} range [{jmax_range[0]:g}, {jmax_range[1]:g}]; ETMX and CHL "
+                "must be calibrated together against Rubisco capacity",
+            )
+
+    check_absorptance_pair(
+        block,
+        params,
+        add,
+        "ALBP",
+        "TAUP",
+        "PAR",
+        PAR_ABSORPTANCE_WARN_RANGE,
+    )
+    check_absorptance_pair(
+        block,
+        params,
+        add,
+        "ALBR",
+        "TAUR",
+        "shortwave",
+        SHORTWAVE_ABSORPTANCE_WARN_RANGE,
+    )
+
+
+def in_range(value: float, bounds: tuple[float, float]) -> bool:
+    return (
+        bounds[0] - PHYSIOLOGY_FLOAT_TOLERANCE
+        <= value
+        <= bounds[1] + PHYSIOLOGY_FLOAT_TOLERANCE
+    )
+
+
+def check_absorptance_pair(
+    block: PlantBlock,
+    params: Dict[str, List[Parameter]],
+    add,
+    albedo_variable: str,
+    transmission_variable: str,
+    band: str,
+    expected_range: tuple[float, float],
+) -> None:
+    albedo = first_value(params, albedo_variable)
+    transmission = first_value(params, transmission_variable)
+    if albedo is None or transmission is None or albedo + transmission > 1.0:
+        return
+    absorptance = 1.0 - albedo - transmission
+    if not in_range(absorptance, expected_range):
+        add(
+            block,
+            "WARN",
+            f"{albedo_variable}/{transmission_variable}",
+            params[albedo_variable][0].line,
+            f"leaf {band} absorptance 1-{albedo_variable}-{transmission_variable} is "
+            f"{absorptance:.3f}, outside broad range [{expected_range[0]:g}, "
+            f"{expected_range[1]:g}]",
+            "physiology",
+        )
+
+
+def enforce_strict_physiology(findings: List[Finding]) -> List[Finding]:
+    """Promote physiology warnings to errors for calibration/run-readiness gates."""
+
+    promoted = []
+    for finding in findings:
+        if finding.category == "physiology" and finding.severity == "WARN":
+            promoted.append(
+                Finding(
+                    severity="ERROR",
+                    pft_code=finding.pft_code,
+                    nz=finding.nz,
+                    ny=finding.ny,
+                    nx=finding.nx,
+                    line=finding.line,
+                    parameter=finding.parameter,
+                    message=f"strict physiology: {finding.message}",
+                    category=finding.category,
+                )
+            )
+        else:
+            promoted.append(finding)
+    return sort_findings(promoted)
 
 
 def check_woody_form(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
@@ -1129,6 +1470,7 @@ def render_markdown(
     ny: int,
     nx: int,
     web_evidence: Optional[Path],
+    strict_physiology: bool,
 ) -> str:
     errors = sum(1 for f in findings if f.severity == "ERROR")
     warnings = sum(1 for f in findings if f.severity == "WARN")
@@ -1139,6 +1481,7 @@ def render_markdown(
         f"- Grid scope: `NY={ny}, NX={nx}`",
         f"- Plant blocks checked: {len(selected)} of {len(blocks)} total blocks",
         f"- Web evidence: `{web_evidence}`" if web_evidence else "- Web evidence: not provided",
+        f"- Strict physiology: {'enabled' if strict_physiology else 'disabled'}",
         f"- Findings: {errors} ERROR, {warnings} WARN",
         "",
         "## Findings",
@@ -1174,11 +1517,13 @@ def build_json(
     ny: int,
     nx: int,
     web_evidence: Optional[Path],
+    strict_physiology: bool,
 ) -> Dict[str, object]:
     return {
         "source_file": str(path),
         "grid_scope": {"ny": ny, "nx": nx},
         "web_evidence_file": str(web_evidence) if web_evidence else None,
+        "strict_physiology": strict_physiology,
         "total_blocks": len(blocks),
         "checked_blocks": len(selected),
         "finding_counts": {
@@ -1196,6 +1541,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--ny", type=int, default=1, help="NY grid index to check; default: 1")
     parser.add_argument("--nx", type=int, default=1, help="NX grid index to check; default: 1")
     parser.add_argument("--web-evidence", type=Path, help="JSON file of web-sourced trait evidence converted to EcoSIM units")
+    parser.add_argument(
+        "--strict-physiology",
+        action="store_true",
+        help="promote physiological-consistency warnings to errors",
+    )
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     args = parser.parse_args(argv)
 
@@ -1227,10 +1577,39 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 2
         findings = sort_findings(findings + check_web_evidence(selected, web_evidence))
 
+    if args.strict_physiology:
+        findings = enforce_strict_physiology(findings)
+
     if args.json:
-        print(json.dumps(build_json(args.desc_file, blocks, selected, findings, args.ny, args.nx, args.web_evidence), indent=2))
+        print(
+            json.dumps(
+                build_json(
+                    args.desc_file,
+                    blocks,
+                    selected,
+                    findings,
+                    args.ny,
+                    args.nx,
+                    args.web_evidence,
+                    args.strict_physiology,
+                ),
+                indent=2,
+            )
+        )
     else:
-        print(render_markdown(args.desc_file, blocks, selected, findings, args.ny, args.nx, args.web_evidence), end="")
+        print(
+            render_markdown(
+                args.desc_file,
+                blocks,
+                selected,
+                findings,
+                args.ny,
+                args.nx,
+                args.web_evidence,
+                args.strict_physiology,
+            ),
+            end="",
+        )
 
     return 1 if any(f.severity == "ERROR" for f in findings) else 0
 

@@ -33,7 +33,7 @@ The parser should keep duplicate variable names in file order. `KLGMAX` is the c
 - In `PLANT CLASS INFORMATION`, any block with `ISTYP` set to annual should have `IWTYP` set to evergreen. This is an EcoSIM convention: all annual plants are considered evergreen for the phenology-type field.
 - `IEBTYP` should use EcoSIM embryophyte type codes `0=bryophyte`, `1=pteridophyte`, `2=gymnosperm`, `3=monocot`, and `4=eudicot`. The checker accepts either a valid integer code or a recognized label in `.desc` output, errors on missing, unrecognized, non-integer, or out-of-range values, and warns when the value conflicts with the inferred PFT form from the block code/name.
 - `ISNTYP` should use EcoSIM snow interception pattern codes `0=bryophyte`, `1=grass`, `2=shrub`, `3=deciduous tree`, and `4=conifer`. The checker errors on missing, non-integer, or out-of-range numeric codes, and warns when the code conflicts with the label text or the inferred PFT form from the block code/name.
-- Fraction traits such as `RUBP`, `CHL`, `FCO2`, `ALBR`, `ALBP`, `TAUR`, `TAUP`, `CFI`, `PORT`, `PhiMIN`, `PhiMAX`, and `PhiMean` should be within `[0, 1]`. In photosynthetic properties, `CHL` is the fraction of total leaf protein in chlorophyll-bound/light-harvesting proteins, including chlorophyll-protein complexes associated with PSI, PSII, and LHC.
+- Fraction traits such as `RUBP`, `PEPC`, `CHL`, `FCO2`, `ALBR`, `ALBP`, `TAUR`, `TAUP`, `CFI`, `PORT`, `PhiMIN`, `PhiMAX`, and `PhiMean` should be within `[0, 1]`. In photosynthetic properties, `CHL` is the fraction of total leaf protein in chlorophyll-bound/light-harvesting proteins, including chlorophyll-protein complexes associated with PSI, PSII, and LHC.
 - `CHL` values in `PHOTOSYNTHETIC PROPERTIES` should normally fall in a broad screening range of `0.08-0.30` on the total-leaf-protein basis. Values below this range likely under-allocate protein to light harvesting, especially for evergreen needleleaf PFTs.
 - Do not use `SLA1` values for sanity-check decisions, including web-informed checks or derived leaf-area photosynthetic capacity calculations.
 - `CLASS` must contain four numeric inclination fractions, each in `[0, 1]`, summing to one.
@@ -44,6 +44,22 @@ The parser should keep duplicate variable names in file order. `KLGMAX` is the c
 - Organ N and P mass ratios (`CNLF`, `CNSHE`, `CNSTK`, `CNRTLIG`, `CNRSV`, `CNHSK`, `CNEAR`, `CNGR`, `CNRT`, `CPLF`, `CPSHE`, `CPSTK`, `CPRTLIG`, `CPRSV`, `CPHSK`, `CPEAR`, `CPGR`, `CPRT`) must be positive; values above `0.2 g element gC-1` are suspicious enough to warn.
 - `OSMO` should be negative in MPa. Very negative values below about `-5 MPa` deserve a warning.
 - `WTSTDI` should be nonnegative.
+
+## Clean Photosynthetic Parameterization
+
+Apply these as pathway-aware physiological warnings. Promote them to errors when `--strict-physiology` is requested. The ranges are deliberately broad screening bounds, not cultivar-specific calibration targets.
+
+- Require a recognizable `ICTYP` pathway and all inputs needed for the corresponding kinetic, allocation, capacity-ratio, and optical checks. Missing values must not silently disable strict physiology.
+- Treat `VCMX`, `VOMX`, `XKCO2`, and `XKO2` as a Rubisco kinetic quartet. Check `VCMX/VOMX` against `6-14` for C4 and `2-8` for C3, and check implied specificity `VCMX*XKO2/(VOMX*XKCO2)` against `70-140`. This prevents an unrealistic turnover ratio from being hidden by compensating Km values.
+- Screen C4 `XKCO2` at `10-35 uM`, `XKO2` at `120-400 uM`, and effective `XKCO24` at `0.5-20 uM`. Screen C3 `XKCO2` at `8-30 uM` and `XKO2` at `180-650 uM`. EcoSIM uses these as aqueous 25 C reference constants.
+- Estimate enzyme nitrogen allocation with `fN_enzyme = allocation * CNWL / 3.3`, using `3.3 gC protein gN-1` when enzyme-specific composition is unavailable. Screen Rubisco at `5-16%` of total leaf N for C4 and `8-30%` for C3. Screen C4 PEPC at `1-6%`; field maize commonly allocates about `2.5-3.5%`.
+- Require `RUBP + CHL + PEPC <= 0.65` for C4 and `RUBP + CHL <= 0.65` for C3 because these fractions draw from one total-leaf-protein pool.
+- For C4, calculate protein-normalized `Vpmax:Vcmax = VCMX4*PEPC/(VCMX*RUBP)` and screen at `0.8-2.5`.
+- Calculate protein-normalized `Jmax:Vcmax` using EcoSIM's chlorophyll-C conversion: `ETMX*CHL*fCHLMESO/(3.7*VCMX*RUBP)` for C4, screened at `4-8`; and `ETMX*CHL/(3.5*VCMX*RUBP)` for C3, screened at `1.2-3`.
+- Screen `FCO2` at `0.25-0.50` for C4 and `0.55-0.85` for C3. Screen C4 `fCHLMESO` at `0.40-0.75`.
+- Screen leaf PAR absorptance `1-ALBP-TAUP` at `0.80-0.95` and broad shortwave absorptance `1-ALBR-TAUR` at `0.30-0.85`.
+
+Use web evidence to narrow these ranges for a species, cultivar, nitrogen treatment, growth stage, and measurement protocol. Useful foundations include the corrected Rubisco kinetic compilation (https://doi.org/10.1093/jxb/erab383), maize nitrogen allocation (https://doi.org/10.3389/fpls.2016.00699), maize seasonal capacity ratios (https://doi.org/10.1111/pce.13511), and maize mesophyll/bundle-sheath chlorophyll partitioning (https://doi.org/10.1104/pp.51.6.1133).
 
 ## Woody Versus Herbaceous Root Blocks
 

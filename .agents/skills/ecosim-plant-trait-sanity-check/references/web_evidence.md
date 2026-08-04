@@ -48,6 +48,10 @@ EcoSIM units often differ from trait database units. Document every conversion i
 - `CNLF` is `gN gC-1`. If a source gives leaf N as `mg gDM-1`, convert with `CNLF = (leaf_N_mg_gDM / 1000) / carbon_fraction`.
 - `CPLF` is `gP gC-1`. If a source gives leaf P as `mg gDM-1`, convert with `CPLF = (leaf_P_mg_gDM / 1000) / carbon_fraction`.
 - `GRDM` is seed carbon mass in `gC seed-1`. Convert dry seed mass with `GRDM = seed_mass_gDM * carbon_fraction`.
+- `PEPC` is the fraction of total leaf protein C allocated to PEPC, while `CNWL` is total leaf protein C per unit total leaf N. If a source reports the fraction of total leaf N allocated to PEPC, map it with `PEPC = fN_PEPC * protein_C_to_N / CNWL`. Use a measured protein C:N ratio when available; otherwise document the screening assumption of `3.3 gC gN-1`. Conversely, the checker estimates `fN_PEPC = PEPC * CNWL / 3.3` for C4 blocks.
+- Map Rubisco nitrogen allocation in the same way: `RUBP = fN_Rubisco * protein_C_to_N / CNWL`. Do not judge `RUBP` or `PEPC` independently of `CNWL`.
+- When a source reports leaf-area `Vpmax:Vcmax` or `Jmax:Vcmax`, compare it to the corresponding protein-normalized EcoSIM ratio only as a screening constraint. Record the source growth stage and temperature normalization; do not present the ratio as a direct unit conversion.
+- Evaluate `VCMX`, `VOMX`, `XKCO2`, and `XKO2` as one kinetic set. Preserve both a plausible carboxylation:oxygenation turnover ratio and a plausible implied specificity; matching specificity alone does not make compensating Km and turnover values physiological.
 - Web `Vcmax25` is commonly leaf-area based (`umol m-2 s-1`), while EcoSIM `VCMX` is Rubisco-C based (`umol CO2 (gC rubisco)-1 s-1`). Do not compare these directly unless the conversion is explicitly supported by additional Rubisco or leaf carbon information.
 
 ## Evidence JSON

@@ -1,6 +1,6 @@
 ---
 name: ecosim-plant-trait-sanity-check
-description: Sanity-check EcoSIM plant_trait.*.desc parameter values for the first grid only. Use when validating plant trait description files, reviewing one-plant-per-block trait records, or checking ranges, units, and woody/herbaceous block consistency before running EcoSIM.
+description: Sanity-check EcoSIM plant_trait.*.desc parameter values for the first grid only. Use when validating plant trait description files, enforcing clean C3/C4 physiological parameterization, reviewing photosynthetic kinetics and protein allocation, or checking ranges, units, and woody/herbaceous block consistency before running EcoSIM.
 ---
 
 # EcoSIM Plant Trait Sanity Check
@@ -19,11 +19,13 @@ Always back parameter-value judgments for `plant_trait.*.desc` files with web se
 ## Workflow
 
 1. Locate the target `plant_trait.*.desc` file. If the user gives no path, prefer a local path they recently mentioned, then search under `data/`, then under the repository.
-2. Run the deterministic checker script on the file:
+2. For calibration or run readiness, run the deterministic checker in strict physiology mode:
 
 ```bash
-python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc
+python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc --strict-physiology
 ```
+
+Omit `--strict-physiology` only for an exploratory review where physiological findings should remain warnings. Strict mode promotes physiological-consistency warnings to errors and returns a nonzero status.
 
 3. Keep the default grid scope unless the user explicitly asks for another grid. The default is equivalent to:
 
@@ -52,13 +54,18 @@ The checker validates the plant blocks at the selected grid for:
 - positive rates, capacities, dimensions, uptake parameters, resistance terms, and nutrient ratios
 - `CLASS` as four inclination fractions that sum to one
 - optical albedo plus transmission not exceeding one
+- pathway-specific Rubisco `Kc`, `Ko`, carboxylation:oxygenation turnover ratio, and implied CO2/O2 specificity
+- Rubisco and PEPC fractions of total leaf N implied by their protein allocations and `CNWL`
+- C4 protein-normalized `Vpmax:Vcmax` and C3/C4 `Jmax:Vcmax` capacity ratios
+- pathway-specific `FCO2`, C4 mesophyll chlorophyll partitioning, and PAR/shortwave absorptance
+- total photosynthetic protein allocation without double-counting the shared leaf-protein pool
 - `ANGSH = 0` for plant forms without petiole or sheath tissue, including conifer, lichen, and moss PFTs
 - osmotic potential sign and standing dead biomass sign
 - growth yield bounds
 - N and P concentration magnitudes
 - class-information conventions, including that annual plants are treated as evergreen in EcoSIM
 - woody versus herbaceous root trait consistency
-- simple cross-parameter checks such as `PhiMIN <= PhiMAX` and fine-root radius not exceeding primary-root radius
+- cross-parameter checks such as `PhiMIN <= PhiMAX` and fine-root radius not exceeding primary-root radius
 
 Read [references/sanity_rules.md](references/sanity_rules.md) before expanding the checker or interpreting a borderline warning. Read [references/web_evidence.md](references/web_evidence.md) before making web-informed trait comparisons.
 
@@ -127,6 +134,12 @@ Use Markdown output for human review:
 python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc
 ```
 
+Enforce physiological consistency for calibration and run readiness:
+
+```bash
+python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc --strict-physiology
+```
+
 Use JSON output for automated pipelines:
 
 ```bash
@@ -139,7 +152,7 @@ Use web evidence in either Markdown or JSON mode:
 python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc --web-evidence /absolute/path/to/web_evidence.json --json
 ```
 
-The script returns a nonzero status when `ERROR` findings are present or when no blocks match the requested grid.
+The script returns a nonzero status when `ERROR` findings are present or when no blocks match the requested grid. With `--strict-physiology`, any physiological-consistency warning is promoted to `ERROR`; unrelated ecological warnings remain warnings.
 
 ## Reporting Guidance
 
