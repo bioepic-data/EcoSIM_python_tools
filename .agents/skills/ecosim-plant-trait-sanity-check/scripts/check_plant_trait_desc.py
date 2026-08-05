@@ -144,6 +144,11 @@ SHORTWAVE_ABSORPTANCE_WARN_RANGE = (0.30, 0.85)
 PHOTOSYNTHETIC_PROTEIN_ALLOCATION_MAX = 0.65
 PHYSIOLOGY_FLOAT_TOLERANCE = 1.0e-6
 
+ACTIVE_STRUCTURAL_PROTEIN_POOLS = {
+    "leaf": ("CNWL", "CNLF", "CPWL", "CPLF"),
+    "root": ("CNWR", "CNRT", "CPWR", "CPRT"),
+}
+
 PHYSIOLOGY_REQUIRED_VARS = {
     "C3": (
         "VCMX",
@@ -571,6 +576,7 @@ def check_blocks(blocks: Iterable[PlantBlock]) -> List[Finding]:
         check_variable_ranges(block, params, add)
         check_petiole_sheath_angle(block, params, add)
         check_cross_parameters(block, params, add)
+        check_active_structural_protein_pools(block, params, add)
         check_physiological_parameterization(block, params, add)
         check_woody_form(block, params, add)
 
@@ -956,6 +962,109 @@ def check_cross_parameters(block: PlantBlock, params: Dict[str, List[Parameter]]
         add(block, "ERROR", "PhiMIN/PhiMAX", line, f"PhiMIN {phimin:g} exceeds PhiMAX {phimax:g}")
 
 
+def active_structural_protein_pool(
+    params: Dict[str, List[Parameter]],
+    organ: str,
+) -> Optional[tuple[float, float, float]]:
+    """Return N-supported, P-supported, and realized protein C per structural C."""
+
+    protein_c_to_n_var, n_per_c_var, protein_c_to_p_var, p_per_c_var = (
+        ACTIVE_STRUCTURAL_PROTEIN_POOLS[organ]
+    )
+    values = (
+        first_value(params, protein_c_to_n_var),
+        first_value(params, n_per_c_var),
+        first_value(params, protein_c_to_p_var),
+        first_value(params, p_per_c_var),
+    )
+    if any(value is None or value <= 0 for value in values):
+        return None
+
+    protein_c_to_n, n_per_c, protein_c_to_p, p_per_c = values
+    n_supported = protein_c_to_n * n_per_c
+    p_supported = protein_c_to_p * p_per_c
+    return n_supported, p_supported, min(n_supported, p_supported)
+
+
+def effective_leaf_protein_c_to_total_n(
+    params: Dict[str, List[Parameter]],
+) -> Optional[float]:
+    pool = active_structural_protein_pool(params, "leaf")
+    leaf_n_per_c = first_value(params, "CNLF")
+    if pool is None or leaf_n_per_c is None or leaf_n_per_c <= 0:
+        return None
+    return pool[2] / leaf_n_per_c
+
+
+def check_active_structural_protein_pools(
+    block: PlantBlock,
+    params: Dict[str, List[Parameter]],
+    add,
+) -> None:
+    """Check N/P support for protein C in active leaf and root structure."""
+
+    is_tree = block.short_code in WOODY_SHORT_CODES
+    for organ, variables in ACTIVE_STRUCTURAL_PROTEIN_POOLS.items():
+        missing = [variable for variable in variables if first_value(params, variable) is None]
+        if missing:
+            add(
+                block,
+                "WARN",
+                "/".join(missing),
+                block.start_line,
+                f"cannot derive {organ} protein C from active structural N and P; "
+                f"missing numeric values for {', '.join(missing)}",
+                "physiology",
+            )
+            continue
+
+        pool = active_structural_protein_pool(params, organ)
+        if pool is None:
+            continue
+        n_supported, p_supported, realized = pool
+        protein_c_to_n_var, n_per_c_var, protein_c_to_p_var, p_per_c_var = variables
+        parameter_name = (
+            f"{protein_c_to_n_var}*{n_per_c_var}/"
+            f"{protein_c_to_p_var}*{p_per_c_var}"
+        )
+        line = params[protein_c_to_n_var][0].line
+
+        if organ == "leaf":
+            scope = "total leaf structural C because all leaf structure is active"
+        elif is_tree:
+            scope = "active root structural C, excluding lignified heartwood"
+        else:
+            scope = "total root structural C because all non-tree root structure is active"
+
+        if realized > 1.0 + PHYSIOLOGY_FLOAT_TOLERANCE:
+            add(
+                block,
+                "ERROR",
+                parameter_name,
+                line,
+                f"N/P-limited {organ} protein C is {realized:.3f} gC protein per gC "
+                f"of {scope}, which exceeds the available structural C",
+                "physiology",
+            )
+            continue
+
+        for support, nutrient, ratio_var, concentration_var in (
+            (n_supported, "N", protein_c_to_n_var, n_per_c_var),
+            (p_supported, "P", protein_c_to_p_var, p_per_c_var),
+        ):
+            if support > 1.0 + PHYSIOLOGY_FLOAT_TOLERANCE:
+                add(
+                    block,
+                    "WARN",
+                    f"{ratio_var}*{concentration_var}",
+                    params[ratio_var][0].line,
+                    f"{nutrient}-supported {organ} protein C is {support:.3f} gC protein "
+                    f"per gC of {scope}; the realized pool remains {realized:.3f} because "
+                    "EcoSIM uses the smaller N- and P-supported amount",
+                    "physiology",
+                )
+
+
 def block_is_c4(params: Dict[str, List[Parameter]]) -> bool:
     return photosynthesis_pathway(params) == "C4"
 
@@ -1016,7 +1125,7 @@ def check_physiological_parameterization(
     kc = first_value(params, "XKCO2")
     ko = first_value(params, "XKO2")
     rubp = first_value(params, "RUBP")
-    cnwl = first_value(params, "CNWL")
+    effective_cnwl = effective_leaf_protein_c_to_total_n(params)
     pepc = first_value(params, "PEPC")
     vcmx4 = first_value(params, "VCMX4")
     etmx = first_value(params, "ETMX")
@@ -1049,8 +1158,8 @@ def check_physiological_parameterization(
                 f"{specificity:.1f}, outside [{lower:g}, {upper:g}]",
             )
 
-    if rubp is not None and cnwl is not None and rubp >= 0 and cnwl > 0:
-        implied_rubisco_n_fraction = rubp * cnwl / PROTEIN_C_TO_N_MASS_RATIO
+    if rubp is not None and effective_cnwl is not None and rubp >= 0:
+        implied_rubisco_n_fraction = rubp * effective_cnwl / PROTEIN_C_TO_N_MASS_RATIO
         rubisco_range = (
             C4_RUBISCO_LEAF_N_FRACTION_WARN_RANGE
             if pathway == "C4"
@@ -1058,25 +1167,27 @@ def check_physiological_parameterization(
         )
         if not in_range(implied_rubisco_n_fraction, rubisco_range):
             warn(
-                "RUBP/CNWL",
+                "RUBP/leaf-protein-pool",
                 params["RUBP"][0].line,
-                f"RUBP {rubp:g} and CNWL {cnwl:g} imply "
+                f"RUBP {rubp:g} and the N/P-limited leaf protein pool "
+                f"({effective_cnwl:g} gC protein gN-1) imply "
                 f"{100.0 * implied_rubisco_n_fraction:.2f}% of total leaf N in Rubisco, "
                 f"outside broad {pathway} range [{100.0 * rubisco_range[0]:g}, "
                 f"{100.0 * rubisco_range[1]:g}]%",
             )
 
-    if pathway == "C4" and pepc is not None and cnwl is not None and pepc >= 0 and cnwl > 0:
-        pepc_c_per_leaf_n = pepc * cnwl
+    if pathway == "C4" and pepc is not None and effective_cnwl is not None and pepc >= 0:
+        pepc_c_per_leaf_n = pepc * effective_cnwl
         implied_pepc_n_fraction = pepc_c_per_leaf_n / PROTEIN_C_TO_N_MASS_RATIO
         if not in_range(implied_pepc_n_fraction, C4_PEPC_LEAF_N_FRACTION_WARN_RANGE):
             lower, upper = C4_PEPC_LEAF_N_FRACTION_WARN_RANGE
             warn(
-                "PEPC/CNWL",
+                "PEPC/leaf-protein-pool",
                 params["PEPC"][0].line,
-                f"PEPC {pepc:g} and CNWL {cnwl:g} imply "
+                f"PEPC {pepc:g} and the N/P-limited leaf protein pool "
+                f"({effective_cnwl:g} gC protein gN-1) imply "
                 f"{100.0 * implied_pepc_n_fraction:.2f}% of total leaf N allocated to PEPC "
-                f"(PEPC*CNWL={pepc_c_per_leaf_n:g} gC PEPC gN-1; "
+                f"(PEPC*effective_CNWL={pepc_c_per_leaf_n:g} gC PEPC gN-1; "
                 f"protein C:N={PROTEIN_C_TO_N_MASS_RATIO:g}), outside broad C4 range "
                 f"[{100.0 * lower:g}, {100.0 * upper:g}]%",
             )

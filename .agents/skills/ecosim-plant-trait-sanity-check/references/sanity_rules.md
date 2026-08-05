@@ -45,6 +45,15 @@ The parser should keep duplicate variable names in file order. `KLGMAX` is the c
 - `OSMO` should be negative in MPa. Very negative values below about `-5 MPa` deserve a warning.
 - `WTSTDI` should be nonnegative.
 
+## Active Structural Protein Pools
+
+- Relate total protein C to both total N and total P in active structural biomass. For an organ with structural N and P concentrations `N/C` and `P/C`, calculate the N-supported protein fraction as `(protein C:N) * (N/C)`, the P-supported fraction as `(protein C:P) * (P/C)`, and the realized protein C fraction as the smaller of the two.
+- For leaves, all structural biomass is active. Use `leaf protein C / leaf structural C = min(CNWL*CNLF, CPWL*CPLF)`.
+- For non-tree roots, all structural biomass is active. Use `root protein C / root structural C = min(CNWR*CNRT, CPWR*CPRT)` across the entire structural root pool.
+- For tree and other woody-PFT roots, apply the same root relationship only to active structural biomass. Exclude lignified heartwood, represented separately by `CNRTLIG` and `CPRTLIG`, from the root protein pool. A static trait file does not contain the dynamic active-to-heartwood C partition, so do not estimate whole-root protein C by mixing active-root and lignified-heartwood concentrations.
+- Require the N/P-limited protein C fraction to be no greater than `1 gC protein gC structural biomass-1`. Warn when either single-nutrient-supported amount exceeds one even if the other nutrient keeps the realized pool below one.
+- Interpret `CNWL`, `CPWL`, `CNWR`, and `CPWR` as protein-pool stoichiometry, not whole-organ elemental C:N or C:P ratios.
+
 ## Clean Photosynthetic Parameterization
 
 Apply these as pathway-aware physiological warnings. Promote them to errors when `--strict-physiology` is requested. The ranges are deliberately broad screening bounds, not cultivar-specific calibration targets.
@@ -52,7 +61,7 @@ Apply these as pathway-aware physiological warnings. Promote them to errors when
 - Require a recognizable `ICTYP` pathway and all inputs needed for the corresponding kinetic, allocation, capacity-ratio, and optical checks. Missing values must not silently disable strict physiology.
 - Treat `VCMX`, `VOMX`, `XKCO2`, and `XKO2` as a Rubisco kinetic quartet. Check `VCMX/VOMX` against `6-14` for C4 and `2-8` for C3, and check implied specificity `VCMX*XKO2/(VOMX*XKCO2)` against `70-140`. This prevents an unrealistic turnover ratio from being hidden by compensating Km values.
 - Screen C4 `XKCO2` at `10-35 uM`, `XKO2` at `120-400 uM`, and effective `XKCO24` at `0.5-20 uM`. Screen C3 `XKCO2` at `8-30 uM` and `XKO2` at `180-650 uM`. EcoSIM uses these as aqueous 25 C reference constants.
-- Estimate enzyme nitrogen allocation with `fN_enzyme = allocation * CNWL / 3.3`, using `3.3 gC protein gN-1` when enzyme-specific composition is unavailable. Screen Rubisco at `5-16%` of total leaf N for C4 and `8-30%` for C3. Screen C4 PEPC at `1-6%`; field maize commonly allocates about `2.5-3.5%`.
+- Define photosynthesis-related allocations (`RUBP`, `PEPC`, and `CHL`) relative to total leaf protein C, not leaf structural C or total leaf N. First derive `leaf_protein_C_per_leaf_C = min(CNWL*CNLF, CPWL*CPLF)` and `effective_CNWL = leaf_protein_C_per_leaf_C/CNLF`. Then estimate enzyme nitrogen allocation with `fN_enzyme = allocation * effective_CNWL / 3.3`, using `3.3 gC protein gN-1` when enzyme-specific composition is unavailable. Screen Rubisco at `5-16%` of total leaf N for C4 and `8-30%` for C3. Screen C4 PEPC at `1-6%`; field maize commonly allocates about `2.5-3.5%`.
 - Require `RUBP + CHL + PEPC <= 0.65` for C4 and `RUBP + CHL <= 0.65` for C3 because these fractions draw from one total-leaf-protein pool.
 - For C4, calculate protein-normalized `Vpmax:Vcmax = VCMX4*PEPC/(VCMX*RUBP)` and screen at `0.8-2.5`.
 - Calculate protein-normalized `Jmax:Vcmax` using EcoSIM's chlorophyll-C conversion: `ETMX*CHL*fCHLMESO/(3.7*VCMX*RUBP)` for C4, screened at `4-8`; and `ETMX*CHL/(3.5*VCMX*RUBP)` for C3, screened at `1.2-3`.

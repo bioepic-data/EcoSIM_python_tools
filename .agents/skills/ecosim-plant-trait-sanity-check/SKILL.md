@@ -1,6 +1,6 @@
 ---
 name: ecosim-plant-trait-sanity-check
-description: Sanity-check EcoSIM plant_trait.*.desc parameter values for the first grid only. Use when validating plant trait description files, enforcing clean C3/C4 physiological parameterization, reviewing photosynthetic kinetics and protein allocation, or checking ranges, units, and woody/herbaceous block consistency before running EcoSIM.
+description: Sanity-check EcoSIM plant_trait.*.desc parameter values for the first grid only. Use when validating plant trait description files, enforcing clean C3/C4 physiological parameterization, reviewing photosynthetic kinetics and active leaf/root protein allocation, or checking ranges, units, and woody/herbaceous block consistency before running EcoSIM.
 ---
 
 # EcoSIM Plant Trait Sanity Check
@@ -55,7 +55,8 @@ The checker validates the plant blocks at the selected grid for:
 - `CLASS` as four inclination fractions that sum to one
 - optical albedo plus transmission not exceeding one
 - pathway-specific Rubisco `Kc`, `Ko`, carboxylation:oxygenation turnover ratio, and implied CO2/O2 specificity
-- Rubisco and PEPC fractions of total leaf N implied by their protein allocations and `CNWL`
+- Rubisco and PEPC fractions of total leaf N implied by their allocations within the N/P-limited total leaf-protein pool
+- leaf and root protein C supported jointly by N and P in active structural biomass, with lignified tree heartwood excluded
 - C4 protein-normalized `Vpmax:Vcmax` and C3/C4 `Jmax:Vcmax` capacity ratios
 - pathway-specific `FCO2`, C4 mesophyll chlorophyll partitioning, and PAR/shortwave absorptance
 - total photosynthetic protein allocation without double-counting the shared leaf-protein pool
@@ -112,7 +113,7 @@ Use this JSON shape:
 
 Web evidence findings default to `WARN` because literature and trait database ranges vary with species, site, phenology, and measurement protocol. Use `severity: "ERROR"` in the evidence JSON only when a value is unequivocally impossible or contradicts a required categorical identity. Do not use external deciduous foliage descriptions to override the EcoSIM convention that annual plants are represented as evergreen in `IWTYP`.
 
-For photosynthetic-property checks, interpret `CHL` as the fraction of total leaf protein in chlorophyll-bound/light-harvesting proteins, including chlorophyll-protein complexes associated with PSI, PSII, and LHC. Do not use `SLA1` values, or any `SLA1`-derived leaf-area capacity calculations, as part of the sanity check.
+For photosynthetic-property checks, interpret `RUBP`, `PEPC`, and `CHL` as fractions of the same total leaf-protein pool. Derive that pool from the smaller of the N- and P-supported amounts in active leaf structural biomass. All leaf structure is active; all non-tree root structure is active; tree root heartwood is lignified and excluded from active root protein. Do not use `SLA1` values, or any `SLA1`-derived leaf-area capacity calculations, as part of the sanity check.
 
 ## Parser Notes
 

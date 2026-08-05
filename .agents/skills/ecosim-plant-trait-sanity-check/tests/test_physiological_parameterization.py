@@ -68,6 +68,28 @@ def physiology_findings(block):
     return findings
 
 
+def active_protein_pool_findings(block):
+    findings = []
+
+    def add(block, severity, parameter, line, message, category="general"):
+        findings.append(
+            CHECKER.Finding(
+                severity=severity,
+                pft_code=block.code,
+                nz=block.nz,
+                ny=block.ny,
+                nx=block.nx,
+                line=line,
+                parameter=parameter,
+                message=message,
+                category=category,
+            )
+        )
+
+    CHECKER.check_active_structural_protein_pools(block, CHECKER.by_var(block), add)
+    return findings
+
+
 class PhysiologicalParameterizationTests(unittest.TestCase):
     def test_missing_pathway_is_flagged_instead_of_skipped(self):
         block = CHECKER.PlantBlock(nz=1, ny=1, nx=1, code="test00", start_line=1)
@@ -91,6 +113,9 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
                 "fCHLMESO": 0.60,
                 "FCO2": 0.40,
                 "CNWL": 2.7,
+                "CNLF": 0.04,
+                "CPWL": 27,
+                "CPLF": 0.004,
                 "ALBR": 0.20,
                 "TAUR": 0.20,
                 "ALBP": 0.075,
@@ -103,7 +128,7 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
             {
                 "XKO2",
                 "VCMX/VOMX",
-                "PEPC/CNWL",
+                "PEPC/leaf-protein-pool",
                 "VCMX4*PEPC/VCMX*RUBP",
                 "ETMX*CHL/VCMX*RUBP",
             },
@@ -125,6 +150,9 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
                 "fCHLMESO": 0.60,
                 "FCO2": 0.35,
                 "CNWL": 2.7,
+                "CNLF": 0.04,
+                "CPWL": 27,
+                "CPLF": 0.004,
                 "ALBR": 0.20,
                 "TAUR": 0.20,
                 "ALBP": 0.09,
@@ -145,6 +173,9 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
                 "CHL": 0.30000001192092896,
                 "FCO2": 0.70,
                 "CNWL": 2.8,
+                "CNLF": 0.04,
+                "CPWL": 28,
+                "CPLF": 0.004,
                 "ALBR": 0.20,
                 "TAUR": 0.20,
                 "ALBP": 0.075,
@@ -153,6 +184,89 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
         )
         self.assertEqual(physiology_findings(block), [])
         self.assertTrue(CHECKER.in_range(0.30000001192092896, (0.08, 0.30)))
+
+    def test_phosphorus_limited_leaf_pool_controls_enzyme_n_allocation(self):
+        block = c4_block(
+            {
+                "VCMX": 100,
+                "VOMX": 12,
+                "XKCO2": 16,
+                "XKO2": 183,
+                "RUBP": 0.10,
+                "ETMX": 1000,
+                "VCMX4": 150,
+                "XKCO24": 3,
+                "PEPC": 0.12,
+                "CHL": 0.20,
+                "fCHLMESO": 0.60,
+                "FCO2": 0.35,
+                "CNWL": 2.7,
+                "CNLF": 0.04,
+                "CPWL": 20,
+                "CPLF": 0.001,
+                "ALBR": 0.20,
+                "TAUR": 0.20,
+                "ALBP": 0.09,
+                "TAUP": 0.04,
+            }
+        )
+        flagged = {finding.parameter for finding in physiology_findings(block)}
+        self.assertNotIn("PEPC/leaf-protein-pool", flagged)
+
+    def test_active_structural_protein_pools_accept_balanced_leaf_and_non_tree_root(self):
+        block = c4_block(
+            {
+                "CNWL": 2.7,
+                "CNLF": 0.04,
+                "CPWL": 27,
+                "CPLF": 0.004,
+                "CNWR": 2.3,
+                "CNRT": 0.025,
+                "CPWR": 23,
+                "CPRT": 0.0025,
+            }
+        )
+        self.assertEqual(active_protein_pool_findings(block), [])
+
+    def test_active_leaf_protein_pool_cannot_exceed_structural_carbon(self):
+        block = c4_block(
+            {
+                "CNWL": 3.0,
+                "CNLF": 0.40,
+                "CPWL": 60,
+                "CPLF": 0.02,
+                "CNWR": 2.3,
+                "CNRT": 0.025,
+                "CPWR": 23,
+                "CPRT": 0.0025,
+            }
+        )
+        findings = active_protein_pool_findings(block)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].severity, "ERROR")
+        self.assertIn("total leaf structural C", findings[0].message)
+
+    def test_tree_root_pool_explicitly_excludes_lignified_heartwood(self):
+        block = CHECKER.PlantBlock(nz=1, ny=1, nx=1, code="ndlf35", start_line=1)
+        values = {
+            "CNWL": 2.6,
+            "CNLF": 0.03,
+            "CPWL": 26,
+            "CPLF": 0.003,
+            "CNWR": 3.0,
+            "CNRT": 0.40,
+            "CPWR": 20,
+            "CPRT": 0.02,
+            "CNRTLIG": 0.005,
+            "CPRTLIG": 0.0005,
+        }
+        block.parameters = [
+            parameter(variable, value, line)
+            for line, (variable, value) in enumerate(values.items(), start=1)
+        ]
+        findings = active_protein_pool_findings(block)
+        self.assertEqual(len(findings), 1)
+        self.assertIn("excluding lignified heartwood", findings[0].message)
 
     def test_strict_mode_only_promotes_physiology_warnings(self):
         findings = [
