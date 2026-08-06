@@ -1,0 +1,9 @@
+case,topography_files,source_file,soil_file,layer,layer_bottom_depth_m,gkc4,gkch,gkca,gkcm,gkcn,gkck
+Boreal Black Spruce PQ,chtop76,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce PQ/tilld,tilld,1,0.02,0.1,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce PQ,chtop76,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce PQ/tilld,tilld,2,0.05,0.1,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce PQ,chtop76,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce PQ/tilld,tilld,3,0.11,0.1,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce PQ,chtop76,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce PQ/tilld,tilld,4,0.27,0.1,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce PQ,chtop76,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce PQ/tilld,tilld,5,0.35,0.1,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce PQ,chtop76,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce PQ/tilld,tilld,6,0.475,0.1,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce PQ,chtop76,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce PQ/tilld,tilld,7,0.88,0.1,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce PQ,chtop76,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce PQ/tilld,tilld,8,1.88,0.1,0.25,0.25,0.6,0.16,3.0

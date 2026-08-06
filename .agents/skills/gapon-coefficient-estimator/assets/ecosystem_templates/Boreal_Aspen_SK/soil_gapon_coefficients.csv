@@ -1,0 +1,13 @@
+case,topography_files,source_file,soil_file,layer,layer_bottom_depth_m,gkc4,gkch,gkca,gkcm,gkcn,gkck
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,1,0.01,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,2,0.05,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,3,0.09,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,4,0.21,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,5,0.32,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,6,0.45,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,7,0.65,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,8,0.85,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,9,1.25,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,10,1.75,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,11,2.25,0.25,2.0,2.0,1.0,0.16,0.25
+Boreal Aspen SK,oatopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Aspen SK/oasoil,oasoil,12,3.0,0.25,2.0,2.0,1.0,0.16,0.25

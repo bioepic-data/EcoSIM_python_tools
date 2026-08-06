@@ -1,3 +1,3 @@
 display_name: Gapon Coefficient Estimator
-short_description: Estimate Ca-normalized Gapon coefficients with paired chemistry and lyotropic-series QC.
-default_prompt: Estimate Ca-normalized Gapon selectivity coefficients from paired exchange-phase and solution-phase data, using Al=Fe>Ca>Mg>K=NH4 as the cation adsorption lyotropic prior.
+short_description: Derive Gapon coefficients or initialize them from depth-explicit ecosystem templates.
+default_prompt: Derive Ca-normalized Gapon coefficients from paired exchange and solution chemistry when possible. Otherwise, select the closest ecosystem template, remap all six EcoSIM Gapon values to the target soil depths, preserve provenance, and state that the template-based starting values are subject to tuning.

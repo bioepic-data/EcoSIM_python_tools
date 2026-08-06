@@ -1,0 +1,11 @@
+case,topography_files,source_file,soil_file,layer,layer_bottom_depth_m,gkc4,gkch,gkca,gkcm,gkcn,gkck
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,1,0.01,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,2,0.025,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,3,0.075,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,4,0.125,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,5,0.175,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,6,0.225,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,7,0.3,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,8,0.5,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,9,0.8,0.25,2.0,2.0,1.0,0.05,0.25
+Cool Temperate Maize-Soybean ON,f25top98,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Maize-Soybean ON/f25sol98,f25sol98,10,1.3,0.25,2.0,2.0,1.0,0.05,0.25

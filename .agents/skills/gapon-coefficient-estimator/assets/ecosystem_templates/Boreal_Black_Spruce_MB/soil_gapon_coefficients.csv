@@ -1,0 +1,10 @@
+case,topography_files,source_file,soil_file,layer,layer_bottom_depth_m,gkc4,gkch,gkca,gkcm,gkcn,gkck
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,1,0.02,0.5,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,2,0.05,0.5,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,3,0.1,0.5,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,4,0.15,0.5,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,5,0.2,0.5,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,6,0.32,0.5,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,7,0.57,0.5,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,8,1.0,0.5,0.25,0.25,0.6,0.16,3.0
+Boreal Black Spruce MB,nobtopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Boreal Black Spruce MB/nobsoil,nobsoil,9,2.0,0.5,0.25,0.25,0.6,0.16,3.0

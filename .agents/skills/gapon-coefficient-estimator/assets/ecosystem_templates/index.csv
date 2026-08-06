@@ -1,0 +1,20 @@
+case,output_file,topography_files,soil_files,rows
+Arctic Tundra AK,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Arctic_Tundra_AK/soil_gapon_coefficients.csv,bat,trough.csv;ridge.csv,32
+Arctic Tundra NWT,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Arctic_Tundra_NWT/soil_gapon_coefficients.csv,dlmtto;dlmttox,dlmtsoil;dlfnsoil;dlfnsoilx,36
+Arctic Wetland NWT,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Arctic_Wetland_NWT/soil_gapon_coefficients.csv,dlmtto,dlmtsoil;dlfnsoil,24
+Boreal Aspen SK,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Boreal_Aspen_SK/soil_gapon_coefficients.csv,oatopo,oasoil,12
+Boreal Black Spruce MB,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Boreal_Black_Spruce_MB/soil_gapon_coefficients.csv,nobtopo,nobsoil,9
+Boreal Black Spruce PQ,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Boreal_Black_Spruce_PQ/soil_gapon_coefficients.csv,chtop76,tilld,8
+Boreal Crop Rotation AB/br,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Boreal_Crop_Rotation_AB/br/soil_gapon_coefficients.csv,brtopo,brsoil,9
+Boreal Jack Pine SK,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Boreal_Jack_Pine_SK/soil_gapon_coefficients.csv,ojtopo,ojsoil,9
+Cool Temperate Douglas Fir BC,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Cool_Temperate_Douglas_Fir_BC/soil_gapon_coefficients.csv,oytop244,quimper,8
+Cool Temperate Maize-Soybean ON,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Cool_Temperate_Maize_Soybean_ON/soil_gapon_coefficients.csv,f25top98,f25sol98,10
+Cool Temperate Oak MA,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Cool_Temperate_Oak_MA/soil_gapon_coefficients.csv,hatopo,hasoil,10
+Cool Temperate Pasture Switzerland,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Cool_Temperate_Pasture_Switzerland/soil_gapon_coefficients.csv,topo_oen,soil_oen,9
+Meditteranean Pasture CA,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Meditteranean_Pasture_CA/soil_gapon_coefficients.csv,vatopo,vasoil,10
+Semiarid Grassland AB,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Semiarid_Grassland_AB/soil_gapon_coefficients.csv,ltopo,lsoil,11
+Tropical Peatland Indonesia,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Tropical_Peatland_Indonesia/soil_gapon_coefficients.csv,ptopo,psoilhum.csv;psoilhol.csv,26
+Tropical Rainforest Amazon,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Tropical_Rainforest_Amazon/soil_gapon_coefficients.csv,sr67topo,sr67soil,11
+Warm Temperate Loblolly Pine TN,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Warm_Temperate_Loblolly_Pine_TN/soil_gapon_coefficients.csv,dutopo,dusoil,8
+Warm Temperate Maize-Soybean Dryland NB,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Warm_Temperate_Maize_Soybean_Dryland_NB/soil_gapon_coefficients.csv,metopo,mesoil,12
+Warm Temperate Maize-Soybean Irrigated NB,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/soil_gapon_by_case/Warm_Temperate_Maize_Soybean_Irrigated_NB/soil_gapon_coefficients.csv,metopo,mesoil,12

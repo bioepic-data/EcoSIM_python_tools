@@ -90,6 +90,28 @@ def active_protein_pool_findings(block):
     return findings
 
 
+def woody_form_findings(block):
+    findings = []
+
+    def add(block, severity, parameter, line, message, category="general"):
+        findings.append(
+            CHECKER.Finding(
+                severity=severity,
+                pft_code=block.code,
+                nz=block.nz,
+                ny=block.ny,
+                nx=block.nx,
+                line=line,
+                parameter=parameter,
+                message=message,
+                category=category,
+            )
+        )
+
+    CHECKER.check_woody_form(block, CHECKER.by_var(block), add)
+    return findings
+
+
 class PhysiologicalParameterizationTests(unittest.TestCase):
     def test_missing_pathway_is_flagged_instead_of_skipped(self):
         block = CHECKER.PlantBlock(nz=1, ny=1, nx=1, code="test00", start_line=1)
@@ -246,7 +268,7 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
         self.assertEqual(findings[0].severity, "ERROR")
         self.assertIn("total leaf structural C", findings[0].message)
 
-    def test_tree_root_pool_explicitly_excludes_lignified_heartwood(self):
+    def test_tree_root_pool_excludes_heartwood_without_separate_concentrations(self):
         block = CHECKER.PlantBlock(nz=1, ny=1, nx=1, code="ndlf35", start_line=1)
         values = {
             "CNWL": 2.6,
@@ -257,8 +279,6 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
             "CNRT": 0.40,
             "CPWR": 20,
             "CPRT": 0.02,
-            "CNRTLIG": 0.005,
-            "CPRTLIG": 0.0005,
         }
         block.parameters = [
             parameter(variable, value, line)
@@ -267,6 +287,20 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
         findings = active_protein_pool_findings(block)
         self.assertEqual(len(findings), 1)
         self.assertIn("excluding lignified heartwood", findings[0].message)
+
+    def test_woody_form_does_not_require_klgmax(self):
+        block = CHECKER.PlantBlock(nz=1, ny=1, nx=1, code="ndlf35", start_line=1)
+        values = {
+            "ROOTMAGE": 1500,
+            "PhiMIN": 0.4,
+            "PhiMAX": 0.7,
+            "R95MAT": 0.05,
+        }
+        block.parameters = [
+            parameter(variable, value, line)
+            for line, (variable, value) in enumerate(values.items(), start=1)
+        ]
+        self.assertEqual(woody_form_findings(block), [])
 
     def test_strict_mode_only_promotes_physiology_warnings(self):
         findings = [

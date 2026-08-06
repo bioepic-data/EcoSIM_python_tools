@@ -1,0 +1,25 @@
+template_id,case,relative_file,soil_file,climate,ecosystem,vegetation,water_regime,management,region,default_for_case
+arctic_tundra_ak_trough,Arctic Tundra AK,Arctic_Tundra_AK/soil_gapon_coefficients.csv,trough.csv,arctic,tundra,tundra,wet,natural,alaska,false
+arctic_tundra_ak_ridge,Arctic Tundra AK,Arctic_Tundra_AK/soil_gapon_coefficients.csv,ridge.csv,arctic,tundra,tundra,dry,natural,alaska,true
+arctic_tundra_nwt_dlmtsoil,Arctic Tundra NWT,Arctic_Tundra_NWT/soil_gapon_coefficients.csv,dlmtsoil,arctic,tundra,tundra,mesic,natural,northwest territories,true
+arctic_tundra_nwt_dlfnsoil,Arctic Tundra NWT,Arctic_Tundra_NWT/soil_gapon_coefficients.csv,dlfnsoil,arctic,tundra,tundra,mesic,natural,northwest territories,false
+arctic_tundra_nwt_dlfnsoilx,Arctic Tundra NWT,Arctic_Tundra_NWT/soil_gapon_coefficients.csv,dlfnsoilx,arctic,tundra,tundra,mesic,natural,northwest territories,false
+arctic_wetland_nwt_dlmtsoil,Arctic Wetland NWT,Arctic_Wetland_NWT/soil_gapon_coefficients.csv,dlmtsoil,arctic,wetland,wetland,wet,natural,northwest territories,true
+arctic_wetland_nwt_dlfnsoil,Arctic Wetland NWT,Arctic_Wetland_NWT/soil_gapon_coefficients.csv,dlfnsoil,arctic,wetland,wetland,wet,natural,northwest territories,false
+boreal_aspen_sk,Boreal Aspen SK,Boreal_Aspen_SK/soil_gapon_coefficients.csv,oasoil,boreal,forest,aspen deciduous broadleaf,mesic,natural,saskatchewan,true
+boreal_black_spruce_mb,Boreal Black Spruce MB,Boreal_Black_Spruce_MB/soil_gapon_coefficients.csv,nobsoil,boreal,forest,black spruce evergreen conifer,mesic,natural,manitoba,true
+boreal_black_spruce_pq,Boreal Black Spruce PQ,Boreal_Black_Spruce_PQ/soil_gapon_coefficients.csv,tilld,boreal,forest,black spruce evergreen conifer,mesic,natural,quebec,true
+boreal_crop_rotation_ab,Boreal Crop Rotation AB/br,Boreal_Crop_Rotation_AB/br/soil_gapon_coefficients.csv,brsoil,boreal,cropland,crop rotation,mesic,rotation,alberta,true
+boreal_jack_pine_sk,Boreal Jack Pine SK,Boreal_Jack_Pine_SK/soil_gapon_coefficients.csv,ojsoil,boreal,forest,jack pine evergreen conifer,dry,natural,saskatchewan,true
+cool_temperate_douglas_fir_bc,Cool Temperate Douglas Fir BC,Cool_Temperate_Douglas_Fir_BC/soil_gapon_coefficients.csv,quimper,cool temperate,forest,douglas fir evergreen conifer,mesic,natural,british columbia,true
+cool_temperate_maize_soybean_on,Cool Temperate Maize-Soybean ON,Cool_Temperate_Maize_Soybean_ON/soil_gapon_coefficients.csv,f25sol98,cool temperate,cropland,maize soybean crop rotation,mesic,rotation,ontario,true
+cool_temperate_oak_ma,Cool Temperate Oak MA,Cool_Temperate_Oak_MA/soil_gapon_coefficients.csv,hasoil,cool temperate,forest,oak deciduous broadleaf,mesic,natural,massachusetts,true
+cool_temperate_pasture_switzerland,Cool Temperate Pasture Switzerland,Cool_Temperate_Pasture_Switzerland/soil_gapon_coefficients.csv,soil_oen,cool temperate,pasture,pasture grass,mesic,grazed,switzerland,true
+mediterranean_pasture_ca,Meditteranean Pasture CA,Meditteranean_Pasture_CA/soil_gapon_coefficients.csv,vasoil,mediterranean,pasture,pasture grass,seasonal dry,grazed,california,true
+semiarid_grassland_ab,Semiarid Grassland AB,Semiarid_Grassland_AB/soil_gapon_coefficients.csv,lsoil,semiarid,grassland,grass prairie,dry,natural,alberta,true
+tropical_peatland_indonesia_humic,Tropical Peatland Indonesia,Tropical_Peatland_Indonesia/soil_gapon_coefficients.csv,psoilhum.csv,tropical,peatland,peat swamp forest,wet,natural,indonesia,true
+tropical_peatland_indonesia_hol,Tropical Peatland Indonesia,Tropical_Peatland_Indonesia/soil_gapon_coefficients.csv,psoilhol.csv,tropical,peatland,peat swamp forest,wet,natural,indonesia,false
+tropical_rainforest_amazon,Tropical Rainforest Amazon,Tropical_Rainforest_Amazon/soil_gapon_coefficients.csv,sr67soil,tropical,rainforest,evergreen broadleaf rainforest,wet,natural,amazon,true
+warm_temperate_loblolly_pine_tn,Warm Temperate Loblolly Pine TN,Warm_Temperate_Loblolly_Pine_TN/soil_gapon_coefficients.csv,dusoil,warm temperate,forest,loblolly pine evergreen conifer,mesic,natural,tennessee,true
+warm_temperate_maize_soybean_dryland_ne,Warm Temperate Maize-Soybean Dryland NB,Warm_Temperate_Maize_Soybean_Dryland_NB/soil_gapon_coefficients.csv,mesoil,warm temperate,cropland,maize soybean crop rotation,dry,dryland rotation,nebraska,true
+warm_temperate_maize_soybean_irrigated_ne,Warm Temperate Maize-Soybean Irrigated NB,Warm_Temperate_Maize_Soybean_Irrigated_NB/soil_gapon_coefficients.csv,mesoil,warm temperate,cropland,maize soybean crop rotation,irrigated,irrigated rotation,nebraska,true

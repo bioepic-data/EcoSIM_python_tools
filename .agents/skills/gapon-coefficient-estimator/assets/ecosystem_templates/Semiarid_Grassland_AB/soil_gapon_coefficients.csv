@@ -1,0 +1,12 @@
+case,topography_files,source_file,soil_file,layer,layer_bottom_depth_m,gkc4,gkch,gkca,gkcm,gkcn,gkck
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,1,0.01,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,2,0.03,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,3,0.05,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,4,0.11,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,5,0.21,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,6,0.3,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,7,0.4,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,8,0.5,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,9,0.7,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,10,1.2,0.1,10.0,10.0,1.0,0.01,0.1
+Semiarid Grassland AB,ltopo,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Semiarid Grassland AB/lsoil,lsoil,11,2.0,0.1,10.0,10.0,1.0,0.01,0.1

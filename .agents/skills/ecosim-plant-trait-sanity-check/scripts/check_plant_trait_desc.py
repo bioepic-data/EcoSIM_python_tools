@@ -80,6 +80,8 @@ POSITIVE_VARS = {
     "PR",
     "RSRR",
     "RSRA",
+    "ARSRA",
+    "RVSR",
     "PTSHT",
     "RTFQ",
     "UPMXZH",
@@ -192,7 +194,6 @@ CONCENTRATION_VARS = {
     "CNLF",
     "CNSHE",
     "CNSTK",
-    "CNRTLIG",
     "CNRSV",
     "CNHSK",
     "CNEAR",
@@ -201,7 +202,6 @@ CONCENTRATION_VARS = {
     "CPLF",
     "CPSHE",
     "CPSTK",
-    "CPRTLIG",
     "CPRSV",
     "CPHSK",
     "CPEAR",
@@ -351,6 +351,11 @@ NO_PETIOLE_SHEATH_LABEL_TOKENS = (
 )
 
 ANGSH_ZERO_TOLERANCE = 1.0e-6
+SECONDS_PER_HOUR = 3600.0
+CONIFER_RSRR_WARN_RANGE_MPA_H_PER_M = (1000.0, 10000.0)
+ROOT_RADIAL_CONDUCTIVITY_BROAD_RANGE_M_PER_S_MPA = (4.7e-9, 1.2e-5)
+CONIFER_CONDUIT_RADIUS_WARN_RANGE_M = (2.5e-6, 40.0e-6)
+ROOT_LUMEN_AREA_FRACTION = 0.2
 
 
 @dataclass
@@ -576,6 +581,8 @@ def check_blocks(blocks: Iterable[PlantBlock]) -> List[Finding]:
         check_variable_ranges(block, params, add)
         check_petiole_sheath_angle(block, params, add)
         check_cross_parameters(block, params, add)
+        check_root_radial_hydraulics(block, params, add)
+        check_root_conduit_hydraulics(block, params, add)
         check_active_structural_protein_pools(block, params, add)
         check_physiological_parameterization(block, params, add)
         check_woody_form(block, params, add)
@@ -962,6 +969,111 @@ def check_cross_parameters(block: PlantBlock, params: Dict[str, List[Parameter]]
         add(block, "ERROR", "PhiMIN/PhiMAX", line, f"PhiMIN {phimin:g} exceeds PhiMAX {phimax:g}")
 
 
+def check_root_radial_hydraulics(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
+    """Check RSRR as radial resistivity and report implausible implied conductivity."""
+
+    rsrr_params = params.get("RSRR", [])
+    if not rsrr_params:
+        add(block, "ERROR", "RSRR", block.start_line, "missing radial root resistivity RSRR", "hydraulics")
+        return
+
+    rsrr = first_value(params, "RSRR")
+    if rsrr is None or rsrr <= 0:
+        return
+
+    conductivity = 1.0 / (SECONDS_PER_HOUR * rsrr)
+    line = rsrr_params[0].line
+    if block_is_conifer(block):
+        lower, upper = CONIFER_RSRR_WARN_RANGE_MPA_H_PER_M
+        if rsrr < lower or rsrr > upper:
+            add(
+                block,
+                "WARN",
+                "RSRR",
+                line,
+                f"RSRR {rsrr:g} MPa h m-1 implies fully wetted radial conductivity "
+                f"{conductivity:.3g} m s-1 MPa-1, outside the broad conifer resistance screen "
+                f"[{lower:g}, {upper:g}] MPa h m-1; high RSRR means low radial conductivity, "
+                "and EcoSIM increases the effective resistance further as micropores dry",
+                "hydraulics",
+            )
+    else:
+        lower, upper = ROOT_RADIAL_CONDUCTIVITY_BROAD_RANGE_M_PER_S_MPA
+        if conductivity < lower or conductivity > upper:
+            add(
+                block,
+                "WARN",
+                "RSRR",
+                line,
+                f"RSRR {rsrr:g} MPa h m-1 implies fully wetted radial conductivity "
+                f"{conductivity:.3g} m s-1 MPa-1, outside the broad cross-study screen "
+                f"[{lower:.3g}, {upper:.3g}] m s-1 MPa-1",
+                "hydraulics",
+            )
+
+
+def check_root_conduit_hydraulics(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
+    """Check literal root-conduit geometry and its axial-resistance correction."""
+
+    rvsr_params = params.get("RVSR", [])
+    if not rvsr_params:
+        add(block, "ERROR", "RVSR", block.start_line, "missing literal mean root water-conduit radius RVSR")
+    else:
+        rvsr = first_value(params, "RVSR")
+        if rvsr is not None and rvsr > 0:
+            rvsr_line = rvsr_params[0].line
+            if block_is_conifer(block):
+                lower, upper = CONIFER_CONDUIT_RADIUS_WARN_RANGE_M
+                if rvsr < lower or rvsr > upper:
+                    add(
+                        block,
+                        "WARN",
+                        "RVSR",
+                        rvsr_line,
+                        "literal mean conifer tracheid radius "
+                        f"{rvsr * 1.0e6:g} um (diameter {2.0 * rvsr * 1.0e6:g} um) is outside "
+                        f"the broad anatomical screen [{lower * 1.0e6:g}, {upper * 1.0e6:g}] um radius; "
+                        "use ARSRA, not an artificially small RVSR, for pit and end-wall resistance correction",
+                        "hydraulics",
+                    )
+
+            rrad2m = first_value(params, "RRAD2M")
+            if rrad2m is not None and rrad2m > 0:
+                conduit_count = ROOT_LUMEN_AREA_FRACTION * (rrad2m / rvsr) ** 2
+                if conduit_count < 1.0:
+                    add(
+                        block,
+                        "ERROR",
+                        "RVSR/RRAD2M",
+                        rvsr_line,
+                        f"RVSR {rvsr:g} m and RRAD2M {rrad2m:g} m imply only "
+                        f"{conduit_count:g} conduits in EcoSIM's {ROOT_LUMEN_AREA_FRACTION:g} lumen-area fraction; "
+                        "expected at least one conduit",
+                        "hydraulics",
+                    )
+
+    arsra_params = params.get("ARSRA", [])
+    if not arsra_params:
+        add(block, "ERROR", "ARSRA", block.start_line, "missing axial conduit-resistance correction ARSRA")
+        return
+
+    arsra = first_value(params, "ARSRA")
+    if arsra is not None and 0 < arsra < 1.0 - PHYSIOLOGY_FLOAT_TOLERANCE:
+        add(
+            block,
+            "WARN",
+            "ARSRA",
+            arsra_params[0].line,
+            f"ARSRA {arsra:g} is below 1 and would make the actual conduit less resistant than its ideal lumen; "
+            "expected ARSRA >= 1",
+            "hydraulics",
+        )
+
+
+def block_is_conifer(block: PlantBlock) -> bool:
+    return expected_snow_interception_code(block) == 4 or expected_embryophyte_code(block) == 2
+
+
 def active_structural_protein_pool(
     params: Dict[str, List[Parameter]],
     organ: str,
@@ -1331,14 +1443,12 @@ def enforce_strict_physiology(findings: List[Finding]) -> List[Finding]:
 def check_woody_form(block: PlantBlock, params: Dict[str, List[Parameter]], add) -> None:
     is_woody = block.short_code in WOODY_SHORT_CODES
     allows_secondary_growth_root_traits = block.short_code in SECONDARY_GROWTH_HERBACEOUS_SHORT_CODES
-    woody_required = ("ROOTMAGE", "PhiMIN", "PhiMAX", "R95MAT", "CNRTLIG", "CPRTLIG")
+    woody_required = ("ROOTMAGE", "PhiMIN", "PhiMAX", "R95MAT")
 
     if is_woody:
         for variable in woody_required:
             if variable not in params:
                 add(block, "WARN", variable, block.start_line, f"woody PFT {block.code} is missing {variable}")
-        if len(params.get("KLGMAX", [])) < 2:
-            add(block, "WARN", "KLGMAX", block.start_line, f"woody PFT {block.code} has fewer than two KLGMAX rows")
         if "PhiMean" in params:
             add(block, "WARN", "PhiMean", params["PhiMean"][0].line, "woody PFT contains herbaceous PhiMean root trait")
     else:
@@ -1557,6 +1667,12 @@ def block_summary(block: PlantBlock, findings: List[Finding]) -> Dict[str, objec
         for f in findings
         if f.pft_code == block.code and f.nz == block.nz and f.ny == block.ny and f.nx == block.nx
     ]
+    rsrr = first_value(by_var(block), "RSRR")
+    radial_conductivity = (
+        1.0 / (SECONDS_PER_HOUR * rsrr)
+        if rsrr is not None and rsrr > 0
+        else None
+    )
     return {
         "pft_code": block.code,
         "nz": block.nz,
@@ -1568,6 +1684,8 @@ def block_summary(block: PlantBlock, findings: List[Finding]) -> Dict[str, objec
         "end_line": block.end_line,
         "parameter_count": len(block.parameters),
         "section_count": len(block.sections),
+        "rsrr_mpa_h_per_m": rsrr,
+        "root_radial_conductivity_m_per_s_mpa": radial_conductivity,
         "errors": sum(1 for f in block_findings if f.severity == "ERROR"),
         "warnings": sum(1 for f in block_findings if f.severity == "WARN"),
     }
@@ -1612,9 +1730,16 @@ def render_markdown(
     for block in selected:
         summary = block_summary(block, findings)
         name = f" - {block.plant_name}" if block.plant_name else ""
+        rsrr_summary = ""
+        if summary["rsrr_mpa_h_per_m"] is not None:
+            rsrr_summary = (
+                f", RSRR {summary['rsrr_mpa_h_per_m']:g} MPa h m-1 -> "
+                f"k_radial {summary['root_radial_conductivity_m_per_s_mpa']:.3g} m s-1 MPa-1"
+            )
         lines.append(
             f"- `{block.label}`{name}: {summary['parameter_count']} parameters, "
             f"{summary['section_count']} sections, {summary['errors']} ERROR, {summary['warnings']} WARN"
+            f"{rsrr_summary}"
         )
 
     return "\n".join(lines) + "\n"

@@ -1,0 +1,9 @@
+case,topography_files,source_file,soil_file,layer,layer_bottom_depth_m,gkc4,gkch,gkca,gkcm,gkcn,gkck
+Cool Temperate Douglas Fir BC,oytop244,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Douglas Fir BC/quimper,quimper,1,0.01,0.25,2.0,2.0,0.6,0.16,0.25
+Cool Temperate Douglas Fir BC,oytop244,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Douglas Fir BC/quimper,quimper,2,0.03,0.25,2.0,2.0,0.6,0.16,0.25
+Cool Temperate Douglas Fir BC,oytop244,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Douglas Fir BC/quimper,quimper,3,0.09,0.25,2.0,2.0,0.6,0.16,0.25
+Cool Temperate Douglas Fir BC,oytop244,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Douglas Fir BC/quimper,quimper,4,0.23,0.25,2.0,2.0,0.6,0.16,0.25
+Cool Temperate Douglas Fir BC,oytop244,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Douglas Fir BC/quimper,quimper,5,0.53,0.25,2.0,2.0,0.6,0.16,0.25
+Cool Temperate Douglas Fir BC,oytop244,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Douglas Fir BC/quimper,quimper,6,0.83,0.25,2.0,2.0,0.6,0.16,0.25
+Cool Temperate Douglas Fir BC,oytop244,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Douglas Fir BC/quimper,quimper,7,1.23,0.25,2.0,2.0,0.6,0.16,0.25
+Cool Temperate Douglas Fir BC,oytop244,/Users/jinyuntang/work/github/ECOSYS_workspace/ecosys16022024/ecosys benchmark runs 2024/Cool Temperate Douglas Fir BC/quimper,quimper,8,1.63,0.25,2.0,2.0,0.6,0.16,0.25

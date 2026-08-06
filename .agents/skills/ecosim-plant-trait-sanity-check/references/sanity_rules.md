@@ -26,7 +26,7 @@ Required sections:
 - `ORGAN GROWTH YIELDS`
 - `ORGAN N AND P CONCENTRATIONS`
 
-The parser should keep duplicate variable names in file order. `KLGMAX` is the common duplicate in woody root traits.
+The parser should keep duplicate variable names in file order.
 
 ## High-Value Range Rules
 
@@ -41,16 +41,29 @@ The parser should keep duplicate variable names in file order. `KLGMAX` is the c
 - `ANGSH` must be `0 degrees` for plant forms that lack petiole or sheath tissue. This includes conifer, lichen, and moss PFTs where a nonzero petiole/sheath angle would imply an organ that is not represented by the plant morphology.
 - Growth yields `DMLF`, `DMSHE`, `DMSTK`, `DMRSV`, `DMHSK`, `DMEAR`, `DMGR`, and `DMRT` should be positive and normally not exceed about `1.2`.
 - Phenological accumulation thresholds `VRNLI` and `VRNXI` should be nonnegative; zero can encode no accumulated leafout or leafoff requirement.
-- Organ N and P mass ratios (`CNLF`, `CNSHE`, `CNSTK`, `CNRTLIG`, `CNRSV`, `CNHSK`, `CNEAR`, `CNGR`, `CNRT`, `CPLF`, `CPSHE`, `CPSTK`, `CPRTLIG`, `CPRSV`, `CPHSK`, `CPEAR`, `CPGR`, `CPRT`) must be positive; values above `0.2 g element gC-1` are suspicious enough to warn.
+- Organ N and P mass ratios (`CNLF`, `CNSHE`, `CNSTK`, `CNRSV`, `CNHSK`, `CNEAR`, `CNGR`, `CNRT`, `CPLF`, `CPSHE`, `CPSTK`, `CPRSV`, `CPHSK`, `CPEAR`, `CPGR`, `CPRT`) must be positive; values above `0.2 g element gC-1` are suspicious enough to warn.
 - `OSMO` should be negative in MPa. Very negative values below about `-5 MPa` deserve a warning.
 - `WTSTDI` should be nonnegative.
+
+## Root Conduit Hydraulics
+
+- Interpret `RSRR` as radial root resistivity per unit absorbing-root surface area in `MPa h m-1`. In the regular EcoSIM uptake calculation, `RootRadialResist = RSRR*(VLMicP/VLWatMicPM)/RootSurfaceArea`; therefore high `RSRR` means low water uptake capacity, and drying micropores increase the effective radial resistance further.
+- Convert `RSRR` to the fully wetted intrinsic radial conductivity with `k_radial = 1/RSRR` in `m h-1 MPa-1`, or `k_radial = 1/(3600*RSRR)` in `m s-1 MPa-1`. Do not interpret conductivity-like NetCDF metadata as overriding the resistance semantics established by the model equation.
+- For conifers, use `1000-10000 MPa h m-1` as a broad deterministic warning screen. This corresponds to `2.78e-8-2.78e-7 m s-1 MPa-1`. Field means for intact fine roots of four mature conifers were `0.51e-7-2.06e-7 m s-1 MPa-1` (https://doi.org/10.1016/j.rhisph.2022.100489). The screen is deliberately wider because intact-root measurements can include axial and interface resistance and are not identical to EcoSIM's intrinsic radial term.
+- For non-conifers without species-level evidence, warn only when implied `k_radial` is outside the broad cross-study root hydraulic-conductivity envelope of `4.7e-9-1.2e-5 m s-1 MPa-1` (https://pmc.ncbi.nlm.nih.gov/articles/PMC10999368/). Prefer species-, organ-, age-, temperature-, and measurement-specific evidence whenever available.
+- Never tune `RSRR` to compensate for implausible `RVSR` or `ARSRA`. Evaluate radial, axial, and soil resistance separately. If `RSRR` is high, inspect their modeled contributions during moist periods and use a sensitivity test before changing the trait.
+- Interpret `RVSR` as the literal arithmetic mean root-conduit lumen radius in meters. Use tracheid lumen radius for conifers and vessel-element lumen radius for angiosperms. Never substitute an effective hydraulic radius.
+- Convert measured diameter to `RVSR` with `RVSR = mean_lumen_diameter_m / 2`. Prefer species-level root measurements; do not silently substitute stem or hydraulically weighted diameters.
+- Screen conifer `RVSR` at `2.5e-6-40e-6 m` radius, corresponding to the broad published `5-80 um` tracheid-diameter envelope (https://www.srs.fs.usda.gov/pubs/chap/chap_2015_domec_001.pdf). Treat this as a warning range and use species-specific web evidence to narrow it. Mature healthy ponderosa-pine roots measured near Burns, Oregon averaged `30.4 um` tracheid diameter, or about `15.2e-6 m` radius (https://doi.org/10.1093/treephys/18.5.333).
+- EcoSIM calculates single-conduit resistance as `ARSRA * Rax_ref * (1e-6/RVSR)^4`, single-conduit area as `pi*RVSR^2`, and conduit count as `0.2*(RRAD2M/RVSR)^2`. Require the implied count to be at least one. With `RRAD2M` and `ARSRA` fixed, bundle axial resistance scales as `RVSR^-2`.
+- Require `ARSRA > 0` and warn when `ARSRA < 1`, because pit, end-wall, and nonideal-flow effects cannot make an actual conduit less resistant than its ideal lumen. Use `ARSRA`, not an artificially small `RVSR`, to represent those additional axial resistances.
 
 ## Active Structural Protein Pools
 
 - Relate total protein C to both total N and total P in active structural biomass. For an organ with structural N and P concentrations `N/C` and `P/C`, calculate the N-supported protein fraction as `(protein C:N) * (N/C)`, the P-supported fraction as `(protein C:P) * (P/C)`, and the realized protein C fraction as the smaller of the two.
 - For leaves, all structural biomass is active. Use `leaf protein C / leaf structural C = min(CNWL*CNLF, CPWL*CPLF)`.
 - For non-tree roots, all structural biomass is active. Use `root protein C / root structural C = min(CNWR*CNRT, CPWR*CPRT)` across the entire structural root pool.
-- For tree and other woody-PFT roots, apply the same root relationship only to active structural biomass. Exclude lignified heartwood, represented separately by `CNRTLIG` and `CPRTLIG`, from the root protein pool. A static trait file does not contain the dynamic active-to-heartwood C partition, so do not estimate whole-root protein C by mixing active-root and lignified-heartwood concentrations.
+- For tree and other woody-PFT roots, apply the same root relationship only to active structural biomass and exclude lignified heartwood. Separate `CNRTLIG` and `CPRTLIG` inputs are no longer required. A static trait file does not contain the dynamic active-to-heartwood C partition, so do not extrapolate the active-root protein fraction to the whole woody-root pool.
 - Require the N/P-limited protein C fraction to be no greater than `1 gC protein gC structural biomass-1`. Warn when either single-nutrient-supported amount exceeds one even if the other nutrient keeps the realized pool below one.
 - Interpret `CNWL`, `CPWL`, `CNWR`, and `CPWR` as protein-pool stoichiometry, not whole-organ elemental C:N or C:P ratios.
 
@@ -80,8 +93,6 @@ Woody blocks should include:
 - `PhiMIN`
 - `PhiMAX`
 - `R95MAT`
-- two `KLGMAX` rows when the format distinguishes maximum lignification rate from half-saturation parameter
-- lignified root concentrations `CNRTLIG` and `CPRTLIG`
 
 Herbaceous blocks should include `PhiMean` unless both `PhiMIN` and `PhiMAX`
 are defined. When the root maturation pair `PhiMIN`/`PhiMAX` is present,

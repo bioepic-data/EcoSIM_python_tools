@@ -132,8 +132,18 @@ external datasets or modeling assumptions:
 - Hydrologic boundary conditions
 - Nutrient pools (NH4, NO3, PO4)
 - Organic nitrogen/phosphorus pools
-- Exchange coefficients (GKC*)
+- Exchange coefficients (GKC*) are not measured by gSSURGO. If paired
+  exchange-solution chemistry is unavailable, invoke the
+  `gapon-coefficient-estimator` ecosystem-template fallback, match the closest
+  ecosystem before climate and management refinements, and remap the selected
+  values to the grid's layer-bottom depths.
 - Water table dynamics
+
+For template-based `GKC*` values, keep the selector's provenance JSON with the
+EcoSIM grid and include this reminder in the report or input metadata:
+"Gapon coefficients are initialized from the closest ecosystem template, not
+derived from site-specific paired exchange and solution chemistry. They are
+starting values and are subject to calibration or tuning when needed."
 
 The atmospheric gas scalar variables `OXYEG`/`OXYGE`, `Z2GEG`, `CO2EIG`,
 `CH4EG`, `Z2OEG`, and `ZNH3EG` are not part of this soil-grid derivation

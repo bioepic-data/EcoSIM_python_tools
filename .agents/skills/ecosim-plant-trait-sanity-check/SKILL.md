@@ -1,6 +1,6 @@
 ---
 name: ecosim-plant-trait-sanity-check
-description: Sanity-check EcoSIM plant_trait.*.desc parameter values for the first grid only. Use when validating plant trait description files, enforcing clean C3/C4 physiological parameterization, reviewing photosynthetic kinetics and active leaf/root protein allocation, or checking ranges, units, and woody/herbaceous block consistency before running EcoSIM.
+description: Sanity-check EcoSIM plant_trait.*.desc parameter values for the first grid only. Use when validating plant trait description files, enforcing clean C3/C4 physiological parameterization, reviewing photosynthetic kinetics, active leaf/root protein allocation, and root hydraulics such as RSRR, RVSR, and ARSRA, or checking ranges, units, and woody/herbaceous block consistency before running EcoSIM.
 ---
 
 # EcoSIM Plant Trait Sanity Check
@@ -56,7 +56,7 @@ The checker validates the plant blocks at the selected grid for:
 - optical albedo plus transmission not exceeding one
 - pathway-specific Rubisco `Kc`, `Ko`, carboxylation:oxygenation turnover ratio, and implied CO2/O2 specificity
 - Rubisco and PEPC fractions of total leaf N implied by their allocations within the N/P-limited total leaf-protein pool
-- leaf and root protein C supported jointly by N and P in active structural biomass, with lignified tree heartwood excluded
+- leaf and root protein C supported jointly by N and P in active structural biomass, with only active root biomass used for woody PFTs
 - C4 protein-normalized `Vpmax:Vcmax` and C3/C4 `Jmax:Vcmax` capacity ratios
 - pathway-specific `FCO2`, C4 mesophyll chlorophyll partitioning, and PAR/shortwave absorptance
 - total photosynthetic protein allocation without double-counting the shared leaf-protein pool
@@ -67,6 +67,8 @@ The checker validates the plant blocks at the selected grid for:
 - class-information conventions, including that annual plants are treated as evergreen in EcoSIM
 - woody versus herbaceous root trait consistency
 - cross-parameter checks such as `PhiMIN <= PhiMAX` and fine-root radius not exceeding primary-root radius
+- `RSRR` radial root resistivity, its implied fully wetted conductivity, and its interaction with soil drying and total root resistance
+- literal `RVSR` conduit radius, conifer tracheid anatomy, conduit geometry relative to `RRAD2M`, and `ARSRA` resistance correction
 
 Read [references/sanity_rules.md](references/sanity_rules.md) before expanding the checker or interpreting a borderline warning. Read [references/web_evidence.md](references/web_evidence.md) before making web-informed trait comparisons.
 
@@ -113,7 +115,11 @@ Use this JSON shape:
 
 Web evidence findings default to `WARN` because literature and trait database ranges vary with species, site, phenology, and measurement protocol. Use `severity: "ERROR"` in the evidence JSON only when a value is unequivocally impossible or contradicts a required categorical identity. Do not use external deciduous foliage descriptions to override the EcoSIM convention that annual plants are represented as evergreen in `IWTYP`.
 
-For photosynthetic-property checks, interpret `RUBP`, `PEPC`, and `CHL` as fractions of the same total leaf-protein pool. Derive that pool from the smaller of the N- and P-supported amounts in active leaf structural biomass. All leaf structure is active; all non-tree root structure is active; tree root heartwood is lignified and excluded from active root protein. Do not use `SLA1` values, or any `SLA1`-derived leaf-area capacity calculations, as part of the sanity check.
+For photosynthetic-property checks, interpret `RUBP`, `PEPC`, and `CHL` as fractions of the same total leaf-protein pool. Derive that pool from the smaller of the N- and P-supported amounts in active leaf structural biomass. All leaf structure is active; all non-tree root structure is active; for trees, apply root protein relationships only to active structural root biomass and exclude lignified heartwood. Separate `CNRTLIG` and `CPRTLIG` trait inputs are not required. Do not use `SLA1` values, or any `SLA1`-derived leaf-area capacity calculations, as part of the sanity check.
+
+Interpret `RVSR` as the literal arithmetic mean lumen radius of root water conduits: tracheids for conifers and vessel elements for angiosperms. Do not use an effective hydraulic radius or tune `RVSR` to absorb pit and end-wall resistance; use `ARSRA` for that correction. Convert published conduit diameters to radius in meters before adding web evidence.
+
+Interpret `RSRR` as radial root resistivity per unit root surface area in `MPa h m-1`, not as conductivity. Convert it to the fully wetted intrinsic radial conductivity with `k_radial = 1/(3600*RSRR)` in `m s-1 MPa-1`. High `RSRR` means low radial conductivity. Review it separately from `RVSR` and `ARSRA`, which control axial transport, and remember that EcoSIM further increases radial resistance as the soil micropore water fraction declines.
 
 ## Parser Notes
 
@@ -123,7 +129,7 @@ The parser treats each block header as a plant identity record:
 PLANT traits for FUNCTIONAL TYPE (NZ,NY,NX)= <NZ> <NY> <NX> <pft_code>
 ```
 
-Parameter names are not globally unique. For example, `KLGMAX` can appear twice in woody root sections with different meanings, so preserve file order and section context when discussing findings.
+Parameter names are not globally unique, so preserve file order and section context when discussing findings.
 
 Trait descriptions sometimes contain colons, such as `Leaf length:width ratio`; split parameter values at the final colon in a row.
 
@@ -160,3 +166,5 @@ The script returns a nonzero status when `ERROR` findings are present or when no
 Do not edit the trait file unless the user asks for corrections. This skill is a diagnostic pass.
 
 When summarizing results, make clear that the check is scoped to the first grid by default, not the full file. If repeated grid columns exist, say how many total blocks were present and how many first-grid plant blocks were inspected.
+
+Always report each checked plant's `RSRR` and implied fully wetted `k_radial`, even when the value passes the deterministic screen. For a high `RSRR` warning, recommend a sensitivity test and diagnose whether radial resistance dominates total root resistance during moist periods before proposing an edit.
