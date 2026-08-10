@@ -10,6 +10,7 @@ the Blodget.clim.2012-2022.template file.
 import pandas as pd
 import numpy as np
 from netCDF4 import Dataset
+import glob
 import os
 import sys
 import json
@@ -17,14 +18,81 @@ import subprocess
 import argparse
 import math
 from datetime import datetime
-import warnings
-warnings.filterwarnings("ignore")
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from Tools.climate_quality import sanitize_era5_dataframe
+
+
+FILL_VALUE_THRESHOLD = 1.0e29
+DEFAULT_COMPARISON_MIN_PAIRS = 720
+
+# These are broad operational screens for detecting forcing failures, not
+# universal performance targets for ERA5 at flux-tower scale.
+IN_SITU_COMPARISON_SPECS = {
+    "TMPH": {
+        "candidates": (("TA_F", "TA_F_QC"), ("TA", None)),
+        "aggregation": "mean",
+        "scale": 1.0,
+        "units": "degC",
+        "valid_range": (-90.0, 60.0),
+        "max_abs_mean_bias": 2.0,
+        "max_rmse": 5.0,
+    },
+    "WINDH": {
+        "candidates": (("WS_F", "WS_F_QC"), ("WS", None)),
+        "aggregation": "mean",
+        "scale": 1.0,
+        "units": "m s-1",
+        "valid_range": (0.0, 75.0),
+        "max_abs_mean_bias": 1.5,
+        "max_rmse": 3.0,
+        "max_abs_relative_mean_bias": 0.50,
+        "relative_bias_min_abs_bias": 0.5,
+    },
+    "RAINH": {
+        "candidates": (("P_F", "P_F_QC"), ("P", None)),
+        "aggregation": "sum",
+        "scale": 1.0,
+        "units": "mm h-1",
+        "valid_range": (0.0, 500.0),
+        "max_abs_relative_total_bias": 0.30,
+        "relative_total_min_observed": 10.0,
+    },
+    "DWPTH": {
+        "candidates": (("VPD_F", "VPD_F_QC"), ("VPD", None)),
+        "aggregation": "mean",
+        "scale": 0.1,
+        "units": "kPa",
+        "valid_range": (0.0, 100.0),
+        "max_abs_mean_bias": 0.30,
+        "max_rmse": 0.75,
+        "max_abs_relative_mean_bias": 0.40,
+        "relative_bias_min_abs_bias": 0.15,
+    },
+    "SRADH": {
+        "candidates": (("SW_IN_F", "SW_IN_F_QC"), ("SW_IN", None)),
+        "aggregation": "mean",
+        "scale": 1.0,
+        "units": "W m-2",
+        "valid_range": (0.0, 1400.0),
+        "max_abs_mean_bias": 40.0,
+        "max_rmse": 150.0,
+        "max_abs_relative_mean_bias": 0.30,
+        "relative_bias_min_abs_bias": 20.0,
+    },
+    "PATM": {
+        "candidates": (("PA_F", "PA_F_QC"), ("PA", None)),
+        "aggregation": "mean",
+        "scale": 1.0,
+        "units": "kPa",
+        "valid_range": (45.0, 110.0),
+        "max_abs_mean_bias": 2.0,
+        "max_rmse": 4.0,
+    },
+}
 
 def get_site_metadata(site_id):
     """Get site metadata using ameriflux_site_info skill."""
@@ -93,7 +161,320 @@ def infer_source_frequency(timestamps):
         return inferred
     return "30min"
 
-def convert_era5_to_ecosim(era5_file, output_file, longitude, elevation=None, quality_report_file=None):
+
+def discover_in_situ_file(era5_file, site_id=None):
+    """Find a matching AmeriFlux FULLSET HH/HR file beside an ERA5 CSV."""
+
+    source_dir = os.path.dirname(os.path.abspath(era5_file))
+    source_name = os.path.basename(era5_file)
+    resolved_site_id = site_id
+    if not resolved_site_id and "_FLUXNET_ERA5_" in source_name:
+        prefix = source_name.split("_FLUXNET_ERA5_", 1)[0]
+        if prefix.startswith("AMF_"):
+            resolved_site_id = prefix[4:]
+
+    cadence_order = []
+    for cadence in ("HH", "HR"):
+        if f"_ERA5_{cadence}_" in source_name:
+            cadence_order.append(cadence)
+    cadence_order.extend(cadence for cadence in ("HH", "HR") if cadence not in cadence_order)
+
+    patterns = []
+    for cadence in cadence_order:
+        if resolved_site_id:
+            patterns.append(f"AMF_{resolved_site_id}_FLUXNET_FULLSET_{cadence}_*.csv")
+        else:
+            patterns.append(f"*_FLUXNET_FULLSET_{cadence}_*.csv")
+
+    for pattern in patterns:
+        candidates = sorted(glob.glob(os.path.join(source_dir, pattern)))
+        if candidates:
+            return os.path.abspath(candidates[-1])
+    return None
+
+
+def read_ecosim_hourly_forcing(netcdf_file):
+    """Read the generated EcoSIM NetCDF back into an hourly table."""
+
+    frames = []
+    with Dataset(netcdf_file, "r") as nc_file:
+        years = np.asarray(nc_file.variables["year"][:], dtype=int)
+        for year_index, year in enumerate(years):
+            timestamps = pd.date_range(
+                start=f"{int(year):04d}-01-01 00:00",
+                periods=366 * 24,
+                freq="h",
+            )
+            data = {"timestamp_start": timestamps}
+            for variable in IN_SITU_COMPARISON_SPECS:
+                raw = nc_file.variables[variable][year_index, :, :, 0]
+                values = np.asarray(np.ma.filled(raw, np.nan), dtype=float).reshape(-1)
+                values[np.abs(values) >= FILL_VALUE_THRESHOLD] = np.nan
+                data[variable] = values
+            frame = pd.DataFrame(data)
+            frame = frame.dropna(subset=tuple(IN_SITU_COMPARISON_SPECS), how="all")
+            frames.append(frame)
+
+    if not frames:
+        return pd.DataFrame(columns=("timestamp_start",) + tuple(IN_SITU_COMPARISON_SPECS))
+    return pd.concat(frames, ignore_index=True)
+
+
+def _choose_observation_column(columns, spec):
+    for value_column, qc_column in spec["candidates"]:
+        if value_column in columns and (qc_column is None or qc_column in columns):
+            return value_column, qc_column
+    return None, None
+
+
+def load_in_situ_hourly(in_situ_file):
+    """Load measured-only AmeriFlux records and aggregate complete hours."""
+
+    header = set(pd.read_csv(in_situ_file, nrows=0).columns)
+    if "TIMESTAMP_START" not in header:
+        raise ValueError(f"In situ file lacks TIMESTAMP_START: {in_situ_file}")
+
+    selected = {"TIMESTAMP_START"}
+    choices = {}
+    for forcing_variable, spec in IN_SITU_COMPARISON_SPECS.items():
+        value_column, qc_column = _choose_observation_column(header, spec)
+        choices[forcing_variable] = (value_column, qc_column)
+        if value_column:
+            selected.add(value_column)
+        if qc_column:
+            selected.add(qc_column)
+
+    observations = pd.read_csv(
+        in_situ_file,
+        usecols=sorted(selected),
+        dtype={"TIMESTAMP_START": str},
+    )
+    observations["timestamp_start"] = pd.to_datetime(
+        observations["TIMESTAMP_START"],
+        format="%Y%m%d%H%M",
+        errors="coerce",
+    )
+    observations = observations.dropna(subset=["timestamp_start"])
+    observations = observations.sort_values("timestamp_start")
+    observations = observations.drop_duplicates("timestamp_start", keep="first")
+
+    deltas = observations["timestamp_start"].diff().dropna().dt.total_seconds()
+    median_seconds = float(deltas.median()) if not deltas.empty else 3600.0
+    expected_records_per_hour = max(1, int(round(3600.0 / median_seconds)))
+    observations["hour"] = observations["timestamp_start"].dt.floor("h")
+
+    hourly = {}
+    for forcing_variable, spec in IN_SITU_COMPARISON_SPECS.items():
+        value_column, qc_column = choices[forcing_variable]
+        if not value_column:
+            hourly[forcing_variable] = {
+                "status": "variable_not_available",
+                "observed_column": None,
+                "qc_column": None,
+            }
+            continue
+
+        values = pd.to_numeric(observations[value_column], errors="coerce")
+        lower, upper = spec["valid_range"]
+        valid = np.isfinite(values) & values.between(lower, upper, inclusive="both")
+        if qc_column:
+            qc = pd.to_numeric(observations[qc_column], errors="coerce")
+            valid &= qc.eq(0)
+
+        measured = pd.DataFrame(
+            {
+                "timestamp_start": observations.loc[valid, "hour"],
+                "value": values.loc[valid] * spec["scale"],
+            }
+        )
+        grouped = measured.groupby("timestamp_start")["value"]
+        if spec["aggregation"] == "sum":
+            values_hourly = grouped.sum(min_count=1)
+        else:
+            values_hourly = grouped.mean()
+        counts = grouped.count()
+        values_hourly = values_hourly[counts >= expected_records_per_hour]
+
+        hourly[forcing_variable] = {
+            "status": "available",
+            "observed_column": value_column,
+            "qc_column": qc_column,
+            "expected_records_per_hour": expected_records_per_hour,
+            "data": values_hourly.rename("observed").reset_index(),
+        }
+    return hourly
+
+
+def _finite_float(value):
+    value = float(value)
+    return value if math.isfinite(value) else None
+
+
+def _large_difference_reasons(metrics, spec):
+    reasons = []
+    abs_bias = abs(metrics["mean_bias"])
+    rmse = metrics["root_mean_square_error"]
+
+    threshold = spec.get("max_abs_mean_bias")
+    if threshold is not None and abs_bias > threshold:
+        reasons.append(f"absolute mean bias {abs_bias:.3g} > {threshold:g} {spec['units']}")
+
+    threshold = spec.get("max_rmse")
+    if threshold is not None and rmse > threshold:
+        reasons.append(f"RMSE {rmse:.3g} > {threshold:g} {spec['units']}")
+
+    threshold = spec.get("max_abs_relative_mean_bias")
+    minimum_bias = spec.get("relative_bias_min_abs_bias", 0.0)
+    relative_bias = metrics.get("relative_mean_bias_fraction")
+    if (
+        threshold is not None
+        and relative_bias is not None
+        and abs(relative_bias) > threshold
+        and abs_bias >= minimum_bias
+    ):
+        reasons.append(f"relative mean bias {100.0 * relative_bias:.1f}% exceeds +/-{100.0 * threshold:g}%")
+
+    threshold = spec.get("max_abs_relative_total_bias")
+    minimum_total = spec.get("relative_total_min_observed", 0.0)
+    relative_total_bias = metrics.get("relative_total_bias_fraction")
+    if (
+        threshold is not None
+        and relative_total_bias is not None
+        and metrics.get("observed_total", 0.0) >= minimum_total
+        and abs(relative_total_bias) > threshold
+    ):
+        reasons.append(f"relative total bias {100.0 * relative_total_bias:.1f}% exceeds +/-{100.0 * threshold:g}%")
+    return reasons
+
+
+def compare_forcing_with_in_situ(netcdf_file, in_situ_file, min_pairs=DEFAULT_COMPARISON_MIN_PAIRS):
+    """Compare generated forcing against measured-only AmeriFlux observations."""
+
+    min_pairs = max(1, int(min_pairs))
+    report = {
+        "status": "not_available",
+        "in_situ_file": os.path.abspath(in_situ_file) if in_situ_file else None,
+        "minimum_paired_hours_for_warning": min_pairs,
+        "screening_note": (
+            "Thresholds are broad operational screens for forcing failures, not universal "
+            "acceptance limits for ERA5 at tower scale."
+        ),
+        "variables": {},
+        "warnings": [],
+    }
+    if not in_situ_file:
+        report["reason"] = "No matching AmeriFlux FULLSET HH/HR file was found."
+        return report
+    if not os.path.exists(in_situ_file):
+        raise FileNotFoundError(f"In situ comparison file not found: {in_situ_file}")
+
+    forcing = read_ecosim_hourly_forcing(netcdf_file)
+    observations = load_in_situ_hourly(in_situ_file)
+    compared_variables = 0
+    sufficient_variables = 0
+
+    for variable, spec in IN_SITU_COMPARISON_SPECS.items():
+        observation = observations[variable]
+        if observation["status"] != "available":
+            report["variables"][variable] = {
+                "status": observation["status"],
+                "units": spec["units"],
+            }
+            continue
+
+        paired = forcing[["timestamp_start", variable]].merge(
+            observation["data"],
+            on="timestamp_start",
+            how="inner",
+        )
+        paired = paired.dropna(subset=[variable, "observed"])
+        paired = paired.sort_values("timestamp_start")
+        paired_hours = int(len(paired))
+        compared_variables += int(paired_hours > 0)
+
+        variable_report = {
+            "status": "insufficient_data" if paired_hours < min_pairs else "compared",
+            "units": spec["units"],
+            "observed_column": observation["observed_column"],
+            "qc_column": observation["qc_column"],
+            "measured_qc_value": 0 if observation["qc_column"] else None,
+            "paired_hours": paired_hours,
+        }
+        if paired_hours == 0:
+            report["variables"][variable] = variable_report
+            continue
+
+        forcing_values = paired[variable].to_numpy(dtype=float)
+        observed_values = paired["observed"].to_numpy(dtype=float)
+        differences = forcing_values - observed_values
+        forcing_mean = float(np.mean(forcing_values))
+        observed_mean = float(np.mean(observed_values))
+        mean_bias = float(np.mean(differences))
+        metrics = {
+            "forcing_mean": forcing_mean,
+            "observed_mean": observed_mean,
+            "mean_bias": mean_bias,
+            "mean_absolute_error": float(np.mean(np.abs(differences))),
+            "root_mean_square_error": float(np.sqrt(np.mean(differences ** 2))),
+            "relative_mean_bias_fraction": (
+                mean_bias / abs(observed_mean) if abs(observed_mean) > 1.0e-12 else None
+            ),
+            "forcing_total": float(np.sum(forcing_values)),
+            "observed_total": float(np.sum(observed_values)),
+            "first_paired_timestamp": paired["timestamp_start"].iloc[0].isoformat(),
+            "last_paired_timestamp": paired["timestamp_start"].iloc[-1].isoformat(),
+        }
+        metrics["relative_total_bias_fraction"] = (
+            (metrics["forcing_total"] - metrics["observed_total"])
+            / abs(metrics["observed_total"])
+            if abs(metrics["observed_total"]) > 1.0e-12
+            else None
+        )
+        if np.std(forcing_values) > 0 and np.std(observed_values) > 0:
+            metrics["pearson_correlation"] = _finite_float(
+                np.corrcoef(forcing_values, observed_values)[0, 1]
+            )
+        else:
+            metrics["pearson_correlation"] = None
+        variable_report.update(metrics)
+
+        if paired_hours >= min_pairs:
+            sufficient_variables += 1
+            reasons = _large_difference_reasons(metrics, spec)
+            if reasons:
+                warning = {
+                    "variable": variable,
+                    "message": (
+                        f"{variable} forcing differs substantially from measured "
+                        f"{observation['observed_column']}: " + "; ".join(reasons)
+                    ),
+                }
+                variable_report["warning"] = warning["message"]
+                report["warnings"].append(warning)
+
+        report["variables"][variable] = variable_report
+
+    if sufficient_variables:
+        report["status"] = "compared"
+    elif compared_variables:
+        report["status"] = "insufficient_data"
+        report["reason"] = "Overlapping measured records did not meet the paired-hour minimum."
+    else:
+        report["reason"] = "No overlapping measured records were available."
+    return report
+
+
+def convert_era5_to_ecosim(
+    era5_file,
+    output_file,
+    longitude,
+    elevation=None,
+    quality_report_file=None,
+    site_id=None,
+    in_situ_file=None,
+    compare_in_situ=True,
+    comparison_min_pairs=DEFAULT_COMPARISON_MIN_PAIRS,
+):
     """
     Convert ERA5 half-hourly data to ECOSIM hourly format.
 
@@ -101,6 +482,7 @@ def convert_era5_to_ecosim(era5_file, output_file, longitude, elevation=None, qu
     era5_file (str): Path to the Ameriflux ERA5 CSV file
     output_file (str): Path to output netCDF file
     longitude (float): Longitude for solar noon calculation
+    in_situ_file (str): Optional AmeriFlux FULLSET HH/HR file for validation
     """
 
     # Read the CSV data with dtype specification to avoid automatic conversion
@@ -139,27 +521,53 @@ def convert_era5_to_ecosim(era5_file, output_file, longitude, elevation=None, qu
     # Create the netCDF file
     create_ecosim_climate_file(hourly_df, output_file, longitude)
 
+    if compare_in_situ:
+        selected_in_situ_file = in_situ_file or discover_in_situ_file(era5_file, site_id)
+        comparison = compare_forcing_with_in_situ(
+            output_file,
+            selected_in_situ_file,
+            min_pairs=comparison_min_pairs,
+        )
+        quality_report["in_situ_comparison"] = comparison
+        if comparison["status"] == "not_available":
+            print(f"In situ comparison skipped: {comparison.get('reason', 'observations unavailable')}")
+        elif comparison["status"] == "insufficient_data":
+            print(f"In situ comparison incomplete: {comparison.get('reason', 'insufficient overlap')}")
+        else:
+            print(
+                f"Compared forcing with {comparison['in_situ_file']}; "
+                f"{len(comparison['warnings'])} large-difference warning(s)."
+            )
+        for warning in comparison["warnings"]:
+            print(f"WARNING: {warning['message']}", file=sys.stderr)
+    else:
+        quality_report["in_situ_comparison"] = {
+            "status": "skipped",
+            "reason": "Disabled by caller.",
+            "variables": {},
+            "warnings": [],
+        }
+
     # Record the output in a YAML file
     try:
         import yaml
-        site_id = args.site_id if 'args' in locals() else "unknown_site"
-        # Attempt to resolve a result directory based on site_id
-        result_dir = f"result/{site_id}"
-        os.makedirs(result_dir, exist_ok=True)
-        yaml_path = os.path.join(result_dir, f"{site_id}_forcing.yaml")
+        if site_id:
+            result_dir = f"result/{site_id}"
+            os.makedirs(result_dir, exist_ok=True)
+            yaml_path = os.path.join(result_dir, f"{site_id}_forcing.yaml")
 
-        forcing_data = {"clm_hour_file_in": os.path.abspath(output_file)}
+            forcing_data = {"clm_hour_file_in": os.path.abspath(output_file)}
 
-        # If YAML already exists, preserve other keys (like grid_file_in)
-        if os.path.exists(yaml_path):
-            with open(yaml_path, 'r') as f:
-                existing_data = yaml.safe_load(f) or {}
-                forcing_data.update(existing_data)
-                forcing_data["clm_hour_file_in"] = os.path.abspath(output_file)
+            # If YAML already exists, preserve other keys (like grid_file_in)
+            if os.path.exists(yaml_path):
+                with open(yaml_path, 'r') as f:
+                    existing_data = yaml.safe_load(f) or {}
+                    forcing_data.update(existing_data)
+                    forcing_data["clm_hour_file_in"] = os.path.abspath(output_file)
 
-        with open(yaml_path, 'w') as f:
-            yaml.dump(forcing_data, f, default_flow_style=False)
-        print(f"Climate forcing path recorded in {yaml_path}")
+            with open(yaml_path, 'w') as f:
+                yaml.dump(forcing_data, f, default_flow_style=False)
+            print(f"Climate forcing path recorded in {yaml_path}")
     except ImportError:
         print("PyYAML not installed; could not record forcing path to YAML.", file=sys.stderr)
     except Exception as e:
@@ -171,6 +579,7 @@ def convert_era5_to_ecosim(era5_file, output_file, longitude, elevation=None, qu
             os.makedirs(quality_report_dir, exist_ok=True)
         with open(quality_report_file, "w") as f:
             json.dump(quality_report, f, indent=2)
+    return quality_report
 
 def calculate_solar_noon_utc(year, month, day, longitude):
   """
@@ -329,7 +738,25 @@ def main():
     parser.add_argument('--input', '-i', required=True, help='Input CSV file path')
     parser.add_argument('--output', '-o', required=True, help='Output netCDF file path')
     parser.add_argument('--site-id', '-s', required=True, help='AmeriFlux site ID (e.g., US-Ha1) to get longitude from')
-    parser.add_argument('--quality-report', help='Optional JSON report for range checks and interpolation repairs')
+    parser.add_argument(
+        '--quality-report',
+        help='Optional JSON report for physical checks, interpolation repairs, and in situ comparison',
+    )
+    parser.add_argument(
+        '--in-situ',
+        help='Optional AmeriFlux FULLSET HH/HR CSV; otherwise auto-discover beside the ERA5 input',
+    )
+    parser.add_argument(
+        '--comparison-min-pairs',
+        type=int,
+        default=DEFAULT_COMPARISON_MIN_PAIRS,
+        help='Minimum paired measured hours required before large-difference warnings (default: 720)',
+    )
+    parser.add_argument(
+        '--skip-in-situ-comparison',
+        action='store_true',
+        help='Disable comparison against an available AmeriFlux FULLSET file',
+    )
     
     args = parser.parse_args()
 
@@ -346,7 +773,17 @@ def main():
     elevation = site_data.get('ALTIG') if site_data else None
 
     print(f"Using longitude {longitude} for site {args.site_id}")
-    convert_era5_to_ecosim(args.input, args.output, longitude, elevation=elevation, quality_report_file=args.quality_report)
+    convert_era5_to_ecosim(
+        args.input,
+        args.output,
+        longitude,
+        elevation=elevation,
+        quality_report_file=args.quality_report,
+        site_id=args.site_id,
+        in_situ_file=args.in_situ,
+        compare_in_situ=not args.skip_in_situ_comparison,
+        comparison_min_pairs=args.comparison_min_pairs,
+    )
     print("Conversion completed successfully!")
 
 if __name__ == "__main__":
