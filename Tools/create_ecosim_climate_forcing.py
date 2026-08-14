@@ -20,19 +20,22 @@ import pandas as pd
 from netCDF4 import Dataset
 import numpy as np
 
+# Historical NADP grids in data/nadp_data_grids use mg L-1 for the major
+# anions, NH4, Ca, and Cl, but ug L-1 for Mg, Na, and K. Numerically,
+# 1 mg L-1 = 1 g m-3 and 1 ug L-1 = 0.001 g m-3.
 CHEM_TEMPLATE_VARS = {
     'PHRG': {"units": "pH", "long_name": "pH in precipitation", "source_key": "ph", "source_keys": ["ph", "phlab_mg_l"], "factor": 1.0},
-    'CN4RIG': {"units": "gN m^-3", "long_name": "NH4 conc in precip", "source_key": "nh4_mg_l", "factor": 0.7765 / 1000},
-    'CNORIG': {"units": "gN m^-3", "long_name": "NO3 conc in precip", "source_key": "no3_mg_l", "factor": 0.2259 / 1000},
+    'CN4RIG': {"units": "gN m^-3", "long_name": "NH4 conc in precip", "source_key": "nh4_mg_l", "factor": 0.7765},
+    'CNORIG': {"units": "gN m^-3", "long_name": "NO3 conc in precip", "source_key": "no3_mg_l", "factor": 0.2259},
     'CPORG': {"units": "gP m^-3", "long_name": "H2PO4 conc in precip", "source_key": None, "factor": None},
     'CALRG': {"units": "gAl m^-3", "long_name": "Al conc in precip", "source_key": None, "factor": None},
     'CFERG': {"units": "gFe m^-3", "long_name": "Fe conc in precip", "source_key": None, "factor": None},
-    'CCARG': {"units": "gCa m^-3", "long_name": "Ca conc in precip", "source_key": "ca_mg_l", "factor": 1.0 / 1000},
+    'CCARG': {"units": "gCa m^-3", "long_name": "Ca conc in precip", "source_key": "ca_mg_l", "factor": 1.0},
     'CMGRG': {"units": "gMg m^-3", "long_name": "Mg conc in precip", "source_key": "mg_mg_l", "factor": 1.0 / 1000},
     'CNARG': {"units": "gNa m^-3", "long_name": "Na conc in precip", "source_key": "na_mg_l", "factor": 1.0 / 1000},
     'CKARG': {"units": "gK m^-3", "long_name": "K conc in precip", "source_key": "k_mg_l", "factor": 1.0 / 1000},
-    'CSORG': {"units": "gS m^-3", "long_name": "SO4 conc in precip", "source_key": "so4_mg_l", "factor": 0.3338 / 1000},
-    'CCLRG': {"units": "gCl m^-3", "long_name": "Cl conc in precip", "source_key": "cl_mg_l", "factor": 1.0 / 1000},
+    'CSORG': {"units": "gS m^-3", "long_name": "SO4 conc in precip", "source_key": "so4_mg_l", "factor": 0.3338},
+    'CCLRG': {"units": "gCl m^-3", "long_name": "Cl conc in precip", "source_key": "cl_mg_l", "factor": 1.0},
 }
 
 CHEM_DEFAULT_VALUES = {

@@ -113,6 +113,32 @@ def woody_form_findings(block):
 
 
 class PhysiologicalParameterizationTests(unittest.TestCase):
+    def test_species_specific_sla_web_evidence_is_checked(self):
+        block = CHECKER.PlantBlock(nz=3, ny=1, nx=1, code="woak35", start_line=1)
+        block.parameters = [parameter("SLA1", 0.033, 8)]
+        evidence = {
+            "plants": [
+                {
+                    "pft_code": "woak35",
+                    "numeric_ranges": [
+                        {
+                            "variable": "SLA1",
+                            "min": 0.016,
+                            "max": 0.020,
+                            "unit": "m2 gC-1",
+                            "source": "site-composition-weighted oak evidence",
+                        }
+                    ],
+                }
+            ]
+        }
+
+        findings = CHECKER.check_web_evidence([block], evidence)
+
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].parameter, "SLA1")
+        self.assertEqual(findings[0].severity, "WARN")
+
     def test_missing_pathway_is_flagged_instead_of_skipped(self):
         block = CHECKER.PlantBlock(nz=1, ny=1, nx=1, code="test00", start_line=1)
         findings = physiology_findings(block)
@@ -306,10 +332,28 @@ class PhysiologicalParameterizationTests(unittest.TestCase):
         findings = [
             CHECKER.Finding("WARN", "maiz41", 1, 1, 1, 2, "XKO2", "high", "physiology"),
             CHECKER.Finding("WARN", "maiz41", 1, 1, 1, 3, "RRAD2M", "large", "general"),
+            CHECKER.Finding(
+                "WARN",
+                "maiz41",
+                1,
+                1,
+                1,
+                4,
+                "ETMX*CHL/VCMX*RUBP",
+                "model-dependent ratio",
+                "physiology",
+            ),
         ]
         promoted = CHECKER.enforce_strict_physiology(findings)
         severities = {finding.parameter: finding.severity for finding in promoted}
-        self.assertEqual(severities, {"XKO2": "ERROR", "RRAD2M": "WARN"})
+        self.assertEqual(
+            severities,
+            {
+                "XKO2": "ERROR",
+                "RRAD2M": "WARN",
+                "ETMX*CHL/VCMX*RUBP": "WARN",
+            },
+        )
 
 
 if __name__ == "__main__":

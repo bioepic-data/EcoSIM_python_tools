@@ -35,7 +35,7 @@ The parser should keep duplicate variable names in file order.
 - `ISNTYP` should use EcoSIM snow interception pattern codes `0=bryophyte`, `1=grass`, `2=shrub`, `3=deciduous tree`, and `4=conifer`. The checker errors on missing, non-integer, or out-of-range numeric codes, and warns when the code conflicts with the label text or the inferred PFT form from the block code/name.
 - Fraction traits such as `RUBP`, `PEPC`, `CHL`, `FCO2`, `ALBR`, `ALBP`, `TAUR`, `TAUP`, `CFI`, `PORT`, `PhiMIN`, `PhiMAX`, and `PhiMean` should be within `[0, 1]`. In photosynthetic properties, `CHL` is the fraction of total leaf protein in chlorophyll-bound/light-harvesting proteins, including chlorophyll-protein complexes associated with PSI, PSII, and LHC.
 - `CHL` values in `PHOTOSYNTHETIC PROPERTIES` should normally fall in a broad screening range of `0.08-0.30` on the total-leaf-protein basis. Values below this range likely under-allocate protein to light harvesting, especially for evergreen needleleaf PFTs.
-- Do not use `SLA1` values for sanity-check decisions, including web-informed checks or derived leaf-area photosynthetic capacity calculations.
+- Do not impose a universal deterministic range on `SLA1`. Allow a web-informed warning when a species- or site-specific range has been converted to `m2 gC-1` with a documented dry-mass carbon fraction. Do not use `SLA1` to derive leaf-area photosynthetic capacities unless the model mapping and conversions are explicitly supported.
 - `CLASS` must contain four numeric inclination fractions, each in `[0, 1]`, summing to one.
 - Optical checks should flag `ALBR + TAUR > 1` and `ALBP + TAUP > 1`.
 - `ANGSH` must be `0 degrees` for plant forms that lack petiole or sheath tissue. This includes conifer, lichen, and moss PFTs where a nonzero petiole/sheath angle would imply an organ that is not represented by the plant morphology.
@@ -43,10 +43,12 @@ The parser should keep duplicate variable names in file order.
 - Phenological accumulation thresholds `VRNLI` and `VRNXI` should be nonnegative; zero can encode no accumulated leafout or leafoff requirement.
 - Organ N and P mass ratios (`CNLF`, `CNSHE`, `CNSTK`, `CNRSV`, `CNHSK`, `CNEAR`, `CNGR`, `CNRT`, `CPLF`, `CPSHE`, `CPSTK`, `CPRSV`, `CPHSK`, `CPEAR`, `CPGR`, `CPRT`) must be positive; values above `0.2 g element gC-1` are suspicious enough to warn.
 - `OSMO` should be negative in MPa. Very negative values below about `-5 MPa` deserve a warning.
-- `WTSTDI` should be nonnegative.
+- `WTSTDI` should be nonnegative. It is standing dead biomass at initialization, so judge it against the simulation start date, cohort origin, and disturbance history rather than as a timeless species trait. A seed-origin run should normally start with zero PFT-specific standing dead biomass unless legacy material is intentionally represented.
+- `KLGMAX` is retired and is not required for woody or non-woody PFT blocks. Do not flag its absence or use it to judge coarse-root lignification.
 
 ## Root Conduit Hydraulics
 
+- Root-resistance behavior is code-version dependent. Verify these equations in the EcoSIM source revision that produced the run and record the commit or version when possible. If it cannot be verified, label resistance decomposition and scaling conclusions as version-unverified. Do not assume that parameter metadata or equations from another branch describe the active executable.
 - Interpret `RSRR` as radial root resistivity per unit absorbing-root surface area in `MPa h m-1`. In the regular EcoSIM uptake calculation, `RootRadialResist = RSRR*(VLMicP/VLWatMicPM)/RootSurfaceArea`; therefore high `RSRR` means low water uptake capacity, and drying micropores increase the effective radial resistance further.
 - Convert `RSRR` to the fully wetted intrinsic radial conductivity with `k_radial = 1/RSRR` in `m h-1 MPa-1`, or `k_radial = 1/(3600*RSRR)` in `m s-1 MPa-1`. Do not interpret conductivity-like NetCDF metadata as overriding the resistance semantics established by the model equation.
 - For conifers, use `1000-10000 MPa h m-1` as a broad deterministic warning screen. This corresponds to `2.78e-8-2.78e-7 m s-1 MPa-1`. Field means for intact fine roots of four mature conifers were `0.51e-7-2.06e-7 m s-1 MPa-1` (https://doi.org/10.1016/j.rhisph.2022.100489). The screen is deliberately wider because intact-root measurements can include axial and interface resistance and are not identical to EcoSIM's intrinsic radial term.
@@ -55,7 +57,7 @@ The parser should keep duplicate variable names in file order.
 - Interpret `RVSR` as the literal arithmetic mean root-conduit lumen radius in meters. Use tracheid lumen radius for conifers and vessel-element lumen radius for angiosperms. Never substitute an effective hydraulic radius.
 - Convert measured diameter to `RVSR` with `RVSR = mean_lumen_diameter_m / 2`. Prefer species-level root measurements; do not silently substitute stem or hydraulically weighted diameters.
 - Screen conifer `RVSR` at `2.5e-6-40e-6 m` radius, corresponding to the broad published `5-80 um` tracheid-diameter envelope (https://www.srs.fs.usda.gov/pubs/chap/chap_2015_domec_001.pdf). Treat this as a warning range and use species-specific web evidence to narrow it. Mature healthy ponderosa-pine roots measured near Burns, Oregon averaged `30.4 um` tracheid diameter, or about `15.2e-6 m` radius (https://doi.org/10.1093/treephys/18.5.333).
-- EcoSIM calculates single-conduit resistance as `ARSRA * Rax_ref * (1e-6/RVSR)^4`, single-conduit area as `pi*RVSR^2`, and conduit count as `0.2*(RRAD2M/RVSR)^2`. Require the implied count to be at least one. With `RRAD2M` and `ARSRA` fixed, bundle axial resistance scales as `RVSR^-2`.
+- In the inspected EcoSIM implementation, single-conduit resistance is `ARSRA * Rax_ref * (1e-6/RVSR)^4`, single-conduit area is `pi*RVSR^2`, and conduit count is `0.2*(RRAD2M/RVSR)^2`. Require the implied count to be at least one only after confirming that geometry in the active code version. With `RRAD2M` and `ARSRA` fixed, this implementation makes bundle axial resistance scale as `RVSR^-2`; do not generalize that scaling to another code revision without verification.
 - Require `ARSRA > 0` and warn when `ARSRA < 1`, because pit, end-wall, and nonideal-flow effects cannot make an actual conduit less resistant than its ideal lumen. Use `ARSRA`, not an artificially small `RVSR`, to represent those additional axial resistances.
 
 ## Active Structural Protein Pools
@@ -69,7 +71,7 @@ The parser should keep duplicate variable names in file order.
 
 ## Clean Photosynthetic Parameterization
 
-Apply these as pathway-aware physiological warnings. Promote them to errors when `--strict-physiology` is requested. The ranges are deliberately broad screening bounds, not cultivar-specific calibration targets.
+Apply these as pathway-aware physiological warnings. Promote them to errors when `--strict-physiology` is requested, except for the model-formulation-sensitive `Jmax:Vcmax` diagnostic. The ranges are deliberately broad screening bounds, not cultivar-specific calibration targets.
 
 - Require a recognizable `ICTYP` pathway and all inputs needed for the corresponding kinetic, allocation, capacity-ratio, and optical checks. Missing values must not silently disable strict physiology.
 - Treat `VCMX`, `VOMX`, `XKCO2`, and `XKO2` as a Rubisco kinetic quartet. Check `VCMX/VOMX` against `6-14` for C4 and `2-8` for C3, and check implied specificity `VCMX*XKO2/(VOMX*XKCO2)` against `70-140`. This prevents an unrealistic turnover ratio from being hidden by compensating Km values.
@@ -77,7 +79,7 @@ Apply these as pathway-aware physiological warnings. Promote them to errors when
 - Define photosynthesis-related allocations (`RUBP`, `PEPC`, and `CHL`) relative to total leaf protein C, not leaf structural C or total leaf N. First derive `leaf_protein_C_per_leaf_C = min(CNWL*CNLF, CPWL*CPLF)` and `effective_CNWL = leaf_protein_C_per_leaf_C/CNLF`. Then estimate enzyme nitrogen allocation with `fN_enzyme = allocation * effective_CNWL / 3.3`, using `3.3 gC protein gN-1` when enzyme-specific composition is unavailable. Screen Rubisco at `5-16%` of total leaf N for C4 and `8-30%` for C3. Screen C4 PEPC at `1-6%`; field maize commonly allocates about `2.5-3.5%`.
 - Require `RUBP + CHL + PEPC <= 0.65` for C4 and `RUBP + CHL <= 0.65` for C3 because these fractions draw from one total-leaf-protein pool.
 - For C4, calculate protein-normalized `Vpmax:Vcmax = VCMX4*PEPC/(VCMX*RUBP)` and screen at `0.8-2.5`.
-- Calculate protein-normalized `Jmax:Vcmax` using EcoSIM's chlorophyll-C conversion: `ETMX*CHL*fCHLMESO/(3.7*VCMX*RUBP)` for C4, screened at `4-8`; and `ETMX*CHL/(3.5*VCMX*RUBP)` for C3, screened at `1.2-3`.
+- Calculate protein-normalized `Jmax:Vcmax` using EcoSIM's chlorophyll-C conversion: `ETMX*CHL*fCHLMESO/(3.7*VCMX*RUBP)` for C4, screened at `4-8`; and `ETMX*CHL/(3.5*VCMX*RUBP)` for C3, screened at `1.2-3`. Treat this as a lower-priority, model-formulation-sensitive diagnostic that remains `WARN` in strict mode. Do not use it to override direct protein-allocation evidence for `CHL` or `RUBP`, and do not force agreement with ratios derived under a different photosynthesis formulation.
 - Screen `FCO2` at `0.25-0.50` for C4 and `0.55-0.85` for C3. Screen C4 `fCHLMESO` at `0.40-0.75`.
 - Screen leaf PAR absorptance `1-ALBP-TAUP` at `0.80-0.95` and broad shortwave absorptance `1-ALBR-TAUR` at `0.30-0.85`.
 

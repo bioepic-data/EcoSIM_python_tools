@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EcoSIM searchable call graph</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f5f7f8;
+  --panel: #ffffff;
+  --fg: #172126;
+  --muted: #5f6b72;
+  --border: #cad2d7;
+  --accent: #176b87;
+  --accent-soft: #dceff5;
+  --node: #e8eef1;
+  --driver: #d9efe8;
+  --dispatch: #f4e7c7;
+  --external: #ece7ef;
+  --edge: #7d8a91;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111719;
+    --panel: #182023;
+    --fg: #edf3f5;
+    --muted: #a8b4ba;
+    --border: #3b484e;
+    --accent: #67bdd8;
+    --accent-soft: #173b47;
+    --node: #263238;
+    --driver: #1d4037;
+    --dispatch: #4a3c21;
+    --external: #37303c;
+    --edge: #84949b;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+h1 { margin: 0; font-size: 18px; font-weight: 600; }
+h2 { margin: 0 0 6px; font-size: 16px; }
+h3 { margin: 14px 0 5px; font-size: 13px; }
+.meta, small { color: var(--muted); }
+.controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) 150px 100px auto;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+input, select, button {
+  font: inherit;
+  color: inherit;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 7px 9px;
+}
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+.layout {
+  display: grid;
+  grid-template-columns: 290px minmax(420px, 1fr) 360px;
+  min-height: calc(100vh - 112px);
+}
+aside { background: var(--panel); overflow: auto; }
+#results-panel { border-right: 1px solid var(--border); }
+#detail-panel { border-left: 1px solid var(--border); padding: 12px; }
+.panel-title { padding: 10px 12px 6px; color: var(--muted); font-weight: 600; }
+#results { padding: 0 8px 12px; }
+.result {
+  display: block;
+  width: 100%;
+  margin: 3px 0;
+  padding: 7px 8px;
+  text-align: left;
+  border-color: transparent;
+  background: transparent;
+}
+.result.active { background: var(--accent-soft); border-color: var(--accent); }
+.result small { display: block; overflow-wrap: anywhere; }
+#graph-wrap { overflow: auto; padding: 10px; }
+#graph { min-width: 100%; min-height: 620px; }
+.edge { stroke: var(--edge); stroke-width: 1.2; fill: none; marker-end: url(#arrow); }
+.edge.function { stroke-dasharray: 4 3; }
+.node rect { fill: var(--node); stroke: var(--border); stroke-width: 1; rx: 4; }
+.node.driver rect { fill: var(--driver); }
+.node.dispatch rect, .node.generic rect, .node.ambiguous rect { fill: var(--dispatch); }
+.node.external rect { fill: var(--external); }
+.node.focus rect { stroke: var(--accent); stroke-width: 2.5; }
+.node text { fill: var(--fg); pointer-events: none; }
+.node .sub { fill: var(--muted); font-size: 11px; }
+.node { cursor: pointer; }
+code { color: var(--fg); overflow-wrap: anywhere; }
+.location { display: flex; gap: 6px; align-items: flex-start; }
+.location code { flex: 1; }
+.link-list { list-style: none; margin: 0; padding: 0; }
+.link-list button {
+  width: 100%;
+  padding: 5px;
+  text-align: left;
+  border-color: transparent;
+  background: transparent;
+}
+.link-list button:hover { background: var(--accent-soft); }
+.badge {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 2px 5px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.empty { padding: 10px 12px; color: var(--muted); }
+@media (max-width: 1050px) {
+  .layout { grid-template-columns: 250px 1fr; }
+  #detail-panel { grid-column: 1 / -1; border-top: 1px solid var(--border); border-left: 0; }
+}
+@media (max-width: 720px) {
+  .controls { grid-template-columns: 1fr 1fr; }
+  .layout { display: block; }
+  #results-panel { max-height: 240px; border-right: 0; border-bottom: 1px solid var(--border); }
+  #graph-wrap { min-height: 520px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>EcoSIM searchable call graph</h1>
+  <span class="meta" id="meta"></span>
+</header>
+<div class="controls">
+  <input id="search" type="search" placeholder="Search procedure, module, subsystem, or source path" aria-label="Search code graph">
+  <select id="direction" aria-label="Graph direction">
+    <option value="both">Callers + callees</option>
+    <option value="out">Callees</option>
+    <option value="in">Callers</option>
+  </select>
+  <select id="depth" aria-label="Graph depth">
+    <option value="1" selected>Depth 1</option>
+    <option value="2">Depth 2</option>
+    <option value="3">Depth 3</option>
+  </select>
+  <button id="entry" type="button">Executable entry</button>
+</div>
+<main class="layout">
+  <aside id="results-panel">
+    <div class="panel-title">Code index</div>
+    <div id="results"></div>
+  </aside>
+  <section id="graph-wrap" aria-label="Call graph">
+    <svg id="graph" role="img" aria-label="Selected procedure call neighborhood"></svg>
+  </section>
+  <aside id="detail-panel"><div id="details"></div></aside>
+</main>
+<script id="graph-data" type="application/json">__GRAPH_JSON__</script>
+<script>
+const graphPayload = document.getElementById("graph-data").textContent.trim();
+if (!graphPayload.startsWith("{")) {
+  window.location.replace(
+    new URL("../code_analysis/ecosim_call_graph/ecosim_call_graph.html", window.location.href).href
+  );
+} else {
+const data = JSON.parse(graphPayload);
+const nodes = new Map(data.nodes.map(node => [node.id, node]));
+const outgoing = new Map();
+const incoming = new Map();
+for (const edge of data.edges) {
+  if (!outgoing.has(edge.source)) outgoing.set(edge.source, []);
+  if (!incoming.has(edge.target)) incoming.set(edge.target, []);
+  outgoing.get(edge.source).push(edge);
+  incoming.get(edge.target).push(edge);
+}
+
+let selected = data.entrypoints[0] || data.nodes[0]?.id;
+const search = document.getElementById("search");
+const results = document.getElementById("results");
+const details = document.getElementById("details");
+const svg = document.getElementById("graph");
+const direction = document.getElementById("direction");
+const depth = document.getElementById("depth");
+const commit = data.metadata.git.commit || "unknown";
+document.getElementById("meta").textContent =
+  `${data.metadata.internal_procedures.toLocaleString()} procedures, ` +
+  `${data.edges.length.toLocaleString()} calls, commit ${commit.slice(0, 10)}` +
+  `${data.metadata.git.dirty ? " + local changes" : ""}`;
+
+function label(node) { return node.qualified_name || node.name; }
+function nodeLocation(node) { return node.file ? `${node.file}:${node.line}` : node.kind; }
+function escapeHtml(value) {
+  const div = document.createElement("div");
+  div.textContent = String(value ?? "");
+  return div.innerHTML;
+}
+
+function rankedResults(query) {
+  const lowered = query.trim().toLowerCase();
+  const matches = data.nodes.filter(node => {
+    const index = `${node.name} ${node.qualified_name} ${node.module || ""} ${node.category} ${node.file}`.toLowerCase();
+    return !lowered || index.includes(lowered);
+  });
+  matches.sort((left, right) => {
+    if (left.id === selected && right.id !== selected) return -1;
+    if (right.id === selected && left.id !== selected) return 1;
+    const leftRank = left.name === lowered ? 0 : left.name.startsWith(lowered) ? 1 : 2;
+    const rightRank = right.name === lowered ? 0 : right.name.startsWith(lowered) ? 1 : 2;
+    return leftRank - rightRank ||
+      Number(right.reachable_from_entry) - Number(left.reachable_from_entry) ||
+      label(left).localeCompare(label(right));
+  });
+  return matches.slice(0, 120);
+}
+
+function renderResults() {
+  const matches = rankedResults(search.value);
+  results.replaceChildren();
+  if (!matches.length) {
+    results.innerHTML = '<div class="empty">No matching procedures</div>';
+    return;
+  }
+  for (const node of matches) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `result${node.id === selected ? " active" : ""}`;
+    button.innerHTML = `<strong>${escapeHtml(label(node))}</strong><small>${escapeHtml(nodeLocation(node))}</small>`;
+    button.onclick = () => selectNode(node.id);
+    results.appendChild(button);
+  }
+}
+
+function neighborhood() {
+  const maxDepth = Number(depth.value);
+  const mode = direction.value;
+  const levels = new Map([[selected, 0]]);
+  const queue = [[selected, 0]];
+  while (queue.length) {
+    const [id, level] = queue.shift();
+    if (Math.abs(level) >= maxDepth) continue;
+    const nextNodes = [];
+    if (mode !== "in") nextNodes.push(...(outgoing.get(id) || []).map(edge => [edge.target, level + 1]));
+    if (mode !== "out") nextNodes.push(...(incoming.get(id) || []).map(edge => [edge.source, level - 1]));
+    for (const [next, nextLevel] of nextNodes) {
+      if (!levels.has(next) || Math.abs(nextLevel) < Math.abs(levels.get(next))) {
+        levels.set(next, nextLevel);
+        queue.push([next, nextLevel]);
+      }
+    }
+    if (levels.size > 220) break;
+  }
+  return levels;
+}
+
+function renderGraph() {
+  const levels = neighborhood();
+  const groups = new Map();
+  for (const [id, level] of levels) {
+    if (!groups.has(level)) groups.set(level, []);
+    groups.get(level).push(id);
+  }
+  for (const ids of groups.values()) ids.sort((left, right) => label(nodes.get(left)).localeCompare(label(nodes.get(right))));
+  const levelKeys = [...groups.keys()].sort((left, right) => left - right);
+  const boxWidth = 220;
+  const boxHeight = 48;
+  const xGap = 88;
+  const yGap = 18;
+  const padding = 35;
+  const maxRows = Math.max(...[...groups.values()].map(group => group.length), 1);
+  const width = padding * 2 + levelKeys.length * boxWidth + Math.max(0, levelKeys.length - 1) * xGap;
+  const height = Math.max(620, padding * 2 + maxRows * (boxHeight + yGap));
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.replaceChildren();
+
+  const namespace = "http://www.w3.org/2000/svg";
+  const defs = document.createElementNS(namespace, "defs");
+  const marker = document.createElementNS(namespace, "marker");
+  marker.setAttribute("id", "arrow");
+  marker.setAttribute("viewBox", "0 0 10 10");
+  marker.setAttribute("refX", "9");
+  marker.setAttribute("refY", "5");
+  marker.setAttribute("markerWidth", "6");
+  marker.setAttribute("markerHeight", "6");
+  marker.setAttribute("orient", "auto-start-reverse");
+  const arrow = document.createElementNS(namespace, "path");
+  arrow.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+  arrow.setAttribute("fill", "var(--edge)");
+  marker.appendChild(arrow);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  const positions = new Map();
+  levelKeys.forEach((level, column) => {
+    const ids = groups.get(level);
+    const totalHeight = ids.length * (boxHeight + yGap) - yGap;
+    const start = (height - totalHeight) / 2;
+    ids.forEach((id, row) => positions.set(id, {
+      x: padding + column * (boxWidth + xGap),
+      y: start + row * (boxHeight + yGap)
+    }));
+  });
+
+  for (const edge of data.edges) {
+    if (!positions.has(edge.source) || !positions.has(edge.target)) continue;
+    const source = positions.get(edge.source);
+    const target = positions.get(edge.target);
+    const x1 = source.x + boxWidth;
+    const y1 = source.y + boxHeight / 2;
+    const x2 = target.x;
+    const y2 = target.y + boxHeight / 2;
+    const bend = (x1 + x2) / 2;
+    const path = document.createElementNS(namespace, "path");
+    path.setAttribute("d", `M ${x1} ${y1} C ${bend} ${y1}, ${bend} ${y2}, ${x2} ${y2}`);
+    path.setAttribute("class", `edge ${edge.kind}`);
+    const title = document.createElementNS(namespace, "title");
+    title.textContent = `${edge.kind} at ${edge.file}:${edge.line} (${edge.resolution})`;
+    path.appendChild(title);
+    svg.appendChild(path);
+  }
+
+  for (const [id, position] of positions) {
+    const node = nodes.get(id);
+    const group = document.createElementNS(namespace, "g");
+    const categoryClass = node.category === "Driver" ? "driver" : node.kind;
+    group.setAttribute("class", `node ${categoryClass}${id === selected ? " focus" : ""}`);
+    group.setAttribute("transform", `translate(${position.x},${position.y})`);
+    const rectangle = document.createElementNS(namespace, "rect");
+    rectangle.setAttribute("width", boxWidth);
+    rectangle.setAttribute("height", boxHeight);
+    const primary = document.createElementNS(namespace, "text");
+    primary.setAttribute("x", "10");
+    primary.setAttribute("y", "20");
+    primary.textContent = label(node).slice(0, 31);
+    const secondary = document.createElementNS(namespace, "text");
+    secondary.setAttribute("x", "10");
+    secondary.setAttribute("y", "37");
+    secondary.setAttribute("class", "sub");
+    secondary.textContent = nodeLocation(node).slice(0, 34);
+    const title = document.createElementNS(namespace, "title");
+    title.textContent = `${label(node)}\n${nodeLocation(node)}`;
+    group.append(rectangle, primary, secondary, title);
+    group.onclick = () => selectNode(id);
+    svg.appendChild(group);
+  }
+}
+
+function neighborButton(id, extra = "") {
+  const node = nodes.get(id);
+  return `<li><button type="button" data-node="${escapeHtml(id)}"><strong>${escapeHtml(label(node))}</strong>` +
+    `${extra ? `<br><small>${escapeHtml(extra)}</small>` : ""}</button></li>`;
+}
+
+function renderDetails() {
+  const node = nodes.get(selected);
+  if (!node) return;
+  const callees = outgoing.get(selected) || [];
+  const callers = incoming.get(selected) || [];
+  let body = `<h2>${escapeHtml(label(node))}</h2><div>` +
+    `<span class="badge">${escapeHtml(node.kind)}</span>` +
+    `<span class="badge">${escapeHtml(node.category)}</span>` +
+    `${node.reachable_from_entry ? '<span class="badge">reachable</span>' : ""}</div>`;
+  if (node.file) {
+    const sourceLocation = `${node.absolute_file}:${node.line}`;
+    body += `<h3>Definition</h3><div class="location"><code>${escapeHtml(sourceLocation)}</code>` +
+      `<button type="button" id="copy-location">Copy</button></div>` +
+      `<p><code>${escapeHtml(node.signature)}</code></p>`;
+  }
+  if (node.candidates?.length) {
+    body += `<h3>Possible dispatch targets (${node.candidates.length})</h3>` +
+      `<ul class="link-list">${node.candidates.map(id => neighborButton(id)).join("")}</ul>`;
+  }
+  body += `<h3>Callees (${callees.length})</h3>` +
+    (callees.length
+      ? `<ul class="link-list">${callees.map(edge => neighborButton(edge.target, `${edge.kind} · ${edge.file}:${edge.line} · ${edge.resolution}`)).join("")}</ul>`
+      : '<div class="empty">None indexed</div>');
+  body += `<h3>Callers (${callers.length})</h3>` +
+    (callers.length
+      ? `<ul class="link-list">${callers.map(edge => neighborButton(edge.source, `${edge.kind} · ${edge.file}:${edge.line}`)).join("")}</ul>`
+      : '<div class="empty">None indexed</div>');
+  details.innerHTML = body;
+  details.querySelectorAll("[data-node]").forEach(button => {
+    button.onclick = () => selectNode(button.dataset.node);
+  });
+  const copy = document.getElementById("copy-location");
+  if (copy) {
+    copy.onclick = async () => {
+      await navigator.clipboard.writeText(`${node.absolute_file}:${node.line}`);
+      copy.textContent = "Copied";
+    };
+  }
+}
+
+function selectNode(id) {
+  selected = id;
+  renderResults();
+  renderGraph();
+  renderDetails();
+}
+
+search.addEventListener("input", renderResults);
+direction.addEventListener("change", renderGraph);
+depth.addEventListener("change", renderGraph);
+document.getElementById("entry").onclick = () => {
+  search.value = "";
+  selectNode(data.entrypoints[0]);
+};
+renderResults();
+renderGraph();
+renderDetails();
+}
+</script>
+</body>
+</html>

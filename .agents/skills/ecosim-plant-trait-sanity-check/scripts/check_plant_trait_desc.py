@@ -103,8 +103,6 @@ POSITIVE_VARS = {
 
 NONNEGATIVE_VARS = {"VRNLI", "VRNXI"}
 
-SKIP_WEB_NUMERIC_VARS = {"SLA1"}
-
 PHOTOSYNTHETIC_WARN_RANGES = {
     "CHL": (
         0.08,
@@ -141,6 +139,7 @@ C3_CARBOXYLATION_TO_OXYGENATION_WARN_RANGE = (2.0, 8.0)
 C4_VPMAX_TO_VCMAX_WARN_RANGE = (0.8, 2.5)
 C4_JMAX_TO_VCMAX_WARN_RANGE = (4.0, 8.0)
 C3_JMAX_TO_VCMAX_WARN_RANGE = (1.2, 3.0)
+LOW_PRIORITY_PHYSIOLOGY_PARAMETERS = {"ETMX*CHL/VCMX*RUBP"}
 PAR_ABSORPTANCE_WARN_RANGE = (0.80, 0.95)
 SHORTWAVE_ABSORPTANCE_WARN_RANGE = (0.30, 0.85)
 PHOTOSYNTHETIC_PROTEIN_ALLOCATION_MAX = 0.65
@@ -1356,9 +1355,10 @@ def check_physiological_parameterization(
             warn(
                 "ETMX*CHL/VCMX*RUBP",
                 params["ETMX"][0].line,
-                f"protein-normalized Jmax:Vcmax is {jmax_to_vcmax:.2f}, outside broad "
-                f"{pathway} range [{jmax_range[0]:g}, {jmax_range[1]:g}]; ETMX and CHL "
-                "must be calibrated together against Rubisco capacity",
+                f"model-formulation-sensitive protein-normalized Jmax:Vcmax diagnostic is "
+                f"{jmax_to_vcmax:.2f}, outside broad {pathway} range "
+                f"[{jmax_range[0]:g}, {jmax_range[1]:g}]; interpret ETMX and CHL within "
+                "EcoSIM and prioritize direct protein-allocation evidence",
             )
 
     check_absorptance_pair(
@@ -1417,11 +1417,15 @@ def check_absorptance_pair(
 
 
 def enforce_strict_physiology(findings: List[Finding]) -> List[Finding]:
-    """Promote physiology warnings to errors for calibration/run-readiness gates."""
+    """Promote physiology warnings except model-formulation-sensitive diagnostics."""
 
     promoted = []
     for finding in findings:
-        if finding.category == "physiology" and finding.severity == "WARN":
+        if (
+            finding.category == "physiology"
+            and finding.severity == "WARN"
+            and finding.parameter not in LOW_PRIORITY_PHYSIOLOGY_PARAMETERS
+        ):
             promoted.append(
                 Finding(
                     severity="ERROR",
@@ -1545,9 +1549,6 @@ def check_web_numeric_range(block: PlantBlock, params: Dict[str, List[Parameter]
     variable = str(rule.get("variable", "")).strip()
     if not variable:
         return
-    if variable.upper() in SKIP_WEB_NUMERIC_VARS:
-        return
-
     severity = str(rule.get("severity", "WARN")).upper()
     lower = optional_float(rule.get("min"))
     upper = optional_float(rule.get("max"))

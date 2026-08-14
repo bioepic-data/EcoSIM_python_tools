@@ -33,7 +33,7 @@ Omit `--strict-physiology` only for an exploratory review where physiological fi
 python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc --ny 1 --nx 1
 ```
 
-4. Use web search to gather trait evidence for each first-grid plant block. Read [references/web_evidence.md](references/web_evidence.md), then search for the plant name, likely taxon, or functional type plus trait terms.
+4. Use web search to gather trait evidence for each first-grid plant block. Read [references/web_evidence.md](references/web_evidence.md), then search for the plant name, likely taxon, or functional type plus trait terms. For `ndlf35`, `woak35`, US-Me2, or US-xSP/SOAP work, also read [references/pft_case_notes.md](references/pft_case_notes.md).
 5. Convert the evidence into EcoSIM units and save a temporary evidence JSON file. Use species-level evidence when available; otherwise use genus, family, or functional-type evidence and mark that evidence level.
 6. Re-run the checker with the evidence file:
 
@@ -57,9 +57,10 @@ The checker validates the plant blocks at the selected grid for:
 - pathway-specific Rubisco `Kc`, `Ko`, carboxylation:oxygenation turnover ratio, and implied CO2/O2 specificity
 - Rubisco and PEPC fractions of total leaf N implied by their allocations within the N/P-limited total leaf-protein pool
 - leaf and root protein C supported jointly by N and P in active structural biomass, with only active root biomass used for woody PFTs
-- C4 protein-normalized `Vpmax:Vcmax` and C3/C4 `Jmax:Vcmax` capacity ratios
+- C4 protein-normalized `Vpmax:Vcmax` and a lower-priority, model-formulation-sensitive C3/C4 `Jmax:Vcmax` diagnostic
 - pathway-specific `FCO2`, C4 mesophyll chlorophyll partitioning, and PAR/shortwave absorptance
 - total photosynthetic protein allocation without double-counting the shared leaf-protein pool
+- `SLA1` against explicit species- or site-specific web evidence, without using SLA to infer photosynthetic kinetics
 - `ANGSH = 0` for plant forms without petiole or sheath tissue, including conifer, lichen, and moss PFTs
 - osmotic potential sign and standing dead biomass sign
 - growth yield bounds
@@ -70,7 +71,7 @@ The checker validates the plant blocks at the selected grid for:
 - `RSRR` radial root resistivity, its implied fully wetted conductivity, and its interaction with soil drying and total root resistance
 - literal `RVSR` conduit radius, conifer tracheid anatomy, conduit geometry relative to `RRAD2M`, and `ARSRA` resistance correction
 
-Read [references/sanity_rules.md](references/sanity_rules.md) before expanding the checker or interpreting a borderline warning. Read [references/web_evidence.md](references/web_evidence.md) before making web-informed trait comparisons.
+Read [references/sanity_rules.md](references/sanity_rules.md) before expanding the checker or interpreting a borderline warning. Read [references/web_evidence.md](references/web_evidence.md) before making web-informed trait comparisons. Use [references/pft_case_notes.md](references/pft_case_notes.md) for retained project evidence and interpretation caveats for previously studied PFT/site combinations.
 
 ## Web-Informed Evidence
 
@@ -115,11 +116,13 @@ Use this JSON shape:
 
 Web evidence findings default to `WARN` because literature and trait database ranges vary with species, site, phenology, and measurement protocol. Use `severity: "ERROR"` in the evidence JSON only when a value is unequivocally impossible or contradicts a required categorical identity. Do not use external deciduous foliage descriptions to override the EcoSIM convention that annual plants are represented as evergreen in `IWTYP`.
 
-For photosynthetic-property checks, interpret `RUBP`, `PEPC`, and `CHL` as fractions of the same total leaf-protein pool. Derive that pool from the smaller of the N- and P-supported amounts in active leaf structural biomass. All leaf structure is active; all non-tree root structure is active; for trees, apply root protein relationships only to active structural root biomass and exclude lignified heartwood. Separate `CNRTLIG` and `CPRTLIG` trait inputs are not required. Do not use `SLA1` values, or any `SLA1`-derived leaf-area capacity calculations, as part of the sanity check.
+For photosynthetic-property checks, interpret `RUBP`, `PEPC`, and `CHL` as fractions of the same total leaf-protein pool. Derive that pool from the smaller of the N- and P-supported amounts in active leaf structural biomass. All leaf structure is active; all non-tree root structure is active; for trees, apply root protein relationships only to active structural root biomass and exclude lignified heartwood. Separate `CNRTLIG` and `CPRTLIG` trait inputs are not required. Check `SLA1` only as an independently evidenced morphological trait. Do not use `SLA1` to back-calculate leaf-area `Vcmax`, `Jmax`, or other photosynthetic capacities unless the model mapping and all required conversions are explicitly supported.
 
 Interpret `RVSR` as the literal arithmetic mean lumen radius of root water conduits: tracheids for conifers and vessel elements for angiosperms. Do not use an effective hydraulic radius or tune `RVSR` to absorb pit and end-wall resistance; use `ARSRA` for that correction. Convert published conduit diameters to radius in meters before adding web evidence.
 
 Interpret `RSRR` as radial root resistivity per unit root surface area in `MPa h m-1`, not as conductivity. Convert it to the fully wetted intrinsic radial conductivity with `k_radial = 1/(3600*RSRR)` in `m s-1 MPa-1`. High `RSRR` means low radial conductivity. Review it separately from `RVSR` and `ARSRA`, which control axial transport, and remember that EcoSIM further increases radial resistance as the soil micropore water fraction declines.
+
+Treat every root-resistance equation and parameter interpretation as EcoSIM-code-version dependent. Before diagnosing or transferring `RSRR`, `RVSR`, or `ARSRA`, verify the active model revision and record its commit or version when available. Recheck radial-resistance assembly, soil-moisture modifiers, conduit-count geometry, and axial-resistance scaling in that revision; the formulas documented here describe the inspected implementation and are not guaranteed across versions.
 
 ## Parser Notes
 
@@ -141,7 +144,7 @@ Use Markdown output for human review:
 python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc
 ```
 
-Enforce physiological consistency for calibration and run readiness:
+Enforce physiological consistency for calibration and run readiness. The model-formulation-sensitive `Jmax:Vcmax` diagnostic remains a warning:
 
 ```bash
 python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc --strict-physiology
@@ -159,7 +162,7 @@ Use web evidence in either Markdown or JSON mode:
 python3 .agents/skills/ecosim-plant-trait-sanity-check/scripts/check_plant_trait_desc.py /absolute/path/to/plant_trait.1930.desc --web-evidence /absolute/path/to/web_evidence.json --json
 ```
 
-The script returns a nonzero status when `ERROR` findings are present or when no blocks match the requested grid. With `--strict-physiology`, any physiological-consistency warning is promoted to `ERROR`; unrelated ecological warnings remain warnings.
+The script returns a nonzero status when `ERROR` findings are present or when no blocks match the requested grid. With `--strict-physiology`, physiological-consistency warnings are promoted to `ERROR` except the model-formulation-sensitive `Jmax:Vcmax` diagnostic, which remains a lower-priority `WARN`. Unrelated ecological warnings also remain warnings.
 
 ## Reporting Guidance
 
@@ -168,3 +171,7 @@ Do not edit the trait file unless the user asks for corrections. This skill is a
 When summarizing results, make clear that the check is scoped to the first grid by default, not the full file. If repeated grid columns exist, say how many total blocks were present and how many first-grid plant blocks were inspected.
 
 Always report each checked plant's `RSRR` and implied fully wetted `k_radial`, even when the value passes the deterministic screen. For a high `RSRR` warning, recommend a sensitivity test and diagnose whether radial resistance dominates total root resistance during moist periods before proposing an edit.
+
+For root-hydraulic findings, report the EcoSIM source version or commit used to verify the equations. If the source revision is unavailable, label equation-level conclusions as version-unverified.
+
+When trait plausibility is being inferred from EcoSIM output, condition GPP, LAI, height, biomass, and mortality judgments on cohort age and initialization. A cohort emerging from seed in the simulation must be compared with seedlings or young stands, not the mature AmeriFlux stand observed at the same location. Treat `WTSTDI` as an initial-condition pool tied to the simulation start date and disturbance history, not as an intrinsic PFT trait.
